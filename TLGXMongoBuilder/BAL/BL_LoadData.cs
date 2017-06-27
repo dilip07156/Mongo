@@ -1,0 +1,88 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BAL
+{
+    public class BL_LoadData : IDisposable
+    {
+        public void Dispose()
+        {
+        }
+
+        public void LoadCountryMaster()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadCountryMaster();
+            }
+        }
+
+        public void LoadCityMaster()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadCityMaster();
+            }
+        }
+
+        public void LoadSupplierMaster()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadSupplierMaster();
+            }
+        }
+
+        public void LoadCountryMapping()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadCountryMapping();
+            }
+        }
+
+        public void LoadCityMapping()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadCityMapping();
+            }
+        }
+
+
+        public void LoadProductMapping()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadProductMapping();
+            }
+        }
+
+        public void LoadProductMappingLite()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadProductMappingLite();
+            }
+        }
+
+        public void LoadActivityMapping()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadActivityMapping();
+            }
+        }
+
+        public void LoadActivityMappingLite()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadActivityMappingLite();
+            }
+        }
+    }
+}
