@@ -8,6 +8,7 @@ using System.ServiceModel;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
+using MongoDB.Driver.Builders;
 
 namespace DAL
 {
@@ -250,23 +251,26 @@ namespace DAL
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
-                                              SupplierCode = apm.SupplierName,
-                                              SupplierProductCode = apm.SupplierProductReference,
-                                              SupplierCountryCode = apm.CountryCode,
-                                              SupplierCountryName = apm.CountryName,
-                                              SupplierCityCode = apm.CityCode,
-                                              SupplierCityName = apm.CityName,
-                                              SupplierProductName = apm.ProductName,
-                                              MappingStatus = apm.Status,
+                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                              SupplierCountryCode = apm.CountryCode.ToUpper(),
+                                              SupplierCountryName = apm.CountryName.ToUpper(),
+                                              SupplierCityCode = apm.CityCode.ToUpper(),
+                                              SupplierCityName = apm.CityName.ToUpper(),
+                                              SupplierProductName = apm.ProductName.ToUpper(),
+                                              MappingStatus = apm.Status.ToUpper(),
                                               MapId = apm.MapId ?? 0,
-                                              SystemProductCode = a.CompanyHotelID.ToString(),
-                                              SystemProductName = a.HotelName,
-                                              SystemCountryName = a.country,
-                                              SystemCityName = a.city,
-                                              SystemProductType = a.ProductCategorySubType
+                                              SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                              SystemProductName = a.HotelName.ToUpper(),
+                                              SystemCountryName = a.country.ToUpper(),
+                                              SystemCityName = a.city.ToUpper(),
+                                              SystemProductType = a.ProductCategorySubType.ToUpper()
                                           }).ToList();
 
                     collection.InsertMany(productMapList);
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+
                     collection = null;
                     _database = null;
                 }
@@ -291,13 +295,17 @@ namespace DAL
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
-                                              SupplierCode = apm.SupplierName,
-                                              SupplierProductCode = apm.SupplierProductReference,
+                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierProductCode = apm.SupplierProductReference.ToUpper(),
                                               MapId = apm.MapId ?? 0,
-                                              SystemProductCode = a.CompanyHotelID.ToString(),
+                                              SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                           }).ToList();
 
                     collection.InsertMany(productMapList);
+
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+
                     collection = null;
                     _database = null;
                 }
@@ -322,23 +330,26 @@ namespace DAL
                                           join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
-                                              SupplierCode = apm.SupplierName,
-                                              SupplierProductCode = apm.SuplierProductCode,
-                                              SupplierCountryCode = apm.SupplierCountryCode,
-                                              SupplierCountryName = apm.SupplierCountryName,
-                                              SupplierCityCode = apm.SupplierCityCode,
-                                              SupplierCityName = apm.SupplierCityName,
-                                              SupplierProductName = apm.SupplierProductName,
-                                              MappingStatus = apm.MappingStatus,
+                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierProductCode = apm.SuplierProductCode.ToUpper(),
+                                              SupplierCountryCode = apm.SupplierCountryCode.ToUpper(),
+                                              SupplierCountryName = apm.SupplierCountryName.ToUpper(),
+                                              SupplierCityCode = apm.SupplierCityCode.ToUpper(),
+                                              SupplierCityName = apm.SupplierCityName.ToUpper(),
+                                              SupplierProductName = apm.SupplierProductName.ToUpper(),
+                                              MappingStatus = apm.MappingStatus.ToUpper(),
                                               MapId = apm.MapID ?? 0,
-                                              SystemProductCode = a.CommonProductID.ToString(),
-                                              SystemProductName = a.Product_Name,
-                                              SystemCountryName = a.Country,
-                                              SystemCityName = a.City,
-                                              SystemProductType = "Activity" //a.ProductCategorySubType
+                                              SystemProductCode = a.CommonProductID.ToString().ToUpper(),
+                                              SystemProductName = a.Product_Name.ToUpper(),
+                                              SystemCountryName = a.Country.ToUpper(),
+                                              SystemCityName = a.City.ToUpper(),
+                                              SystemProductType = "Activity".ToUpper() //a.ProductCategorySubType
                                           }).ToList();
 
                     collection.InsertMany(productMapList);
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+
                     collection = null;
                     _database = null;
                 }
@@ -363,13 +374,16 @@ namespace DAL
                                           join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
-                                              SupplierCode = apm.SupplierName,
-                                              SupplierProductCode = apm.SuplierProductCode,
+                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierProductCode = apm.SuplierProductCode.ToUpper(),
                                               MapId = apm.MapID ?? 0,
-                                              SystemProductCode = a.CommonProductID.ToString(),
+                                              SystemProductCode = a.CommonProductID.ToString().ToUpper(),
                                           }).ToList();
 
                     collection.InsertMany(productMapList);
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+
                     collection = null;
                     _database = null;
                 }
