@@ -137,6 +137,7 @@
     <None Include="Properties\PublishProfiles\TLGX_SQL_TO_MONGO_UAT.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -144,13 +145,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\BAL\BAL.csproj">
       <Project>{6324b7d4-1245-4e4a-9432-8ba40d29ce3e}</Project>
       <Name>BAL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DAL\DAL.csproj">
-      <Project>{83b0c554-8090-4e00-8c4f-ce70bdbe18d1}</Project>
-      <Name>DAL</Name>
     </ProjectReference>
     <ProjectReference Include="..\ServiceContracts\DataContracts.csproj">
       <Project>{136fb945-6d3e-4dde-8391-74c5c27143f4}</Project>
@@ -160,9 +160,6 @@
       <Project>{0674527a-ee83-4b93-a3d5-302c2b8290c7}</Project>
       <Name>ServiceContracts</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
