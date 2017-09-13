@@ -28,5 +28,6 @@ namespace DAL
         public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public Nullable<bool> IsActive { get; set; }
+        public Nullable<System.Guid> Place_Id { get; set; }
     }
 }

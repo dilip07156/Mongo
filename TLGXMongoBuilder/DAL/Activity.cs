@@ -14,36 +14,33 @@ namespace DAL
     
     public partial class Activity
     {
-        public System.Guid Acivity_Id { get; set; }
+        public System.Guid Activity_Id { get; set; }
         public Nullable<int> CommonProductID { get; set; }
         public Nullable<int> Legacy_Product_ID { get; set; }
+        public Nullable<int> CompanyProductID { get; set; }
+        public Nullable<int> FinanceProductID { get; set; }
         public string Product_Name { get; set; }
         public string Display_Name { get; set; }
         public string Country { get; set; }
         public string City { get; set; }
-        public string ProductType { get; set; }
-        public string ProductSubType { get; set; }
+        public Nullable<System.Guid> Country_Id { get; set; }
+        public Nullable<System.Guid> City_Id { get; set; }
         public string ProductCategory { get; set; }
+        public string ProductCategorySubType { get; set; }
+        public string ProductType { get; set; }
+        public string Mode_Of_Transport { get; set; }
+        public Nullable<int> CompanyRating { get; set; }
+        public Nullable<int> ProductRating { get; set; }
+        public string Affiliation { get; set; }
+        public Nullable<bool> CompanyRecommended { get; set; }
+        public Nullable<bool> IsActive { get; set; }
+        public string Remarks { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
-        public Nullable<bool> IsActive { get; set; }
-        public string StartingPoint { get; set; }
-        public string EndingPoint { get; set; }
-        public string Duration { get; set; }
-        public Nullable<bool> CompanyRecommended { get; set; }
         public Nullable<double> Latitude { get; set; }
         public Nullable<double> Longitude { get; set; }
-        public string ShortDescription { get; set; }
-        public string LongDescription { get; set; }
-        public Nullable<bool> MealsYN { get; set; }
-        public Nullable<bool> GuideYN { get; set; }
-        public string TransferYN { get; set; }
-        public string PhysicalLevel { get; set; }
-        public string Advisory { get; set; }
-        public string ThingsToCarry { get; set; }
-        public string DeparturePoint { get; set; }
         public string TourType { get; set; }
         public Nullable<int> Parent_Legacy_Id { get; set; }
     }
