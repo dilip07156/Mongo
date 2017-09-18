@@ -327,7 +327,7 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ActivityMapping");
                     var productMapList = (from apm in context.Activity_SupplierProductMapping
-                                          join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
+                                          join a in context.Activities on apm.Activity_ID equals a.Activity_Id
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
                                               SupplierCode = apm.SupplierName.ToUpper(),
@@ -371,7 +371,7 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ActivityMappingLite");
                     var productMapList = (from apm in context.Activity_SupplierProductMapping
-                                          join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
+                                          join a in context.Activities on apm.Activity_ID equals a.Activity_Id
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
                                               SupplierCode = apm.SupplierName.ToUpper(),

@@ -67,6 +67,10 @@
           <Property Name="LEGACY_STATE" Type="nvarchar" MaxLength="255" />
           <Property Name="Legacy_HTL_ID" Type="int" />
           <Property Name="Google_Place_Id" Type="nvarchar" MaxLength="255" />
+          <Property Name="FullAddress" Type="nvarchar(max)" />
+          <Property Name="Country_Id" Type="uniqueidentifier" />
+          <Property Name="City_Id" Type="uniqueidentifier" />
+          <Property Name="InsertFrom" Type="bit" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -216,6 +220,7 @@
           <Property Name="Edit_User" Type="varchar" MaxLength="50" />
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="IsActive" Type="bit" />
+          <Property Name="Place_Id" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="Accommodation_PaxOccupancy">
           <Key>
@@ -286,6 +291,11 @@
           <Property Name="address" Type="nvarchar(max)" />
           <Property Name="address_tx" Type="nvarchar(max)" />
           <Property Name="TelephoneNumber_tx" Type="nvarchar" MaxLength="225" />
+          <Property Name="StarRating" Type="nvarchar" MaxLength="255" />
+          <Property Name="Google_Place_Id" Type="nvarchar" MaxLength="255" />
+          <Property Name="Country_Id" Type="uniqueidentifier" />
+          <Property Name="City_Id" Type="uniqueidentifier" />
+          <Property Name="stg_AccoMapping_Id" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -396,38 +406,35 @@
         </EntityType>
         <EntityType Name="Activity">
           <Key>
-            <PropertyRef Name="Acivity_Id" />
+            <PropertyRef Name="Activity_Id" />
           </Key>
-          <Property Name="Acivity_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Activity_Id" Type="uniqueidentifier" Nullable="false" />
           <Property Name="CommonProductID" Type="int" />
           <Property Name="Legacy_Product_ID" Type="int" />
+          <Property Name="CompanyProductID" Type="int" />
+          <Property Name="FinanceProductID" Type="int" />
           <Property Name="Product_Name" Type="nvarchar" MaxLength="1000" />
           <Property Name="Display_Name" Type="nvarchar" MaxLength="1000" />
           <Property Name="Country" Type="nvarchar" MaxLength="255" />
           <Property Name="City" Type="nvarchar" MaxLength="255" />
-          <Property Name="ProductType" Type="nvarchar" MaxLength="255" />
-          <Property Name="ProductSubType" Type="nvarchar" MaxLength="255" />
+          <Property Name="Country_Id" Type="uniqueidentifier" />
+          <Property Name="City_Id" Type="uniqueidentifier" />
           <Property Name="ProductCategory" Type="nvarchar" MaxLength="255" />
+          <Property Name="ProductCategorySubType" Type="nvarchar" MaxLength="255" />
+          <Property Name="ProductType" Type="nvarchar" MaxLength="255" />
+          <Property Name="Mode_Of_Transport" Type="nvarchar" MaxLength="255" />
+          <Property Name="CompanyRating" Type="int" />
+          <Property Name="ProductRating" Type="int" />
+          <Property Name="Affiliation" Type="nvarchar" MaxLength="255" />
+          <Property Name="CompanyRecommended" Type="bit" />
+          <Property Name="IsActive" Type="bit" />
+          <Property Name="Remarks" Type="nvarchar(max)" />
           <Property Name="Create_Date" Type="datetime" />
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
-          <Property Name="IsActive" Type="bit" />
-          <Property Name="StartingPoint" Type="nvarchar" MaxLength="255" />
-          <Property Name="EndingPoint" Type="nvarchar" MaxLength="255" />
-          <Property Name="Duration" Type="nvarchar" MaxLength="255" />
-          <Property Name="CompanyRecommended" Type="bit" />
           <Property Name="Latitude" Type="float" />
           <Property Name="Longitude" Type="float" />
-          <Property Name="ShortDescription" Type="nvarchar(max)" />
-          <Property Name="LongDescription" Type="nvarchar(max)" />
-          <Property Name="MealsYN" Type="bit" />
-          <Property Name="GuideYN" Type="bit" />
-          <Property Name="TransferYN" Type="nvarchar" MaxLength="255" />
-          <Property Name="PhysicalLevel" Type="nvarchar" MaxLength="255" />
-          <Property Name="Advisory" Type="nvarchar(max)" />
-          <Property Name="ThingsToCarry" Type="nvarchar(max)" />
-          <Property Name="DeparturePoint" Type="nvarchar(max)" />
           <Property Name="TourType" Type="nvarchar" MaxLength="2550" />
           <Property Name="Parent_Legacy_Id" Type="int" />
         </EntityType>
@@ -506,6 +513,14 @@
           <Property Name="Create_User" Type="nvarchar" MaxLength="100" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="100" />
           <Property Name="MapID" Type="int" />
+          <Property Name="Price" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="TotalActivities" Type="int" />
+          <Property Name="PhysicalIntensity" Type="nvarchar" MaxLength="255" />
+          <Property Name="PassengerNumbers" Type="nvarchar" MaxLength="255" />
+          <Property Name="DurationLength" Type="nvarchar" MaxLength="255" />
+          <Property Name="Timing" Type="nvarchar" MaxLength="255" />
+          <Property Name="Session" Type="nvarchar" MaxLength="255" />
+          <Property Name="Specials" Type="nvarchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="DynamicAttribute">
           <Key>
@@ -574,6 +589,9 @@
           <Property Name="CountryCode" Type="nvarchar" MaxLength="255" />
           <Property Name="StateCode" Type="nvarchar" MaxLength="255" />
           <Property Name="StateName" Type="nvarchar" MaxLength="255" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="stg_City_Id" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="m_CityMaster">
           <Key>
@@ -594,6 +612,8 @@
           <Property Name="StateName" Type="nvarchar" MaxLength="255" />
           <Property Name="StateCode" Type="nvarchar" MaxLength="10" />
           <Property Name="Google_PlaceId" Type="nvarchar" MaxLength="255" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -613,6 +633,11 @@
           <Property Name="MapID" Type="int" />
           <Property Name="Remarks" Type="nvarchar(max)" />
           <Property Name="actionType" Type="varchar" MaxLength="10" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="ContinentCode" Type="nvarchar" MaxLength="255" />
+          <Property Name="ContinentName" Type="nvarchar" MaxLength="255" />
+          <Property Name="stg_Country_Id" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -647,6 +672,8 @@
           <Property Name="ISO3166-1-Geoname ID" Type="nvarchar" MaxLength="255" />
           <Property Name="ISO3166-1-EDGAR" Type="nvarchar" MaxLength="255" />
           <Property Name="GooglePlaceID" Type="nvarchar" MaxLength="255" />
+          <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="m_States">
           <Key>
@@ -790,6 +817,10 @@
           <Property Name="LEGACY_STATE" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Legacy_HTL_ID" Type="Int32" />
           <Property Name="Google_Place_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="FullAddress" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Country_Id" Type="Guid" />
+          <Property Name="City_Id" Type="Guid" />
+          <Property Name="InsertFrom" Type="Boolean" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -939,6 +970,7 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="IsActive" Type="Boolean" />
+          <Property Name="Place_Id" Type="Guid" />
         </EntityType>
         <EntityType Name="Accommodation_PaxOccupancy">
           <Key>
@@ -1136,9 +1168,9 @@
           <EntitySet Name="m_CountryMapping" EntityType="TLGX_DEV_Model.m_CountryMapping" />
           <EntitySet Name="m_CityMapping" EntityType="TLGX_DEV_Model.m_CityMapping" />
           <EntitySet Name="Accommodation_ProductMapping" EntityType="TLGX_DEV_Model.Accommodation_ProductMapping" />
-          <EntitySet Name="Activities" EntityType="TLGX_DEV_Model.Activity" />
           <EntitySet Name="Activity_Content" EntityType="TLGX_DEV_Model.Activity_Content" />
           <EntitySet Name="Activity_SupplierProductMapping" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" />
+          <EntitySet Name="Activities" EntityType="TLGX_DEV_Model.Activity" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -1186,6 +1218,8 @@
           <Property Name="StateCode" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="Google_PlaceId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="CountryCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -1220,6 +1254,8 @@
           <Property Name="ISO3166_1_Geoname_ID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="ISO3166_1_EDGAR" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="GooglePlaceID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="m_States">
           <Key>
@@ -1268,6 +1304,11 @@
           <Property Name="MapID" Type="Int32" />
           <Property Name="Remarks" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="actionType" Type="String" MaxLength="10" FixedLength="false" Unicode="false" />
+          <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ContinentCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ContinentName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="stg_Country_Id" Type="Guid" />
         </EntityType>
         <EntityType Name="m_CityMapping">
           <Key>
@@ -1292,6 +1333,9 @@
           <Property Name="CountryCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="StateCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="StateName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="stg_City_Id" Type="Guid" />
         </EntityType>
         <EntityType Name="Accommodation_ProductMapping">
           <Key>
@@ -1333,43 +1377,11 @@
           <Property Name="address" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="address_tx" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="TelephoneNumber_tx" Type="String" MaxLength="225" FixedLength="false" Unicode="true" />
-        </EntityType>
-        <EntityType Name="Activity">
-          <Key>
-            <PropertyRef Name="Acivity_Id" />
-          </Key>
-          <Property Name="Acivity_Id" Type="Guid" Nullable="false" />
-          <Property Name="CommonProductID" Type="Int32" />
-          <Property Name="Legacy_Product_ID" Type="Int32" />
-          <Property Name="Product_Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="Display_Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="Country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="City" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductSubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="IsActive" Type="Boolean" />
-          <Property Name="StartingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="EndingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Duration" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyRecommended" Type="Boolean" />
-          <Property Name="Latitude" Type="Double" />
-          <Property Name="Longitude" Type="Double" />
-          <Property Name="ShortDescription" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="LongDescription" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="MealsYN" Type="Boolean" />
-          <Property Name="GuideYN" Type="Boolean" />
-          <Property Name="TransferYN" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PhysicalLevel" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Advisory" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="ThingsToCarry" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="DeparturePoint" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="TourType" Type="String" MaxLength="2550" FixedLength="false" Unicode="true" />
-          <Property Name="Parent_Legacy_Id" Type="Int32" />
+          <Property Name="StarRating" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Google_Place_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Country_Id" Type="Guid" />
+          <Property Name="City_Id" Type="Guid" />
+          <Property Name="stg_AccoMapping_Id" Type="Guid" />
         </EntityType>
         <EntityType Name="Activity_Content">
           <Key>
@@ -1446,6 +1458,48 @@
           <Property Name="Create_User" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="MapID" Type="Int32" />
+          <Property Name="Price" Type="Decimal" Precision="18" Scale="0" />
+          <Property Name="TotalActivities" Type="Int32" />
+          <Property Name="PhysicalIntensity" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PassengerNumbers" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="DurationLength" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Timing" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Session" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Specials" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Activity">
+          <Key>
+            <PropertyRef Name="Activity_Id" />
+          </Key>
+          <Property Name="Activity_Id" Type="Guid" Nullable="false" />
+          <Property Name="CommonProductID" Type="Int32" />
+          <Property Name="Legacy_Product_ID" Type="Int32" />
+          <Property Name="CompanyProductID" Type="Int32" />
+          <Property Name="FinanceProductID" Type="Int32" />
+          <Property Name="Product_Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Display_Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="City" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Country_Id" Type="Guid" />
+          <Property Name="City_Id" Type="Guid" />
+          <Property Name="ProductCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCategorySubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Mode_Of_Transport" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyRating" Type="Int32" />
+          <Property Name="ProductRating" Type="Int32" />
+          <Property Name="Affiliation" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyRecommended" Type="Boolean" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="Remarks" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="Double" />
+          <Property Name="Longitude" Type="Double" />
+          <Property Name="TourType" Type="String" MaxLength="2550" FixedLength="false" Unicode="true" />
+          <Property Name="Parent_Legacy_Id" Type="Int32" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -1456,6 +1510,10 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="InsertFrom" ColumnName="InsertFrom" />
+                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
+                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
+                <ScalarProperty Name="FullAddress" ColumnName="FullAddress" />
                 <ScalarProperty Name="Accommodation_Id" ColumnName="Accommodation_Id" />
                 <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
                 <ScalarProperty Name="CompanyHotelID" ColumnName="CompanyHotelID" />
@@ -1657,6 +1715,7 @@
           <EntitySetMapping Name="Accommodation_NearbyPlaces">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_NearbyPlaces">
               <MappingFragment StoreEntitySet="Accommodation_NearbyPlaces">
+                <ScalarProperty Name="Place_Id" ColumnName="Place_Id" />
                 <ScalarProperty Name="Accommodation_NearbyPlace_Id" ColumnName="Accommodation_NearbyPlace_Id" />
                 <ScalarProperty Name="Accomodation_Id" ColumnName="Accomodation_Id" />
                 <ScalarProperty Name="Legacy_Htl_Id" ColumnName="Legacy_Htl_Id" />
@@ -1883,6 +1942,8 @@
           <EntitySetMapping Name="m_CityMaster">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMaster">
               <MappingFragment StoreEntitySet="m_CityMaster">
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
                 <ScalarProperty Name="Google_PlaceId" ColumnName="Google_PlaceId" />
                 <ScalarProperty Name="StateCode" ColumnName="StateCode" />
@@ -1904,6 +1965,8 @@
           <EntitySetMapping Name="m_CountryMaster">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMaster">
               <MappingFragment StoreEntitySet="m_CountryMaster">
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="GooglePlaceID" ColumnName="GooglePlaceID" />
                 <ScalarProperty Name="ISO3166_1_EDGAR" ColumnName="ISO3166-1-EDGAR" />
                 <ScalarProperty Name="ISO3166_1_Geoname_ID" ColumnName="ISO3166-1-Geoname ID" />
@@ -1970,6 +2033,11 @@
           <EntitySetMapping Name="m_CountryMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMapping">
               <MappingFragment StoreEntitySet="m_CountryMapping">
+                <ScalarProperty Name="stg_Country_Id" ColumnName="stg_Country_Id" />
+                <ScalarProperty Name="ContinentName" ColumnName="ContinentName" />
+                <ScalarProperty Name="ContinentCode" ColumnName="ContinentCode" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="actionType" ColumnName="actionType" />
                 <ScalarProperty Name="Remarks" ColumnName="Remarks" />
                 <ScalarProperty Name="MapID" ColumnName="MapID" />
@@ -1990,6 +2058,9 @@
           <EntitySetMapping Name="m_CityMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMapping">
               <MappingFragment StoreEntitySet="m_CityMapping">
+                <ScalarProperty Name="stg_City_Id" ColumnName="stg_City_Id" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="StateName" ColumnName="StateName" />
                 <ScalarProperty Name="StateCode" ColumnName="StateCode" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
@@ -2015,6 +2086,11 @@
           <EntitySetMapping Name="Accommodation_ProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_ProductMapping">
               <MappingFragment StoreEntitySet="Accommodation_ProductMapping">
+                <ScalarProperty Name="stg_AccoMapping_Id" ColumnName="stg_AccoMapping_Id" />
+                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
+                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
+                <ScalarProperty Name="Google_Place_Id" ColumnName="Google_Place_Id" />
+                <ScalarProperty Name="StarRating" ColumnName="StarRating" />
                 <ScalarProperty Name="TelephoneNumber_tx" ColumnName="TelephoneNumber_tx" />
                 <ScalarProperty Name="address_tx" ColumnName="address_tx" />
                 <ScalarProperty Name="address" ColumnName="address" />
@@ -2054,44 +2130,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Activities">
-            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity">
-              <MappingFragment StoreEntitySet="Activity">
-                <ScalarProperty Name="Parent_Legacy_Id" ColumnName="Parent_Legacy_Id" />
-                <ScalarProperty Name="TourType" ColumnName="TourType" />
-                <ScalarProperty Name="DeparturePoint" ColumnName="DeparturePoint" />
-                <ScalarProperty Name="ThingsToCarry" ColumnName="ThingsToCarry" />
-                <ScalarProperty Name="Advisory" ColumnName="Advisory" />
-                <ScalarProperty Name="PhysicalLevel" ColumnName="PhysicalLevel" />
-                <ScalarProperty Name="TransferYN" ColumnName="TransferYN" />
-                <ScalarProperty Name="GuideYN" ColumnName="GuideYN" />
-                <ScalarProperty Name="MealsYN" ColumnName="MealsYN" />
-                <ScalarProperty Name="LongDescription" ColumnName="LongDescription" />
-                <ScalarProperty Name="ShortDescription" ColumnName="ShortDescription" />
-                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
-                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
-                <ScalarProperty Name="CompanyRecommended" ColumnName="CompanyRecommended" />
-                <ScalarProperty Name="Duration" ColumnName="Duration" />
-                <ScalarProperty Name="EndingPoint" ColumnName="EndingPoint" />
-                <ScalarProperty Name="StartingPoint" ColumnName="StartingPoint" />
-                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
-                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
-                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
-                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
-                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
-                <ScalarProperty Name="ProductCategory" ColumnName="ProductCategory" />
-                <ScalarProperty Name="ProductSubType" ColumnName="ProductSubType" />
-                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
-                <ScalarProperty Name="City" ColumnName="City" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-                <ScalarProperty Name="Display_Name" ColumnName="Display_Name" />
-                <ScalarProperty Name="Product_Name" ColumnName="Product_Name" />
-                <ScalarProperty Name="Legacy_Product_ID" ColumnName="Legacy_Product_ID" />
-                <ScalarProperty Name="CommonProductID" ColumnName="CommonProductID" />
-                <ScalarProperty Name="Acivity_Id" ColumnName="Acivity_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Activity_Content">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Content">
               <MappingFragment StoreEntitySet="Activity_Content">
@@ -2112,6 +2150,14 @@
           <EntitySetMapping Name="Activity_SupplierProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_SupplierProductMapping">
               <MappingFragment StoreEntitySet="Activity_SupplierProductMapping">
+                <ScalarProperty Name="Specials" ColumnName="Specials" />
+                <ScalarProperty Name="Session" ColumnName="Session" />
+                <ScalarProperty Name="Timing" ColumnName="Timing" />
+                <ScalarProperty Name="DurationLength" ColumnName="DurationLength" />
+                <ScalarProperty Name="PassengerNumbers" ColumnName="PassengerNumbers" />
+                <ScalarProperty Name="PhysicalIntensity" ColumnName="PhysicalIntensity" />
+                <ScalarProperty Name="TotalActivities" ColumnName="TotalActivities" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="MapID" ColumnName="MapID" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Create_User" ColumnName="Create_User" />
@@ -2167,6 +2213,41 @@
                 <ScalarProperty Name="Supplier_ID" ColumnName="Supplier_ID" />
                 <ScalarProperty Name="Activity_ID" ColumnName="Activity_ID" />
                 <ScalarProperty Name="ActivitySupplierProductMapping_Id" ColumnName="ActivitySupplierProductMapping_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activities">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity">
+              <MappingFragment StoreEntitySet="Activity">
+                <ScalarProperty Name="Parent_Legacy_Id" ColumnName="Parent_Legacy_Id" />
+                <ScalarProperty Name="TourType" ColumnName="TourType" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Remarks" ColumnName="Remarks" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="CompanyRecommended" ColumnName="CompanyRecommended" />
+                <ScalarProperty Name="Affiliation" ColumnName="Affiliation" />
+                <ScalarProperty Name="ProductRating" ColumnName="ProductRating" />
+                <ScalarProperty Name="CompanyRating" ColumnName="CompanyRating" />
+                <ScalarProperty Name="Mode_Of_Transport" ColumnName="Mode_Of_Transport" />
+                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
+                <ScalarProperty Name="ProductCategorySubType" ColumnName="ProductCategorySubType" />
+                <ScalarProperty Name="ProductCategory" ColumnName="ProductCategory" />
+                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
+                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="Display_Name" ColumnName="Display_Name" />
+                <ScalarProperty Name="Product_Name" ColumnName="Product_Name" />
+                <ScalarProperty Name="FinanceProductID" ColumnName="FinanceProductID" />
+                <ScalarProperty Name="CompanyProductID" ColumnName="CompanyProductID" />
+                <ScalarProperty Name="Legacy_Product_ID" ColumnName="Legacy_Product_ID" />
+                <ScalarProperty Name="CommonProductID" ColumnName="CommonProductID" />
+                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

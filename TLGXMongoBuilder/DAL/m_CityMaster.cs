@@ -29,5 +29,7 @@ namespace DAL
         public string StateCode { get; set; }
         public string Google_PlaceId { get; set; }
         public string CountryCode { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
     }
 }

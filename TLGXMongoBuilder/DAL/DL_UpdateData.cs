@@ -25,7 +25,7 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ActivityMapping");
                     var activityMap = (from apm in context.Activity_SupplierProductMapping
-                                       join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
+                                       join a in context.Activities on apm.Activity_ID equals a.Activity_Id
                                        where apm.MapID == Convert.ToInt32(MapId)
                                        select new DataContracts.Mapping.DC_ProductMapping
                                        {
@@ -54,7 +54,7 @@ namespace DAL
 
                     var collectionLite = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ActivityMappingLite");
                     var activityMapLite = (from apm in context.Activity_SupplierProductMapping
-                                           join a in context.Activities on apm.Activity_ID equals a.Acivity_Id
+                                           join a in context.Activities on apm.Activity_ID equals a.Activity_Id
                                            where apm.MapID == Convert.ToInt32(MapId)
                                            select new DataContracts.Mapping.DC_ProductMappingLite
                                            {

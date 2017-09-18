@@ -72,5 +72,9 @@ namespace DAL
         public string LEGACY_STATE { get; set; }
         public Nullable<int> Legacy_HTL_ID { get; set; }
         public string Google_Place_Id { get; set; }
+        public string FullAddress { get; set; }
+        public Nullable<System.Guid> Country_Id { get; set; }
+        public Nullable<System.Guid> City_Id { get; set; }
+        public Nullable<bool> InsertFrom { get; set; }
     }
 }

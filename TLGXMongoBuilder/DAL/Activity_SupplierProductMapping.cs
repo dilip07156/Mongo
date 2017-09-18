@@ -69,5 +69,13 @@ namespace DAL
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
         public Nullable<int> MapID { get; set; }
+        public Nullable<decimal> Price { get; set; }
+        public Nullable<int> TotalActivities { get; set; }
+        public string PhysicalIntensity { get; set; }
+        public string PassengerNumbers { get; set; }
+        public string DurationLength { get; set; }
+        public string Timing { get; set; }
+        public string Session { get; set; }
+        public string Specials { get; set; }
     }
 }
