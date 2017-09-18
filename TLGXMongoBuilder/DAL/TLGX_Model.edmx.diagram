@@ -36,10 +36,10 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMapping" Width="1.5" PointX="3.375" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ProductMapping" Width="1.5" PointX="5.375" PointY="0.75" />
       </Diagram>
-      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="ActivityMapping" >
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="0.75" />
+      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="ActivityMapping" ZoomLevel="93" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Content" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="1.125" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

@@ -43,5 +43,7 @@ namespace DAL
         public string ISO3166_1_Geoname_ID { get; set; }
         public string ISO3166_1_EDGAR { get; set; }
         public string GooglePlaceID { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
     }
 }
