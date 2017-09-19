@@ -50,9 +50,11 @@
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\AVAMAR BACKUP\Rubesh Panda\Documents\Visual Studio 2015\Projects\ProdSvc\ProdSvc\bin\EntityFramework.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework.SqlServer">
       <HintPath>..\..\..\AVAMAR BACKUP\Rubesh Panda\Documents\Visual Studio 2015\Projects\ProdSvc\ProdSvc\bin\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="FluentAssertions, Version=4.19.2.0, Culture=neutral, PublicKeyToken=33f2691a05b67b6a, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentAssertions.4.19.2\lib\net45\FluentAssertions.dll</HintPath>
@@ -132,6 +134,7 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="packages.config" />
+    <None Include="Properties\PublishProfiles\LocalDeployFileSys.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_DEV_SQLTOMONGO_CI.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_MAPPER_DISTRIBUTION_SVC.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_PREPROD_SQLTOMONGO_CI.pubxml" />
