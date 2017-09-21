@@ -12,24 +12,20 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class m_CityMaster
+    public partial class Activity_ClassificationAttributes
     {
-        public System.Guid City_Id { get; set; }
-        public string Name { get; set; }
-        public string Code { get; set; }
-        public string CountryName { get; set; }
-        public string CountryCode { get; set; }
-        public System.Guid Country_Id { get; set; }
+        public System.Guid Activity_ClassificationAttribute_Id { get; set; }
+        public Nullable<System.Guid> Activity_Id { get; set; }
+        public string AttributeType { get; set; }
+        public string AttributeValue { get; set; }
+        public Nullable<bool> IsActive { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public string Create_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Edit_User { get; set; }
-        public string Status { get; set; }
-        public Nullable<System.Guid> State_Id { get; set; }
-        public string StateName { get; set; }
-        public string StateCode { get; set; }
-        public string Google_PlaceId { get; set; }
-        public string Latitude { get; set; }
-        public string Longitude { get; set; }
+        public Nullable<bool> InternalOnly { get; set; }
+        public string AttributeSubType { get; set; }
+        public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
+        public Nullable<int> Legacy_Product_ID { get; set; }
     }
 }

@@ -5,41 +5,79 @@
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
       <Diagram DiagramId="8973d5c8492e42ba9882f5f1ac9684ca" Name="Accomodation" ZoomLevel="47">
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ClassificationAttributes" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Contact" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Descriptions" Width="1.5" PointX="2.75" PointY="5.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Facility" Width="1.5" PointX="4.75" PointY="5.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_HealthAndSafety" Width="1.5" PointX="6.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_HotelUpdates" Width="1.5" PointX="6.75" PointY="5.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Media" Width="1.5" PointX="8.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_NearbyPlaces" Width="1.5" PointX="8.75" PointY="6.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_PaxOccupancy" Width="1.5" PointX="10.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RoomFacility" Width="1.5" PointX="4.75" PointY="10.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RoomInfo" Width="1.5" PointX="10.75" PointY="7.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RouteInfo" Width="1.5" PointX="6.75" PointY="11.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RuleInfo" Width="1.5" PointX="12.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Status" Width="1.5" PointX="12.75" PointY="4.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.DynamicAttribute" Width="1.5" PointX="14.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Media_Attributes" Width="1.5" PointX="14.75" PointY="5.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ClassificationAttributes" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Contact" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Descriptions" Width="1.5" PointX="2.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Facility" Width="1.5" PointX="4.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_HealthAndSafety" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_HotelUpdates" Width="1.5" PointX="6.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Media" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_NearbyPlaces" Width="1.5" PointX="8.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_PaxOccupancy" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ProductMapping" Width="1.5" PointX="2.75" PointY="10.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RoomFacility" Width="1.5" PointX="4.75" PointY="10.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RoomInfo" Width="1.5" PointX="10.75" PointY="7.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RouteInfo" Width="1.5" PointX="6.75" PointY="11.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_RuleInfo" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Status" Width="1.5" PointX="12.75" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeAttributes" Width="1.5" PointX="12.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping" Width="1.5" PointX="12.75" PointY="12.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Media_Attributes" Width="1.5" PointX="14.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation" Width="1.5" PointX="0.5" PointY="0.75" />
       </Diagram>
       <Diagram DiagramId="2ae0b859787d4af1a632a2cd7f6676c2" Name="Masters" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityArea" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityAreaLocation" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMaster" Width="1.5" PointX="4.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CountryMaster" Width="1.5" PointX="0.75" PointY="4.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.m_States" Width="1.5" PointX="2.75" PointY="5.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier" Width="1.5" PointX="4.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_Currency" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_EntityType" Width="1.5" PointX="2.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_keyword" Width="1.5" PointX="6.75" PointY="3.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_keyword_alias" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_masterattribute" Width="1.5" PointX="8.75" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_masterattributevalue" Width="1.5" PointX="8.75" PointY="8.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_PortMaster" Width="1.5" PointX="2.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_States" Width="1.5" PointX="4.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_Statuses" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_SupplierImportAttributes" Width="1.5" PointX="10.75" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_SupplierImportAttributeValues" Width="1.5" PointX="10.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_APILocation" Width="1.5" PointX="12.75" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_Market" Width="1.5" PointX="6.75" PointY="12.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_ProductCategory" Width="1.5" PointX="12.75" PointY="8.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_Schedule" Width="1.5" PointX="12.75" PointY="12.75" />
       </Diagram>
-      <Diagram DiagramId="087092cd16664163ac6f791461e858e8" Name="Mapping" >
-        <EntityTypeShape EntityType="TLGX_DEV_Model.m_CountryMapping" Width="1.5" PointX="0.75" PointY="0.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMapping" Width="1.5" PointX="3.375" PointY="0.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ProductMapping" Width="1.5" PointX="5.375" PointY="0.75" />
+      <Diagram DiagramId="087092cd16664163ac6f791461e858e8" Name="Mapping" ZoomLevel="74" >
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierActivityImageMapping" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierActivityMetaDataMapping" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierActivityTypeMapping" Width="1.5" PointX="4.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMapping" Width="1.5" PointX="6.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_CountryMapping" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_MasterAttributeMapping" Width="1.5" PointX="8.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_MasterAttributeValueMapping" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" Width="1.5" PointX="0.75" PointY="10.75" />
       </Diagram>
-      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="ActivityMapping" ZoomLevel="93" >
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Content" Width="1.5" PointX="2.75" PointY="0.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" Width="1.5" PointX="4.75" PointY="0.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="1.125" />
+      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="Activity" ZoomLevel="88" >
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_ClassificationAttributes" Width="1.5" PointX="2.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Contact" Width="1.5" PointX="4.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Content" Width="1.5" PointX="2.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Descriptions" Width="1.5" PointX="4.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Facility" Width="1.5" PointX="6.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Flavour" Width="1.5" PointX="6.75" PointY="5.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_InclusionDetails" Width="1.5" PointX="8.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Inclusions" Width="1.5" PointX="8.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Itinerary" Width="1.5" PointX="0.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Media" Width="1.5" PointX="10.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_PickUpDrop" Width="1.5" PointX="2.75" PointY="10.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_PickUpDropDetail" Width="1.5" PointX="10.75" PointY="6.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_PickupDropSchedule" Width="1.5" PointX="4.75" PointY="11.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Policy" Width="1.5" PointX="12.75" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Status" Width="1.5" PointX="12.75" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Tips" Width="1.5" PointX="6.75" PointY="12.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Types" Width="1.5" PointX="12.75" PointY="9.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Updates" Width="1.5" PointX="12.75" PointY="13.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_WeatherInformation" Width="1.5" PointX="14.75" PointY="0.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

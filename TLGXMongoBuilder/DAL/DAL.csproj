@@ -136,13 +136,82 @@
     <Compile Include="Accommodation_Status.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Accommodation_SupplierRoomTypeAttributes.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Accommodation_SupplierRoomTypeMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_ClassificationAttributes.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Contact.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Activity_Content.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_Descriptions.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Facility.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Flavour.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_InclusionDetails.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Inclusions.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Itinerary.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Media.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_PickUpDrop.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_PickUpDropDetail.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_PickupDropSchedule.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Policy.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Status.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_SupplierActivityImageMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_SupplierActivityMetaDataMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_SupplierActivityTypeMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_SupplierProductMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Tips.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Types.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Updates.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_WeatherInformation.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="AuthenticateDAL.cs" />
@@ -151,9 +220,6 @@
     <Compile Include="DL_Mapping.cs" />
     <Compile Include="DL_Masters.cs" />
     <Compile Include="DL_UpdateData.cs" />
-    <Compile Include="DynamicAttribute.cs">
-      <DependentUpon>TLGX_Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="Media_Attributes.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
@@ -176,12 +242,60 @@
     <Compile Include="m_CountryMaster.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="m_Currency.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_EntityType.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_keyword.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_keyword_alias.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_masterattribute.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_MasterAttributeMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_masterattributevalue.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_MasterAttributeValueMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_PortMaster.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="m_States.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_Statuses.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_SupplierImportAttributes.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="m_SupplierImportAttributeValues.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="ProductDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Supplier.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Supplier_APILocation.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Supplier_Market.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Supplier_ProductCategory.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Supplier_Schedule.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="TLGX_Model.Context.cs">

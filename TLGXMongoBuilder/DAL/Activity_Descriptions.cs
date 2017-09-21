@@ -12,19 +12,23 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class DynamicAttribute
+    public partial class Activity_Descriptions
     {
-        public System.Guid DynamicAttribute_Id { get; set; }
-        public string ObjectType { get; set; }
-        public string AttributeClass { get; set; }
-        public string AttributeName { get; set; }
-        public string AttributeValue { get; set; }
-        public Nullable<System.Guid> Object_Id { get; set; }
-        public Nullable<System.Guid> ObjectSubElement_Id { get; set; }
+        public System.Guid Activity_Description_Id { get; set; }
+        public Nullable<System.Guid> Activity_Id { get; set; }
+        public Nullable<int> Legacy_Product_ID { get; set; }
+        public string Description { get; set; }
+        public string Language_Code { get; set; }
+        public string DescriptionFor { get; set; }
+        public string DescriptionType { get; set; }
+        public Nullable<System.DateTime> FromDate { get; set; }
+        public Nullable<System.DateTime> ToDate { get; set; }
+        public string Source { get; set; }
         public Nullable<bool> IsActive { get; set; }
         public string Create_User { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
+        public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
     }
 }

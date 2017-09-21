@@ -12,24 +12,17 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class m_CityMaster
+    public partial class Supplier_Market
     {
-        public System.Guid City_Id { get; set; }
-        public string Name { get; set; }
+        public System.Guid Supplier_Market_Id { get; set; }
+        public Nullable<System.Guid> Supplier_Id { get; set; }
         public string Code { get; set; }
-        public string CountryName { get; set; }
-        public string CountryCode { get; set; }
-        public System.Guid Country_Id { get; set; }
-        public Nullable<System.DateTime> Create_Date { get; set; }
-        public string Create_User { get; set; }
-        public Nullable<System.DateTime> Edit_Date { get; set; }
-        public string Edit_User { get; set; }
+        public string Name { get; set; }
         public string Status { get; set; }
-        public Nullable<System.Guid> State_Id { get; set; }
-        public string StateName { get; set; }
-        public string StateCode { get; set; }
-        public string Google_PlaceId { get; set; }
-        public string Latitude { get; set; }
-        public string Longitude { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string Create_User { get; set; }
+        public string Edit_User { get; set; }
+        public Nullable<bool> IsActive { get; set; }
     }
 }
