@@ -110,5 +110,13 @@ namespace MapperSvc
             }
         }
 
+        public void LoadRoomTypeMapping()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadRoomTypeMapping();
+            }
+        }
+
     }
 }

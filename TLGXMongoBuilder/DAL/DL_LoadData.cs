@@ -393,5 +393,61 @@ namespace DAL
                 throw ex;
             }
         }
+
+        public void LoadRoomTypeMapping()
+        {
+
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("RoomTypeMapping");
+
+                    var collection = _database.GetCollection<DataContracts.Mapping.DC_RoomTypeMapping>("RoomTypeMapping");
+
+                    var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
+
+                    Accommodation_SupplierRoomTypeMapping = Accommodation_SupplierRoomTypeMapping.Where(w => w.MappingStatus == "MAPPED").Select(s => s);
+
+                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
+                    var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
+                    //var Keyword = (from a in context.m_keyword select a).AsQueryable();
+
+                    var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping
+                                           join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
+                                           join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
+                                           from accorinew in accoritemp.DefaultIfEmpty()
+                                           select new DataContracts.Mapping.DC_RoomTypeMapping
+                                           {
+                                               SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
+                                               SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
+                                               SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
+                                               SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
+                                               Status = asrtm.MappingStatus.ToUpper().Trim(),
+                                               SystemRoomTypeMapId = asrtm.MapId.ToString(),
+                                               SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
+                                               SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
+                                               SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
+                                               SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
+                                               SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
+                                               //AlternateRoomNames = new DataContracts.Mapping.DC_RoomTypeMapping_AlternateRoomNames { Normalized = asrtm.TX_RoomName, Stripped = asrtm.Tx_StrippedName },
+                                               Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
+                                           }).ToList();
+
+                    collection.InsertMany(roomTypeMapList);
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

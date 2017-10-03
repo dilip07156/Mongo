@@ -84,5 +84,13 @@ namespace BAL
                 obj.LoadActivityMappingLite();
             }
         }
+
+        public void LoadRoomTypeMapping()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadRoomTypeMapping();
+            }
+        }
     }
 }

@@ -64,5 +64,10 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ActivityMappingLite", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadActivityMappingLite();
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/RoomTypeMapping", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadRoomTypeMapping();
     }
 }
