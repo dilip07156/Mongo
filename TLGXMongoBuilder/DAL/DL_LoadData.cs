@@ -267,9 +267,12 @@ namespace DAL
                                               SystemProductType = a.ProductCategorySubType.ToUpper()
                                           }).ToList();
 
-                    collection.InsertMany(productMapList);
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                    if (productMapList.Count() > 0)
+                    {
+                        collection.InsertMany(productMapList);
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                    }
 
                     collection = null;
                     _database = null;
@@ -301,11 +304,12 @@ namespace DAL
                                               SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                           }).ToList();
 
-                    collection.InsertMany(productMapList);
-
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-
+                    if (productMapList.Count() > 0)
+                    {
+                        collection.InsertMany(productMapList);
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                    }
                     collection = null;
                     _database = null;
                 }
@@ -443,7 +447,10 @@ namespace DAL
                                                        Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
                                                    }).ToList();
 
-                            collection.InsertMany(roomTypeMapList);
+                            if(roomTypeMapList.Count() > 0)
+                            {
+                                collection.InsertMany(roomTypeMapList);
+                            }
 
                             iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
 
@@ -502,7 +509,10 @@ namespace DAL
                                                      }).ToList()
                                       }).ToList();
 
-                    collection.InsertMany(searchList);
+                    if (searchList.Count() > 0)
+                    {
+                        collection.InsertMany(searchList);
+                    }
 
                     collection = null;
                     _database = null;
