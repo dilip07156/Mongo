@@ -118,5 +118,13 @@ namespace MapperSvc
             }
         }
 
+        public void LoadKeywords()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadKeywords();
+            }
+        }
+
     }
 }

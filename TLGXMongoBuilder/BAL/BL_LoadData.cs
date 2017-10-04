@@ -92,5 +92,13 @@ namespace BAL
                 obj.LoadRoomTypeMapping();
             }
         }
+
+        public void LoadKeywords()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadKeywords();
+            }
+        }
     }
 }
