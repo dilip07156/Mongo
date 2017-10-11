@@ -23,5 +23,6 @@ namespace DAL
         public System.DateTime Create_Date { get; set; }
         public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string SupplierMasterAttributeCode { get; set; }
     }
 }

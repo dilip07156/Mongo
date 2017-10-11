@@ -21,6 +21,7 @@ namespace DAL
         public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
         public string InclusionDetailFor { get; set; }
         public string GuideLanguage { get; set; }
+        public string GuideLanguageCode { get; set; }
         public string InclusionDetailType { get; set; }
         public string InclusionDetailName { get; set; }
         public string InclusionDetailDescription { get; set; }

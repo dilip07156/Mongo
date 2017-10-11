@@ -29,6 +29,8 @@ namespace DAL
         public Nullable<System.DateTime> Create_Date { get; set; }
         public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string Description_Name { get; set; }
+        public string DescriptionSubType { get; set; }
         public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
     }
 }

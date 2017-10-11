@@ -33,5 +33,6 @@ namespace DAL
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
         public Nullable<int> MapId { get; set; }
+        public string MediaType { get; set; }
     }
 }

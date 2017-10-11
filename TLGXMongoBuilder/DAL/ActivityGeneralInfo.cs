@@ -12,7 +12,7 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class Activity
+    public partial class ActivityGeneralInfo
     {
         public System.Guid Activity_Id { get; set; }
         public Nullable<int> CommonProductID { get; set; }

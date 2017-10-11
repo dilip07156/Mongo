@@ -77,5 +77,9 @@ namespace DAL
         public string Timing { get; set; }
         public string Session { get; set; }
         public string Specials { get; set; }
+        public Nullable<bool> Recommonded { get; set; }
+        public Nullable<double> Rating { get; set; }
+        public string Location { get; set; }
+        public string Area { get; set; }
     }
 }

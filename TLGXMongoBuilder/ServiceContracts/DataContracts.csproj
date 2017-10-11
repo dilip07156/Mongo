@@ -79,6 +79,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Activity\ActivityDefinition.cs" />
     <Compile Include="AuthenticateContract.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />

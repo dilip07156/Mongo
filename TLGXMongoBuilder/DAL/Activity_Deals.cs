@@ -12,22 +12,17 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class Activity_PickupDropSchedule
+    public partial class Activity_Deals
     {
-        public System.Guid Activity_PickupDropSchedule_Id { get; set; }
-        public Nullable<System.Guid> Activity_Id { get; set; }
-        public Nullable<int> Legacy_Product_Id { get; set; }
+        public System.Guid Activity_Deals_Id { get; set; }
         public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
-        public string ForSupplier { get; set; }
-        public Nullable<System.Guid> Supplier_Id { get; set; }
-        public string SupplierName { get; set; }
-        public Nullable<bool> IsDateRange { get; set; }
-        public Nullable<System.DateTime> FromDate { get; set; }
-        public Nullable<System.DateTime> ToDate { get; set; }
-        public string DaysOfWeek { get; set; }
-        public string TimeFrom { get; set; }
-        public string TimeTo { get; set; }
-        public string TimeOfDay { get; set; }
+        public Nullable<System.Guid> Activity_Id { get; set; }
+        public string DealCode { get; set; }
+        public string DealText { get; set; }
+        public string DealName { get; set; }
+        public string Deal_TnC { get; set; }
+        public Nullable<decimal> Deal_Price { get; set; }
+        public string Deal_Currency { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Create_User { get; set; }

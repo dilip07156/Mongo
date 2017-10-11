@@ -12,6 +12,14 @@ namespace BAL
         {
         }
 
+        public void LoadActivityDefinition()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadActivityDefinition();
+            }
+        }
+
         public void LoadCountryMaster()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())

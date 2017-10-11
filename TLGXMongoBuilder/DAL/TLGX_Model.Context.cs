@@ -45,34 +45,10 @@ namespace DAL
         public virtual DbSet<Supplier_Market> Supplier_Market { get; set; }
         public virtual DbSet<Supplier_ProductCategory> Supplier_ProductCategory { get; set; }
         public virtual DbSet<Supplier_Schedule> Supplier_Schedule { get; set; }
-        public virtual DbSet<Activity_SupplierActivityImageMapping> Activity_SupplierActivityImageMapping { get; set; }
-        public virtual DbSet<Activity_SupplierActivityMetaDataMapping> Activity_SupplierActivityMetaDataMapping { get; set; }
-        public virtual DbSet<Activity_SupplierActivityTypeMapping> Activity_SupplierActivityTypeMapping { get; set; }
         public virtual DbSet<m_CityMapping> m_CityMapping { get; set; }
         public virtual DbSet<m_CountryMapping> m_CountryMapping { get; set; }
         public virtual DbSet<m_MasterAttributeMapping> m_MasterAttributeMapping { get; set; }
         public virtual DbSet<m_MasterAttributeValueMapping> m_MasterAttributeValueMapping { get; set; }
-        public virtual DbSet<Activity_SupplierProductMapping> Activity_SupplierProductMapping { get; set; }
-        public virtual DbSet<Activity> Activities { get; set; }
-        public virtual DbSet<Activity_ClassificationAttributes> Activity_ClassificationAttributes { get; set; }
-        public virtual DbSet<Activity_Contact> Activity_Contact { get; set; }
-        public virtual DbSet<Activity_Content> Activity_Content { get; set; }
-        public virtual DbSet<Activity_Descriptions> Activity_Descriptions { get; set; }
-        public virtual DbSet<Activity_Facility> Activity_Facility { get; set; }
-        public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
-        public virtual DbSet<Activity_InclusionDetails> Activity_InclusionDetails { get; set; }
-        public virtual DbSet<Activity_Inclusions> Activity_Inclusions { get; set; }
-        public virtual DbSet<Activity_Itinerary> Activity_Itinerary { get; set; }
-        public virtual DbSet<Activity_Media> Activity_Media { get; set; }
-        public virtual DbSet<Activity_PickUpDrop> Activity_PickUpDrop { get; set; }
-        public virtual DbSet<Activity_PickUpDropDetail> Activity_PickUpDropDetail { get; set; }
-        public virtual DbSet<Activity_PickupDropSchedule> Activity_PickupDropSchedule { get; set; }
-        public virtual DbSet<Activity_Policy> Activity_Policy { get; set; }
-        public virtual DbSet<Activity_Status> Activity_Status { get; set; }
-        public virtual DbSet<Activity_Tips> Activity_Tips { get; set; }
-        public virtual DbSet<Activity_Types> Activity_Types { get; set; }
-        public virtual DbSet<Activity_Updates> Activity_Updates { get; set; }
-        public virtual DbSet<Activity_WeatherInformation> Activity_WeatherInformation { get; set; }
         public virtual DbSet<Accommodation_ClassificationAttributes> Accommodation_ClassificationAttributes { get; set; }
         public virtual DbSet<Accommodation_Contact> Accommodation_Contact { get; set; }
         public virtual DbSet<Accommodation_Descriptions> Accommodation_Descriptions { get; set; }
@@ -92,5 +68,37 @@ namespace DAL
         public virtual DbSet<Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping { get; set; }
         public virtual DbSet<Media_Attributes> Media_Attributes { get; set; }
         public virtual DbSet<Accommodation> Accommodations { get; set; }
+        public virtual DbSet<Activity> Activities { get; set; }
+        public virtual DbSet<Activity_Ancillary> Activity_Ancillary { get; set; }
+        public virtual DbSet<Activity_ClassificationAttributes> Activity_ClassificationAttributes { get; set; }
+        public virtual DbSet<Activity_Contact> Activity_Contact { get; set; }
+        public virtual DbSet<Activity_Content> Activity_Content { get; set; }
+        public virtual DbSet<Activity_Deals> Activity_Deals { get; set; }
+        public virtual DbSet<Activity_Descriptions> Activity_Descriptions { get; set; }
+        public virtual DbSet<Activity_Facility> Activity_Facility { get; set; }
+        public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
+        public virtual DbSet<Activity_InclusionDetails> Activity_InclusionDetails { get; set; }
+        public virtual DbSet<Activity_Inclusions> Activity_Inclusions { get; set; }
+        public virtual DbSet<Activity_Itinerary> Activity_Itinerary { get; set; }
+        public virtual DbSet<Activity_Media> Activity_Media { get; set; }
+        public virtual DbSet<Activity_PickUpDrop> Activity_PickUpDrop { get; set; }
+        public virtual DbSet<Activity_PickUpDropDetail> Activity_PickUpDropDetail { get; set; }
+        public virtual DbSet<Activity_PickupDropSchedule> Activity_PickupDropSchedule { get; set; }
+        public virtual DbSet<Activity_Policy> Activity_Policy { get; set; }
+        public virtual DbSet<Activity_Prices> Activity_Prices { get; set; }
+        public virtual DbSet<Activity_ReviewsAndScores> Activity_ReviewsAndScores { get; set; }
+        public virtual DbSet<Activity_Status> Activity_Status { get; set; }
+        public virtual DbSet<Activity_Tips> Activity_Tips { get; set; }
+        public virtual DbSet<Activity_Types> Activity_Types { get; set; }
+        public virtual DbSet<Activity_Updates> Activity_Updates { get; set; }
+        public virtual DbSet<Activity_WeatherInformation> Activity_WeatherInformation { get; set; }
+        public virtual DbSet<ActivityGeneralInfo> ActivityGeneralInfoes { get; set; }
+        public virtual DbSet<Activity_SupplierActivityImageMapping> Activity_SupplierActivityImageMapping { get; set; }
+        public virtual DbSet<Activity_SupplierActivityMetaDataMapping> Activity_SupplierActivityMetaDataMapping { get; set; }
+        public virtual DbSet<Activity_SupplierActivityReviews> Activity_SupplierActivityReviews { get; set; }
+        public virtual DbSet<Activity_SupplierActivityTypeMapping> Activity_SupplierActivityTypeMapping { get; set; }
+        public virtual DbSet<Activity_SupplierProductMapping> Activity_SupplierProductMapping { get; set; }
+        public virtual DbSet<Activity_SupplierProductMapping_CA> Activity_SupplierProductMapping_CA { get; set; }
+        public virtual DbSet<Activity_SupplierProductMapping_Deals> Activity_SupplierProductMapping_Deals { get; set; }
     }
 }

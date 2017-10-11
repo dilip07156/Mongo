@@ -447,7 +447,7 @@ namespace DAL
                                                        Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
                                                    }).ToList();
 
-                            if(roomTypeMapList.Count() > 0)
+                            if (roomTypeMapList.Count() > 0)
                             {
                                 collection.InsertMany(roomTypeMapList);
                             }
@@ -512,6 +512,159 @@ namespace DAL
                     if (searchList.Count() > 0)
                     {
                         collection.InsertMany(searchList);
+                    }
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadActivityDefinition()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+
+                    _database.DropCollection("ActivityDefinitions");
+
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = from a in context.Activity_Flavour
+                                       select a;
+
+                    foreach (var Activity in ActivityList)
+                    {
+
+                        ////check if record is already exists
+                        //var searchResultCount = collection.Find(f => f.Le == Acco.CompanyHotelID.ToString()).Count();
+                        //if (searchResultCount > 0)
+                        //{
+                        //    continue;
+                        //}
+
+                        var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
+                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                        var ActivityDesc = (from a in context.Activity_Descriptions
+                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                            select a).ToList();
+
+                        var ActivityInc = (from a in context.Activity_Inclusions
+                                           where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                           select a).ToList();
+
+                        var ActivityIncDetails = (from a in context.Activity_InclusionDetails
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
+
+                        var ActivityPolicy = (from a in context.Activity_Policy
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                        var ActivityMedia = (from a in context.Activity_Media
+                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                             select a).ToList();
+
+                        var ActivityReviews = (from a in context.Activity_ReviewsAndScores
+                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                               select a).ToList();
+
+                        var ActivitySPM = (from a in context.Activity_SupplierProductMapping
+                                           where a.Activity_ID == Activity.Activity_Flavour_Id
+                                           select a).ToList();
+
+                        var ActivityDeals = (from a in context.Activity_Deals
+                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                             select a).ToList();
+
+                        var ActivityPrices = (from a in context.Activity_Prices
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                        var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
+                                             where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
+                                             select a).ToList();
+
+                        //create new mongo object record
+                        var newActivity = new DataContracts.Activity.ActivityDefinition();
+
+                        newActivity.TLGXActivityCode = Activity.CommonProductNameSubType_Id;
+                        newActivity.SupplierCompanyCode = string.Empty;
+                        newActivity.SupplierProductCode = Activity.CompanyProductNameSubType_Id;
+                        newActivity.Category = Activity.ProductCategorySubType;
+                        newActivity.Type = Activity.ProductType;
+                        newActivity.SubType = Activity.ProductNameSubType;
+                        newActivity.Name = Activity.ProductName;
+                        newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short Description").Select(s => s.Description).FirstOrDefault());
+                        newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Sessions").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Start Time").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "End Time").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long Description").Select(s => s.Description).FirstOrDefault());
+                        newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
+                        newActivity.CountryName = Activity.Country;
+                        newActivity.CountryCode = Activity.CountryCode;
+                        newActivity.CityName = Activity.City;
+                        newActivity.CityCode = Activity.CityCode;
+                        newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofVIews").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).ToArray());
+                        newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+                        newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+                        newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
+                        //newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
+                        newActivity.BookingPolicies = new DataContracts.Activity.ImportantInfoAndBookingPolicies
+                        {
+                            InfoText = (ActivityClassAttr.Where(w => w.AttributeType == "ImportantInfo" && w.AttributeSubType == "InfoText").Select(s => s.AttributeValue).ToArray()),
+                            InfoType = (ActivityClassAttr.Where(w => w.AttributeType == "ImportantInfo" && w.AttributeSubType == "InfoType").Select(s => s.AttributeValue).ToArray())
+                        };
+                        newActivity.TermsAndConditions = (ActivityPolicy.Where(w => w.Policy_Type == "TermsAndConditions").Select(s => new DataContracts.Activity.TermsAndConditions { Name = s.PolicyName, Description = s.PolicyDescription }).ToList());
+
+                        newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
+                        {
+                            Caption = s.Media_Caption,
+                            Description  = s.Description,
+                            FullUrl = s.Media_URL,
+                            Height = s.Media_Height ?? 0,
+                            MediaType = s.MediaType,
+                            SortOrder = (s.Media_Position ?? 0).ToString(),
+                            ThumbUrl = s.Media_URL,
+                            Width = s.Media_Width ?? 0
+                        }).ToList());
+
+                        newActivity.Duration = new DataContracts.Activity.ActivityDuration
+                        {
+                            Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
+                            Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
+                            Text  = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                        };
+
+                        collection.InsertOneAsync(newActivity);
+
+                        newActivity = null;
+
+                        ActivityClassAttr = null;
+                        ActivityDesc = null;
+                        ActivityInc = null;
+                        ActivityIncDetails = null;
+                        ActivityPolicy = null;
+                        ActivityMedia = null;
+                        ActivityReviews = null;
+                        ActivitySPM = null;
+                        ActivityDeals = null;
+                        ActivityPrices = null;
+                        ActivitySPMCA = null;
                     }
 
                     collection = null;

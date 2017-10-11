@@ -12,20 +12,21 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class Activity_Contact
+    public partial class Activity_SupplierProductMapping_CA
     {
-        public System.Guid Activity_Contact_Id { get; set; }
-        public Nullable<System.Guid> Activity_Id { get; set; }
-        public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
-        public Nullable<int> Legacy_Product_ID { get; set; }
-        public string Telephone { get; set; }
-        public string Fax { get; set; }
-        public string WebSiteURL { get; set; }
-        public string Email { get; set; }
-        public string Create_User { get; set; }
+        public System.Guid Activity_SupplierProductMapping_CA_Id { get; set; }
+        public Nullable<System.Guid> Supplier_ID { get; set; }
+        public string SupplierCode { get; set; }
+        public string SupplierName { get; set; }
+        public string SuplierProductCode { get; set; }
+        public string SupplierProductName { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
-        public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string Create_User { get; set; }
+        public string Edit_User { get; set; }
+        public string AttributeType { get; set; }
+        public string AttributeSubType { get; set; }
+        public string AttributeValue { get; set; }
         public Nullable<bool> IsActive { get; set; }
     }
 }

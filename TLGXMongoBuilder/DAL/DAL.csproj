@@ -145,6 +145,12 @@
     <Compile Include="Activity.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="ActivityGeneralInfo.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Ancillary.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_ClassificationAttributes.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
@@ -152,6 +158,9 @@
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Activity_Content.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_Deals.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Activity_Descriptions.cs">
@@ -187,6 +196,12 @@
     <Compile Include="Activity_Policy.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_Prices.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_ReviewsAndScores.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_Status.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
@@ -196,10 +211,19 @@
     <Compile Include="Activity_SupplierActivityMetaDataMapping.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_SupplierActivityReviews.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_SupplierActivityTypeMapping.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Activity_SupplierProductMapping.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_SupplierProductMapping_CA.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_SupplierProductMapping_Deals.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Activity_Tips.cs">

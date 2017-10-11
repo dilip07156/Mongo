@@ -16,7 +16,7 @@ namespace DAL
     {
         public System.Guid Activity_Status_Id { get; set; }
         public Nullable<System.Guid> Activity_Id { get; set; }
-        public Nullable<System.DateTime> Legacy_Product_ID { get; set; }
+        public Nullable<int> Legacy_Product_ID { get; set; }
         public Nullable<System.DateTime> From { get; set; }
         public Nullable<System.DateTime> To { get; set; }
         public string DeactivationReason { get; set; }

@@ -32,5 +32,26 @@ namespace DAL
         public string EndingPoint { get; set; }
         public string USP { get; set; }
         public Nullable<bool> IsPickUpDropDefined { get; set; }
+        public Nullable<bool> MustSeeInCountry { get; set; }
+        public Nullable<bool> CompanyReccom { get; set; }
+        public string Duration { get; set; }
+        public string CountryCode { get; set; }
+        public string CityCode { get; set; }
+        public Nullable<decimal> Latitude { get; set; }
+        public Nullable<decimal> Longitude { get; set; }
+        public string Street { get; set; }
+        public string Street2 { get; set; }
+        public string Street3 { get; set; }
+        public string Street4 { get; set; }
+        public string Street5 { get; set; }
+        public string PostalCode { get; set; }
+        public Nullable<System.Guid> City_Id { get; set; }
+        public Nullable<System.Guid> Country_Id { get; set; }
+        public string Area { get; set; }
+        public string Location { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string Create_User { get; set; }
+        public string Edit_User { get; set; }
     }
 }

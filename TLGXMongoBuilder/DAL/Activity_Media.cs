@@ -36,5 +36,9 @@ namespace DAL
         public string FileFormat { get; set; }
         public string MediaID { get; set; }
         public string MediaFileMaster { get; set; }
+        public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
+        public Nullable<int> Media_Width { get; set; }
+        public Nullable<int> Media_Height { get; set; }
+        public string Media_Caption { get; set; }
     }
 }

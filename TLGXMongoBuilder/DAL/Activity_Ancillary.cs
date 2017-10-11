@@ -12,20 +12,18 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class Activity_Contact
+    public partial class Activity_Ancillary
     {
-        public System.Guid Activity_Contact_Id { get; set; }
-        public Nullable<System.Guid> Activity_Id { get; set; }
-        public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
-        public Nullable<int> Legacy_Product_ID { get; set; }
-        public string Telephone { get; set; }
-        public string Fax { get; set; }
-        public string WebSiteURL { get; set; }
-        public string Email { get; set; }
-        public string Create_User { get; set; }
+        public System.Guid Activity_Ancillary_Id { get; set; }
+        public string Ancillary_Type { get; set; }
+        public string Ancillary_Name { get; set; }
+        public string Ancillary_Description { get; set; }
+        public string Ancillary_Status { get; set; }
+        public Nullable<System.DateTime> Ancillary_FromDate { get; set; }
+        public Nullable<System.DateTime> Ancillary_ToDate { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
-        public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
-        public Nullable<bool> IsActive { get; set; }
+        public string Create_User { get; set; }
+        public string Edit_User { get; set; }
     }
 }
