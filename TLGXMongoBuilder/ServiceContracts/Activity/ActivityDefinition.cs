@@ -101,14 +101,14 @@ namespace DataContracts.Activity
     {
         public string Source { get; set; }
         public string Type { get; set; }
-        public double Score { get; set; }
+        public decimal? Score { get; set; }
     }
 
     public class CustomerReviews
     {
         public string Source { get; set; }
         public string Type { get; set; }
-        public double Score { get; set; }
+        public decimal? Score { get; set; }
         public string Author { get; set; }
         public string Date { get; set; }
         public string Comment { get; set; }
@@ -116,8 +116,8 @@ namespace DataContracts.Activity
 
     public class ActivityLocation
     {
-        public double Latitude { get; set; }
-        public double Longitude { get; set; }
+        public decimal? Latitude { get; set; }
+        public decimal? Longitude { get; set; }
         public string Address { get; set; }
         public string Location { get; set; }
         public string Area { get; set; }
@@ -171,7 +171,7 @@ namespace DataContracts.Activity
 
     public class Deals
     {
-        public decimal DealPrice { get; set; }
+        public decimal? DealPrice { get; set; }
         public string Currency { get; set; }
         public string DealText { get; set; }
         public string OfferTermsAndConditions { get; set; }
@@ -181,7 +181,7 @@ namespace DataContracts.Activity
     public class Prices
     {
         public string SupplierCurrency { get; set; }
-        public decimal NetPrice { get; set; }
+        public decimal? NetPrice { get; set; }
         public string PriceBasis { get; set; }
         public string PriceId { get; set; }
     }

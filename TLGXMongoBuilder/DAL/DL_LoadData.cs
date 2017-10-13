@@ -634,7 +634,7 @@ namespace DAL
                         newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
                         {
                             Caption = s.Media_Caption,
-                            Description  = s.Description,
+                            Description = s.Description,
                             FullUrl = s.Media_URL,
                             Height = s.Media_Height ?? 0,
                             MediaType = s.MediaType,
@@ -647,8 +647,54 @@ namespace DAL
                         {
                             Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
                             Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
-                            Text  = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                            Text = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
                         };
+
+                        newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
+                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Title + s.Review_Description }).ToList());
+                        newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
+                        {
+                            Address = Activity.Street + Activity.Street2 + Activity.Street3 + Activity.Street4 + Activity.Street5,
+                            Area = Activity.Area,
+                            Latitude = Activity.Latitude,
+                            Location = Activity.Location,
+                            Longitude = Activity.Longitude
+                        };
+
+                        newActivity.TourGuideLanguages = (from a in ActivityInc
+                                                          join ad in ActivityIncDetails on a.Activity_Inclusions_Id equals ad.Activity_Inclusions_Id
+                                                          where a.IsInclusion ?? false == true
+                                                          select new DataContracts.Activity.TourGuideLanguages
+                                                          {
+                                                              Language = ad.GuideLanguage,
+                                                              LanguageID = ad.GuideLanguageCode
+                                                          }).ToList();
+
+                        newActivity.SupplierDetails = ActivitySPM.Select(s => new DataContracts.Activity.SupplierDetails
+                        {
+                            SupplierName = s.SupplierName,
+                            SupplierID = s.SupplierCode,
+                            TourActivityID = s.SuplierProductCode,
+                            CountryCode = s.SupplierCountryCode,
+                            CountryName = s.SupplierCountryName,
+                            CityCode = s.SupplierCityCode,
+                            CityName = s.SupplierCityName
+                        }).FirstOrDefault();
+
+                        newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
+
+                        newActivity.Prices = ActivityPrices.Select(s => new DataContracts.Activity.Prices { NetPrice = s.PriceNet, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+
+                        newActivity.SupplierAttributes = ActivitySPMCA.Select(s => new DataContracts.Activity.SupplierAttributes { Group = s.AttributeType, Key = s.AttributeSubType, Supplier = s.SupplierName, Value = s.AttributeValue }).ToList();
+
+                        newActivity.SimliarProducts = ActivityList.Where(w => w.Activity_Flavour_Id != Activity.Activity_Flavour_Id && w.ProductNameSubType == Activity.ProductNameSubType).Select(s => new DataContracts.Activity.SimliarProducts
+                        {
+                            TLGXActivityCode = s.CommonProductNameSubType_Id
+                        }).ToList();
+
+                        newActivity.ClassificationAttrributes = ActivityClassAttr.Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
+
+                        newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty , SystemName = string.Empty }).FirstOrDefault();
 
                         collection.InsertOneAsync(newActivity);
 
