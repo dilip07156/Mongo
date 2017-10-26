@@ -599,13 +599,13 @@ namespace DAL
                         //create new mongo object record
                         var newActivity = new DataContracts.Activity.ActivityDefinition();
 
-                        newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
+                        //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
 
-                        newActivity.TLGXActivityCode = Activity.CommonProductNameSubType_Id;
+                        newActivity.TLGXActivityCode = Convert.ToInt64(Activity.CommonProductNameSubType_Id);
 
-                        newActivity.SupplierCompanyCode = string.Empty;
+                        newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
 
-                        newActivity.SupplierProductCode = Activity.CompanyProductNameSubType_Id;
+                        newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
 
                         newActivity.Category = Activity.ProductCategorySubType;
 
@@ -682,7 +682,7 @@ namespace DAL
 
                         newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
 
-                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Title + s.Review_Description, Date = s.Review_PostedDate.ToString() }).ToList());
+                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Description, Date = s.Review_PostedDate.ToString(), Title = s.Review_Title }).ToList());
 
                         newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
                         {
@@ -716,11 +716,11 @@ namespace DAL
 
                         newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                        newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product").Select(s => new DataContracts.Activity.Prices { NetPrice = s.Price, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                        newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product" && w.Price_Type == "NetPrice").Select(s => new DataContracts.Activity.Prices { NetPrice = s.Price, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
                         newActivity.SimliarProducts = (from afo in ActivityFO
                                                        join ap in ActivityPrices on afo.Activity_FlavourOptions_Id.ToString().ToUpper() equals (ap.Price_OptionCode ?? string.Empty).ToUpper()
-                                                       where ap.Price_For == "Options"
+                                                       where ap.Price_For == "Options" && ap.Price_Type == "NetPrice"
                                                        select new DataContracts.Activity.SimliarProducts
                                                        {
                                                            TLGXActivityCode = afo.Activity_OptionCode,

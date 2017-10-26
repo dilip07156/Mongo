@@ -9,9 +9,11 @@ namespace DataContracts.Activity
 {
     public class ActivityDefinition
     {
+        //[BsonId]
+        //public string Activity_Flavour_Id { get; set; }
+
         [BsonId]
-        public string Activity_Flavour_Id { get; set; }
-        public string TLGXActivityCode { get; set; }
+        public long TLGXActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
         public string SupplierProductCode { get; set; }
         public string Category { get; set; }
@@ -107,6 +109,7 @@ namespace DataContracts.Activity
         public decimal? Score { get; set; }
         public string Author { get; set; }
         public string Date { get; set; }
+        public string Title { get; set; }
         public string Comment { get; set; }
     }
 
