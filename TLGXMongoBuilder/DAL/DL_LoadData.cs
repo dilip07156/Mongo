@@ -601,7 +601,7 @@ namespace DAL
 
                         //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
 
-                        newActivity.TLGXActivityCode = Convert.ToInt64(Activity.CommonProductNameSubType_Id);
+                        newActivity.TLGXActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
 
                         newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
 

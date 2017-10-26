@@ -13,7 +13,7 @@ namespace DataContracts.Activity
         //public string Activity_Flavour_Id { get; set; }
 
         [BsonId]
-        public long TLGXActivityCode { get; set; }
+        public int TLGXActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
         public string SupplierProductCode { get; set; }
         public string Category { get; set; }
