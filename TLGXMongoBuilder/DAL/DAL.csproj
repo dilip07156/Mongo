@@ -172,6 +172,9 @@
     <Compile Include="Activity_Flavour.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_FlavourOptions.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_InclusionDetails.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>

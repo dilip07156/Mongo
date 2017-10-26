@@ -592,44 +592,74 @@ namespace DAL
                                              where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
                                              select a).ToList();
 
+                        var ActivityFO = (from a in context.Activity_FlavourOptions
+                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                          select a).ToList();
+
                         //create new mongo object record
                         var newActivity = new DataContracts.Activity.ActivityDefinition();
 
+                        newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
+
                         newActivity.TLGXActivityCode = Activity.CommonProductNameSubType_Id;
+
                         newActivity.SupplierCompanyCode = string.Empty;
+
                         newActivity.SupplierProductCode = Activity.CompanyProductNameSubType_Id;
+
                         newActivity.Category = Activity.ProductCategorySubType;
+
                         newActivity.Type = Activity.ProductType;
+
                         newActivity.SubType = Activity.ProductNameSubType;
+
                         newActivity.Name = Activity.ProductName;
-                        newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short Description").Select(s => s.Description).FirstOrDefault());
+
+                        newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+
                         newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Sessions").Select(s => s.AttributeValue).FirstOrDefault());
-                        newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Start Time").Select(s => s.AttributeValue).FirstOrDefault());
-                        newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "End Time").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "EndTime").Select(s => s.AttributeValue).FirstOrDefault());
+
                         newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
+
                         newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
-                        newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long Description").Select(s => s.Description).FirstOrDefault());
+
+                        newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+
                         newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
+
                         newActivity.CountryName = Activity.Country;
+
                         newActivity.CountryCode = Activity.CountryCode;
+
                         newActivity.CityName = Activity.City;
+
                         newActivity.CityCode = Activity.CityCode;
+
                         newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
+
                         newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
+
                         newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
+
                         newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
-                        newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofVIews").Select(s => s.AttributeValue).FirstOrDefault());
-                        newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).ToArray());
+
+                        newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Interests").Select(s => s.AttributeValue).ToArray());
+
                         newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+
                         newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+
                         newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
-                        //newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
-                        newActivity.BookingPolicies = new DataContracts.Activity.ImportantInfoAndBookingPolicies
-                        {
-                            InfoText = (ActivityClassAttr.Where(w => w.AttributeType == "ImportantInfo" && w.AttributeSubType == "InfoText").Select(s => s.AttributeValue).ToArray()),
-                            InfoType = (ActivityClassAttr.Where(w => w.AttributeType == "ImportantInfo" && w.AttributeSubType == "InfoType").Select(s => s.AttributeValue).ToArray())
-                        };
-                        newActivity.TermsAndConditions = (ActivityPolicy.Where(w => w.Policy_Type == "TermsAndConditions").Select(s => new DataContracts.Activity.TermsAndConditions { Name = s.PolicyName, Description = s.PolicyDescription }).ToList());
+
+                        newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
+
+                        newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
 
                         newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
                         {
@@ -645,16 +675,18 @@ namespace DAL
 
                         newActivity.Duration = new DataContracts.Activity.ActivityDuration
                         {
-                            Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
-                            Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
-                            Text = (ActivityClassAttr.Where(w => w.AttributeType == "Durations" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                            Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
+                            Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
+                            Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
                         };
 
                         newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
-                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Title + s.Review_Description }).ToList());
+
+                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Title + s.Review_Description, Date = s.Review_PostedDate.ToString() }).ToList());
+
                         newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
                         {
-                            Address = Activity.Street + Activity.Street2 + Activity.Street3 + Activity.Street4 + Activity.Street5,
+                            Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
                             Area = Activity.Area,
                             Latitude = Activity.Latitude,
                             Location = Activity.Location,
@@ -678,28 +710,33 @@ namespace DAL
                             CountryCode = s.SupplierCountryCode,
                             CountryName = s.SupplierCountryName,
                             CityCode = s.SupplierCityCode,
-                            CityName = s.SupplierCityName
+                            CityName = s.SupplierCityName,
+                            PricingCurrency = s.Currency
                         }).FirstOrDefault();
 
                         newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                        newActivity.Prices = ActivityPrices.Select(s => new DataContracts.Activity.Prices { NetPrice = s.PriceNet, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                        newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product").Select(s => new DataContracts.Activity.Prices { NetPrice = s.Price, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
-                        newActivity.SupplierAttributes = ActivitySPMCA.Select(s => new DataContracts.Activity.SupplierAttributes { Group = s.AttributeType, Key = s.AttributeSubType, Supplier = s.SupplierName, Value = s.AttributeValue }).ToList();
+                        newActivity.SimliarProducts = (from afo in ActivityFO
+                                                       join ap in ActivityPrices on afo.Activity_FlavourOptions_Id.ToString().ToUpper() equals (ap.Price_OptionCode ?? string.Empty).ToUpper()
+                                                       where ap.Price_For == "Options"
+                                                       select new DataContracts.Activity.SimliarProducts
+                                                       {
+                                                           TLGXActivityCode = afo.Activity_OptionCode,
+                                                           ActivityType = afo.Activity_Type,
+                                                           DealText = afo.Activity_DealText,
+                                                           Options = afo.Activity_OptionName,
+                                                           TotalNetPrice = ap.Price.ToString()
+                                                       }).ToList();
 
-                        newActivity.SimliarProducts = ActivityList.Where(w => w.Activity_Flavour_Id != Activity.Activity_Flavour_Id && w.ProductNameSubType == Activity.ProductNameSubType).Select(s => new DataContracts.Activity.SimliarProducts
-                        {
-                            TLGXActivityCode = s.CommonProductNameSubType_Id
-                        }).ToList();
+                        newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
 
-                        newActivity.ClassificationAttrributes = ActivityClassAttr.Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
-
-                        newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty , SystemName = string.Empty }).FirstOrDefault();
+                        newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
 
                         collection.InsertOneAsync(newActivity);
 
                         newActivity = null;
-
                         ActivityClassAttr = null;
                         ActivityDesc = null;
                         ActivityInc = null;
@@ -711,6 +748,7 @@ namespace DAL
                         ActivityDeals = null;
                         ActivityPrices = null;
                         ActivitySPMCA = null;
+                        ActivityFO = null;
                     }
 
                     collection = null;

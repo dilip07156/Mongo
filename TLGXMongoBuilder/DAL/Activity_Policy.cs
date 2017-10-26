@@ -26,5 +26,6 @@ namespace DAL
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
         public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
+        public Nullable<bool> IsActive { get; set; }
     }
 }

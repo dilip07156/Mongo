@@ -30,5 +30,6 @@ namespace DAL
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Edit_User { get; set; }
         public string Review_Status { get; set; }
+        public Nullable<bool> IsActive { get; set; }
     }
 }

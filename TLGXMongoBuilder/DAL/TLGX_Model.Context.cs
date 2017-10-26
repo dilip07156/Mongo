@@ -85,7 +85,6 @@ namespace DAL
         public virtual DbSet<Activity_PickUpDropDetail> Activity_PickUpDropDetail { get; set; }
         public virtual DbSet<Activity_PickupDropSchedule> Activity_PickupDropSchedule { get; set; }
         public virtual DbSet<Activity_Policy> Activity_Policy { get; set; }
-        public virtual DbSet<Activity_Prices> Activity_Prices { get; set; }
         public virtual DbSet<Activity_ReviewsAndScores> Activity_ReviewsAndScores { get; set; }
         public virtual DbSet<Activity_Status> Activity_Status { get; set; }
         public virtual DbSet<Activity_Tips> Activity_Tips { get; set; }
@@ -100,5 +99,7 @@ namespace DAL
         public virtual DbSet<Activity_SupplierProductMapping> Activity_SupplierProductMapping { get; set; }
         public virtual DbSet<Activity_SupplierProductMapping_CA> Activity_SupplierProductMapping_CA { get; set; }
         public virtual DbSet<Activity_SupplierProductMapping_Deals> Activity_SupplierProductMapping_Deals { get; set; }
+        public virtual DbSet<Activity_FlavourOptions> Activity_FlavourOptions { get; set; }
+        public virtual DbSet<Activity_Prices> Activity_Prices { get; set; }
     }
 }

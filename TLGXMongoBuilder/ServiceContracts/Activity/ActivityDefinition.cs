@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MongoDB.Bson.Serialization.Attributes;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,8 @@ namespace DataContracts.Activity
 {
     public class ActivityDefinition
     {
+        [BsonId]
+        public string Activity_Flavour_Id { get; set; }
         public string TLGXActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
         public string SupplierProductCode { get; set; }
@@ -36,8 +39,8 @@ namespace DataContracts.Activity
         public List<Inclusions> Inclusions { get; set; }
         public List<Exclusions> Exclusions { get; set; }
         public string[] Highlights { get; set; }
-        public List<TermsAndConditions> TermsAndConditions { get; set; }
-        public ImportantInfoAndBookingPolicies BookingPolicies { get; set; }
+        public string[] TermsAndConditions { get; set; }
+        public List<ImportantInfoAndBookingPolicies> BookingPolicies { get; set; }
         public List<Media> ActivityMedia { get; set; }
         public ActivityDuration Duration { get; set; }
         public List<ReviewScores> ReviewScores { get; set; }
@@ -50,7 +53,6 @@ namespace DataContracts.Activity
         public List<Deals> Deals { get; set; }
         public List<Prices> Prices { get; set; }
         public SystemMapping SystemMapping { get; set; }
-        public List<SupplierAttributes> SupplierAttributes { get; set; }
     }
 
     public class Inclusions
@@ -65,16 +67,10 @@ namespace DataContracts.Activity
         public string Description { get; set; }
     }
 
-    public class TermsAndConditions
-    {
-        public string Name { get; set; }
-        public string Description { get; set; }
-    }
-
     public class ImportantInfoAndBookingPolicies
     {
-        public string[] InfoType { get; set; }
-        public string[] InfoText { get; set; }
+        public string InfoType { get; set; }
+        public string InfoText { get; set; }
     }
 
     public class Media
@@ -156,9 +152,9 @@ namespace DataContracts.Activity
     {
         public string TLGXActivityCode { get; set; }
         public string DealText { get; set; }
-        public string[] Options { get; set; }
-        public string[] ActivityTypes { get; set; }
-        public List<Prices> TotalNetPrice { get; set; }
+        public string Options { get; set; }
+        public string ActivityType { get; set; }
+        public string TotalNetPrice { get; set; }
 
     }
 
@@ -192,11 +188,4 @@ namespace DataContracts.Activity
         public string SystemID { get; set; }
     }
 
-    public class SupplierAttributes
-    {
-        public string Group { get; set; }
-        public string Key { get; set; }
-        public string Value { get; set; }
-        public string Supplier { get; set; }
-    }
 }

@@ -296,6 +296,7 @@
           <Property Name="Country_Id" Type="uniqueidentifier" />
           <Property Name="City_Id" Type="uniqueidentifier" />
           <Property Name="stg_AccoMapping_Id" Type="uniqueidentifier" />
+          <Property Name="TLGXProductCode" Type="nvarchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -659,6 +660,23 @@
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
         </EntityType>
+        <EntityType Name="Activity_FlavourOptions">
+          <Key>
+            <PropertyRef Name="Activity_FlavourOptions_Id" />
+          </Key>
+          <Property Name="Activity_FlavourOptions_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="uniqueidentifier" />
+          <Property Name="Activity_FlavourName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Activity_OptionName" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Activity_OptionCode" Type="nvarchar" MaxLength="255" />
+          <Property Name="Activity_Type" Type="nvarchar" MaxLength="255" />
+          <Property Name="Activity_DealText" Type="nvarchar(max)" />
+          <Property Name="Status" Type="nvarchar" MaxLength="255" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_Date" Type="datetime" />
+          <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
+        </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
             <PropertyRef Name="Activity_InclusionDetails_Id" />
@@ -683,6 +701,7 @@
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsActive" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_Inclusions">
           <Key>
@@ -706,6 +725,7 @@
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsActive" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_Itinerary">
           <Key>
@@ -848,6 +868,7 @@
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Activity_Flavour_Id" Type="uniqueidentifier" />
+          <Property Name="IsActive" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_Prices">
           <Key>
@@ -858,8 +879,16 @@
           <Property Name="Activity_Id" Type="uniqueidentifier" />
           <Property Name="PriceCode" Type="nvarchar" MaxLength="255" />
           <Property Name="PriceBasis" Type="nvarchar" MaxLength="255" />
-          <Property Name="PriceNet" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="Price" Type="decimal" Precision="18" Scale="2" />
           <Property Name="PriceCurrency" Type="nvarchar" MaxLength="255" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="Edit_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsActive" Type="bit" />
+          <Property Name="Price_For" Type="nvarchar" MaxLength="255" />
+          <Property Name="Price_Type" Type="nvarchar" MaxLength="255" />
+          <Property Name="Price_OptionCode" Type="nvarchar" MaxLength="255" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -881,6 +910,7 @@
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Review_Status" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsActive" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_Status">
           <Key>
@@ -1058,6 +1088,7 @@
           <Property Name="Rating" Type="float" />
           <Property Name="Location" Type="nvarchar" MaxLength="255" />
           <Property Name="Area" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsActive" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_SupplierProductMapping_CA">
           <Key>
@@ -1655,6 +1686,7 @@
           <EntitySet Name="Activity_Descriptions" EntityType="Self.Activity_Descriptions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Facility" EntityType="Self.Activity_Facility" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Flavour" EntityType="Self.Activity_Flavour" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Activity_FlavourOptions" EntityType="Self.Activity_FlavourOptions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_InclusionDetails" EntityType="Self.Activity_InclusionDetails" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Inclusions" EntityType="Self.Activity_Inclusions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Itinerary" EntityType="Self.Activity_Itinerary" Schema="dbo" store:Type="Tables" />
@@ -1769,7 +1801,6 @@
           <EntitySet Name="Activity_PickUpDropDetail" EntityType="TLGX_DEV_Model.Activity_PickUpDropDetail" />
           <EntitySet Name="Activity_PickupDropSchedule" EntityType="TLGX_DEV_Model.Activity_PickupDropSchedule" />
           <EntitySet Name="Activity_Policy" EntityType="TLGX_DEV_Model.Activity_Policy" />
-          <EntitySet Name="Activity_Prices" EntityType="TLGX_DEV_Model.Activity_Prices" />
           <EntitySet Name="Activity_ReviewsAndScores" EntityType="TLGX_DEV_Model.Activity_ReviewsAndScores" />
           <EntitySet Name="Activity_Status" EntityType="TLGX_DEV_Model.Activity_Status" />
           <EntitySet Name="Activity_Tips" EntityType="TLGX_DEV_Model.Activity_Tips" />
@@ -1784,6 +1815,8 @@
           <EntitySet Name="Activity_SupplierProductMapping" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" />
           <EntitySet Name="Activity_SupplierProductMapping_CA" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_CA" />
           <EntitySet Name="Activity_SupplierProductMapping_Deals" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_Deals" />
+          <EntitySet Name="Activity_FlavourOptions" EntityType="TLGX_DEV_Model.Activity_FlavourOptions" />
+          <EntitySet Name="Activity_Prices" EntityType="TLGX_DEV_Model.Activity_Prices" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2422,6 +2455,7 @@
           <Property Name="Country_Id" Type="Guid" />
           <Property Name="City_Id" Type="Guid" />
           <Property Name="stg_AccoMapping_Id" Type="Guid" />
+          <Property Name="TLGXProductCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -2892,6 +2926,7 @@
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_Inclusions">
           <Key>
@@ -2915,6 +2950,7 @@
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_Itinerary">
           <Key>
@@ -3057,18 +3093,7 @@
           <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activity_Flavour_Id" Type="Guid" />
-        </EntityType>
-        <EntityType Name="Activity_Prices">
-          <Key>
-            <PropertyRef Name="Activity_Prices_Id" />
-          </Key>
-          <Property Name="Activity_Prices_Id" Type="Guid" Nullable="false" />
-          <Property Name="Activity_Flavour_Id" Type="Guid" />
-          <Property Name="Activity_Id" Type="Guid" />
-          <Property Name="PriceCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PriceBasis" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PriceNet" Type="Decimal" Precision="18" Scale="0" />
-          <Property Name="PriceCurrency" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -3090,6 +3115,7 @@
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Review_Status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_Status">
           <Key>
@@ -3366,6 +3392,7 @@
           <Property Name="Rating" Type="Double" />
           <Property Name="Location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Area" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_SupplierProductMapping_CA">
           <Key>
@@ -3406,6 +3433,43 @@
           <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Activity_FlavourOptions">
+          <Key>
+            <PropertyRef Name="Activity_FlavourOptions_Id" />
+          </Key>
+          <Property Name="Activity_FlavourOptions_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="Guid" />
+          <Property Name="Activity_FlavourName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_OptionName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_OptionCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Type" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_DealText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Activity_Prices">
+          <Key>
+            <PropertyRef Name="Activity_Prices_Id" />
+          </Key>
+          <Property Name="Activity_Prices_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="Guid" />
+          <Property Name="Activity_Id" Type="Guid" />
+          <Property Name="PriceCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PriceBasis" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Price" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="PriceCurrency" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="Price_For" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Price_Type" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Price_OptionCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4041,6 +4105,7 @@
           <EntitySetMapping Name="Accommodation_ProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_ProductMapping">
               <MappingFragment StoreEntitySet="Accommodation_ProductMapping">
+                <ScalarProperty Name="TLGXProductCode" ColumnName="TLGXProductCode" />
                 <ScalarProperty Name="stg_AccoMapping_Id" ColumnName="stg_AccoMapping_Id" />
                 <ScalarProperty Name="City_Id" ColumnName="City_Id" />
                 <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
@@ -4551,6 +4616,7 @@
           <EntitySetMapping Name="Activity_InclusionDetails">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_InclusionDetails">
               <MappingFragment StoreEntitySet="Activity_InclusionDetails">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
@@ -4577,6 +4643,7 @@
           <EntitySetMapping Name="Activity_Inclusions">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Inclusions">
               <MappingFragment StoreEntitySet="Activity_Inclusions">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
@@ -4731,6 +4798,7 @@
           <EntitySetMapping Name="Activity_Policy">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Policy">
               <MappingFragment StoreEntitySet="Activity_Policy">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Create_User" ColumnName="Create_User" />
@@ -4746,22 +4814,10 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Activity_Prices">
-            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Prices">
-              <MappingFragment StoreEntitySet="Activity_Prices">
-                <ScalarProperty Name="PriceCurrency" ColumnName="PriceCurrency" />
-                <ScalarProperty Name="PriceNet" ColumnName="PriceNet" />
-                <ScalarProperty Name="PriceBasis" ColumnName="PriceBasis" />
-                <ScalarProperty Name="PriceCode" ColumnName="PriceCode" />
-                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
-                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
-                <ScalarProperty Name="Activity_Prices_Id" ColumnName="Activity_Prices_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Activity_ReviewsAndScores">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_ReviewsAndScores">
               <MappingFragment StoreEntitySet="Activity_ReviewsAndScores">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Review_Status" ColumnName="Review_Status" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
@@ -4998,6 +5054,7 @@
           <EntitySetMapping Name="Activity_SupplierProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_SupplierProductMapping">
               <MappingFragment StoreEntitySet="Activity_SupplierProductMapping">
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Area" ColumnName="Area" />
                 <ScalarProperty Name="Location" ColumnName="Location" />
                 <ScalarProperty Name="Rating" ColumnName="Rating" />
@@ -5107,6 +5164,45 @@
                 <ScalarProperty Name="Supplier_ID" ColumnName="Supplier_ID" />
                 <ScalarProperty Name="Activity_ID" ColumnName="Activity_ID" />
                 <ScalarProperty Name="Activity_SupplierProductMapping_Deals_Id" ColumnName="Activity_SupplierProductMapping_Deals_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_FlavourOptions">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_FlavourOptions">
+              <MappingFragment StoreEntitySet="Activity_FlavourOptions">
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Activity_DealText" ColumnName="Activity_DealText" />
+                <ScalarProperty Name="Activity_Type" ColumnName="Activity_Type" />
+                <ScalarProperty Name="Activity_OptionCode" ColumnName="Activity_OptionCode" />
+                <ScalarProperty Name="Activity_OptionName" ColumnName="Activity_OptionName" />
+                <ScalarProperty Name="Activity_FlavourName" ColumnName="Activity_FlavourName" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+                <ScalarProperty Name="Activity_FlavourOptions_Id" ColumnName="Activity_FlavourOptions_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_Prices">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Prices">
+              <MappingFragment StoreEntitySet="Activity_Prices">
+                <ScalarProperty Name="Price_OptionCode" ColumnName="Price_OptionCode" />
+                <ScalarProperty Name="Price_Type" ColumnName="Price_Type" />
+                <ScalarProperty Name="Price_For" ColumnName="Price_For" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="PriceCurrency" ColumnName="PriceCurrency" />
+                <ScalarProperty Name="Price" ColumnName="Price" />
+                <ScalarProperty Name="PriceBasis" ColumnName="PriceBasis" />
+                <ScalarProperty Name="PriceCode" ColumnName="PriceCode" />
+                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+                <ScalarProperty Name="Activity_Prices_Id" ColumnName="Activity_Prices_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

@@ -60,7 +60,7 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_CA" Width="1.5" PointX="0.75" PointY="11.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_Deals" Width="1.5" PointX="2.75" PointY="11.75" />
       </Diagram>
-      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="Activity" ZoomLevel="88" >
+      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="Activity" ZoomLevel="81" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Ancillary" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_ClassificationAttributes" Width="1.5" PointX="4.75" PointY="0.75" />
@@ -78,7 +78,6 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_PickUpDropDetail" Width="1.5" PointX="12.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_PickupDropSchedule" Width="1.5" PointX="12.75" PointY="8.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Policy" Width="1.5" PointX="14.75" PointY="0.75" />
-        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Prices" Width="1.5" PointX="14.75" PointY="5.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_ReviewsAndScores" Width="1.5" PointX="14.75" PointY="9.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Status" Width="1.5" PointX="10.75" PointY="14.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Tips" Width="1.5" PointX="12.75" PointY="14.75" />
@@ -86,6 +85,8 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Updates" Width="1.5" PointX="6.75" PointY="15.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_WeatherInformation" Width="1.5" PointX="16.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.ActivityGeneralInfo" Width="1.5" PointX="0.75" PointY="16.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_FlavourOptions" Width="1.5" PointX="3.375" PointY="16.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Prices" Width="1.5" PointX="17.375" PointY="5.75" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

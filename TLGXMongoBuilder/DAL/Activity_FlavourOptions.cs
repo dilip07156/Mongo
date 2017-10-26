@@ -12,22 +12,19 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class Activity_Prices
+    public partial class Activity_FlavourOptions
     {
-        public System.Guid Activity_Prices_Id { get; set; }
+        public System.Guid Activity_FlavourOptions_Id { get; set; }
         public Nullable<System.Guid> Activity_Flavour_Id { get; set; }
-        public Nullable<System.Guid> Activity_Id { get; set; }
-        public string PriceCode { get; set; }
-        public string PriceBasis { get; set; }
-        public Nullable<decimal> Price { get; set; }
-        public string PriceCurrency { get; set; }
+        public string Activity_FlavourName { get; set; }
+        public string Activity_OptionName { get; set; }
+        public string Activity_OptionCode { get; set; }
+        public string Activity_Type { get; set; }
+        public string Activity_DealText { get; set; }
+        public string Status { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
-        public string Create_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
+        public string Create_User { get; set; }
         public string Edit_User { get; set; }
-        public Nullable<bool> IsActive { get; set; }
-        public string Price_For { get; set; }
-        public string Price_Type { get; set; }
-        public string Price_OptionCode { get; set; }
     }
 }
