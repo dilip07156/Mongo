@@ -720,7 +720,7 @@ namespace DAL
                         newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product" && w.Price_Type == "NetPrice").Select(s => new DataContracts.Activity.Prices { NetPrice = s.Price, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
                         newActivity.SimliarProducts = (from afo in ActivityFO
-                                                       join ap in ActivityPrices on afo.Activity_FlavourOptions_Id.ToString().ToUpper() equals (ap.Price_OptionCode ?? string.Empty).ToUpper()
+                                                       join ap in ActivityPrices on afo.Activity_FlavourOptions_Id equals (ap.Activity_FlavourOptions_Id ?? Guid.Empty)
                                                        where ap.Price_For == "Options" && ap.Price_Type == "NetPrice"
                                                        select new DataContracts.Activity.SimliarProducts
                                                        {

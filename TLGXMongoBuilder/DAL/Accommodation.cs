@@ -76,5 +76,6 @@ namespace DAL
         public Nullable<System.Guid> Country_Id { get; set; }
         public Nullable<System.Guid> City_Id { get; set; }
         public Nullable<bool> InsertFrom { get; set; }
+        public string Address_Tx { get; set; }
     }
 }
