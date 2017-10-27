@@ -667,7 +667,8 @@ namespace DAL
                             Description = s.Description,
                             FullUrl = s.Media_URL,
                             Height = s.Media_Height ?? 0,
-                            MediaType = s.MediaType,
+                            MediaType = s.Category,
+                            MediaSubType = s.SubCategory,
                             SortOrder = (s.Media_Position ?? 0).ToString(),
                             ThumbUrl = s.Media_URL,
                             Width = s.Media_Width ?? 0
