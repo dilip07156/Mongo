@@ -99,7 +99,7 @@ namespace DAL
         public virtual DbSet<Activity_SupplierProductMapping> Activity_SupplierProductMapping { get; set; }
         public virtual DbSet<Activity_SupplierProductMapping_CA> Activity_SupplierProductMapping_CA { get; set; }
         public virtual DbSet<Activity_SupplierProductMapping_Deals> Activity_SupplierProductMapping_Deals { get; set; }
-        public virtual DbSet<Activity_FlavourOptions> Activity_FlavourOptions { get; set; }
         public virtual DbSet<Activity_Prices> Activity_Prices { get; set; }
+        public virtual DbSet<Activity_FlavourOptions> Activity_FlavourOptions { get; set; }
     }
 }

@@ -536,6 +536,7 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
                     var ActivityList = from a in context.Activity_Flavour
+                                       where a.CityCode != null
                                        select a;
 
                     foreach (var Activity in ActivityList)
@@ -622,6 +623,10 @@ namespace DAL
                         newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "EndTime").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -717,14 +722,15 @@ namespace DAL
 
                         newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                        newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product" && w.Price_Type == "NetPrice").Select(s => new DataContracts.Activity.Prices { NetPrice = s.Price, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                        newActivity.Prices = ActivityPrices.Where(w => w.Price_For == "Product").Select(s => new DataContracts.Activity.Prices { Price = s.Price, PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
                         newActivity.SimliarProducts = (from afo in ActivityFO
                                                        join ap in ActivityPrices on afo.Activity_FlavourOptions_Id equals (ap.Activity_FlavourOptions_Id ?? Guid.Empty)
-                                                       where ap.Price_For == "Options" && ap.Price_Type == "NetPrice"
+                                                       where ap.Price_For == "Options" && ap.Price_Type == "MerchantNetPrice"
                                                        select new DataContracts.Activity.SimliarProducts
                                                        {
-                                                           TLGXActivityCode = afo.Activity_OptionCode,
+                                                           TLGXActivityOptionCode = afo.TLGXActivityOptionCode,
+                                                           OptionCode = afo.Activity_OptionCode,
                                                            ActivityType = afo.Activity_Type,
                                                            DealText = afo.Activity_DealText,
                                                            Options = afo.Activity_OptionName,

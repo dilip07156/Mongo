@@ -678,6 +678,7 @@
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="Create_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Edit_User" Type="nvarchar" MaxLength="255" />
+          <Property Name="TLGXActivityOptionCode" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
@@ -1818,8 +1819,8 @@
           <EntitySet Name="Activity_SupplierProductMapping" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping" />
           <EntitySet Name="Activity_SupplierProductMapping_CA" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_CA" />
           <EntitySet Name="Activity_SupplierProductMapping_Deals" EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_Deals" />
-          <EntitySet Name="Activity_FlavourOptions" EntityType="TLGX_DEV_Model.Activity_FlavourOptions" />
           <EntitySet Name="Activity_Prices" EntityType="TLGX_DEV_Model.Activity_Prices" />
+          <EntitySet Name="Activity_FlavourOptions" EntityType="TLGX_DEV_Model.Activity_FlavourOptions" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -3439,23 +3440,6 @@
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
-        <EntityType Name="Activity_FlavourOptions">
-          <Key>
-            <PropertyRef Name="Activity_FlavourOptions_Id" />
-          </Key>
-          <Property Name="Activity_FlavourOptions_Id" Type="Guid" Nullable="false" />
-          <Property Name="Activity_Flavour_Id" Type="Guid" />
-          <Property Name="Activity_FlavourName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_OptionName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_OptionCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_Type" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_DealText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-        </EntityType>
         <EntityType Name="Activity_Prices">
           <Key>
             <PropertyRef Name="Activity_Prices_Id" />
@@ -3476,6 +3460,24 @@
           <Property Name="Price_Type" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Price_OptionCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activity_FlavourOptions_Id" Type="Guid" />
+        </EntityType>
+        <EntityType Name="Activity_FlavourOptions">
+          <Key>
+            <PropertyRef Name="Activity_FlavourOptions_Id" />
+          </Key>
+          <Property Name="Activity_FlavourOptions_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="Guid" />
+          <Property Name="Activity_FlavourName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_OptionName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_OptionCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Type" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_DealText" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="TLGXActivityOptionCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -5175,24 +5177,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Activity_FlavourOptions">
-            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_FlavourOptions">
-              <MappingFragment StoreEntitySet="Activity_FlavourOptions">
-                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
-                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
-                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
-                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="Activity_DealText" ColumnName="Activity_DealText" />
-                <ScalarProperty Name="Activity_Type" ColumnName="Activity_Type" />
-                <ScalarProperty Name="Activity_OptionCode" ColumnName="Activity_OptionCode" />
-                <ScalarProperty Name="Activity_OptionName" ColumnName="Activity_OptionName" />
-                <ScalarProperty Name="Activity_FlavourName" ColumnName="Activity_FlavourName" />
-                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
-                <ScalarProperty Name="Activity_FlavourOptions_Id" ColumnName="Activity_FlavourOptions_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Activity_Prices">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Prices">
               <MappingFragment StoreEntitySet="Activity_Prices">
@@ -5212,6 +5196,25 @@
                 <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
                 <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
                 <ScalarProperty Name="Activity_Prices_Id" ColumnName="Activity_Prices_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_FlavourOptions">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_FlavourOptions">
+              <MappingFragment StoreEntitySet="Activity_FlavourOptions">
+                <ScalarProperty Name="TLGXActivityOptionCode" ColumnName="TLGXActivityOptionCode" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Activity_DealText" ColumnName="Activity_DealText" />
+                <ScalarProperty Name="Activity_Type" ColumnName="Activity_Type" />
+                <ScalarProperty Name="Activity_OptionCode" ColumnName="Activity_OptionCode" />
+                <ScalarProperty Name="Activity_OptionName" ColumnName="Activity_OptionName" />
+                <ScalarProperty Name="Activity_FlavourName" ColumnName="Activity_FlavourName" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+                <ScalarProperty Name="Activity_FlavourOptions_Id" ColumnName="Activity_FlavourOptions_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
