@@ -537,7 +537,7 @@ namespace DAL
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
                     var ActivityList = (from a in context.Activity_Flavour
                                        where a.CityCode != null
-                                       select a).Take(100);
+                                       select a);
 
                     foreach (var Activity in ActivityList)
                     {
