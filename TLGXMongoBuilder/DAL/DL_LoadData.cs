@@ -535,9 +535,9 @@ namespace DAL
                     _database.DropCollection("ActivityDefinitions");
 
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var ActivityList = from a in context.Activity_Flavour
+                    var ActivityList = (from a in context.Activity_Flavour
                                        where a.CityCode != null
-                                       select a;
+                                       select a).Take(100);
 
                     foreach (var Activity in ActivityList)
                     {
@@ -602,7 +602,7 @@ namespace DAL
 
                         //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
 
-                        newActivity.TLGXActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
+                        newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
 
                         newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
 
@@ -729,7 +729,7 @@ namespace DAL
                                                        where ap.Price_For == "Options" && ap.Price_Type == "MerchantNetPrice"
                                                        select new DataContracts.Activity.SimliarProducts
                                                        {
-                                                           TLGXActivityOptionCode = afo.TLGXActivityOptionCode,
+                                                           SystemActivityOptionCode = afo.TLGXActivityOptionCode,
                                                            OptionCode = afo.Activity_OptionCode,
                                                            ActivityType = afo.Activity_Type,
                                                            DealText = afo.Activity_DealText,
