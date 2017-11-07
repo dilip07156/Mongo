@@ -161,7 +161,6 @@ namespace DataContracts.Activity
         public string DealText { get; set; }
         public string Options { get; set; }
         public string ActivityType { get; set; }
-        public string TotalNetPrice { get; set; }
 
     }
 
@@ -188,6 +187,8 @@ namespace DataContracts.Activity
         public string PriceType { get; set; }
         public string PriceBasis { get; set; }
         public string PriceId { get; set; }
+        public string OptionCode { get; set; }
+        public string PriceFor { get; set; }
     }
 
     public class SystemMapping
