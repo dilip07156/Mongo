@@ -781,14 +781,22 @@ namespace DAL
                     List<DataContracts.Activity.ActivityMasters> dataList = new List<DataContracts.Activity.ActivityMasters>();
 
                     dataList = (from ma in context.m_masterattribute
+                                join pma in context.m_masterattribute on ma.ParentAttribute_Id equals pma.MasterAttribute_Id into pmaj
+                                from pmalj in pmaj.DefaultIfEmpty()
                                 where ma.IsActive == true && ma.MasterFor == "Activity"
                                 select new DataContracts.Activity.ActivityMasters
                                 {
                                     Type = ma.Name.Trim(),
+                                    ParentType = pmalj.Name.Trim(),
                                     Values = (from mav in context.m_masterattributevalue
+                                              join pmav in context.m_masterattributevalue on mav.ParentAttributeValue_Id equals pmav.MasterAttributeValue_Id into pmavj
+                                              from pmavlj in pmavj.DefaultIfEmpty()
                                               where mav.MasterAttribute_Id == ma.MasterAttribute_Id && mav.IsActive == true
-                                              select mav.AttributeValue.Trim()
-                                              ).ToList()
+                                              select new DataContracts.Activity.ActivityMasterValues
+                                              {
+                                                  Value = mav.AttributeValue.Trim(),
+                                                  ParentValue = pmavlj.AttributeValue.Trim()
+                                              }).ToList()
                                 }).ToList();
 
 
