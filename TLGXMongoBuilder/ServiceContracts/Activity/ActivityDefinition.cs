@@ -21,13 +21,14 @@ namespace DataContracts.Activity
         public string SubType { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public string Session { get; set; }
+        public Session Session { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public string DeparturePoint { get; set; }
         public string ReturnDetails { get; set; }
         public string DaysOfTheWeek { get; set; }
         public string PhysicalIntensity { get; set; }
+        public string SuitableFor { get; set; }
         public string Overview { get; set; }
         public string Recommended { get; set; }
         public string CountryName { get; set; }
@@ -57,6 +58,12 @@ namespace DataContracts.Activity
         public List<Deals> Deals { get; set; }
         public List<Prices> Prices { get; set; }
         public SystemMapping SystemMapping { get; set; }
+    }
+
+    public class Session
+    {
+        public string SupplierValue { get; set; }
+        public string MappedValue { get; set; }
     }
 
     public class Inclusions
@@ -183,7 +190,7 @@ namespace DataContracts.Activity
     public class Prices
     {
         public string SupplierCurrency { get; set; }
-        public decimal? Price { get; set; }
+        public double? Price { get; set; }
         public string PriceType { get; set; }
         public string PriceBasis { get; set; }
         public string PriceId { get; set; }

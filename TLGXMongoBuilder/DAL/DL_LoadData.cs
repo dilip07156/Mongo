@@ -532,12 +532,12 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
 
-                    _database.DropCollection("ActivityDefinitions");
+                    _database.DropCollection("ActivityDefinitionsNew");
 
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitionsNew");
                     var ActivityList = (from a in context.Activity_Flavour
                                         where a.CityCode != null
-                                        select a);
+                                        select a).Take(100);
 
                     foreach (var Activity in ActivityList)
                     {
@@ -618,7 +618,7 @@ namespace DAL
 
                         newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
-                        newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Sessions").Select(s => s.AttributeValue).FirstOrDefault());
+                        newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Session").Select(s => new DataContracts.Activity.Session { MappedValue = s.AttributeValue }).FirstOrDefault());
 
                         newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -665,6 +665,8 @@ namespace DAL
                         newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
 
                         newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
+
+                        newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
                         {
@@ -722,7 +724,7 @@ namespace DAL
 
                         newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                        newActivity.Prices = ActivityPrices.Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = s.Price, PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                        newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
                         newActivity.SimliarProducts = (from afo in ActivityFO
                                                        select new DataContracts.Activity.SimliarProducts
@@ -754,6 +756,43 @@ namespace DAL
                         ActivitySPMCA = null;
                         ActivityFO = null;
                     }
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadActivityMasters()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("ActivityMasters");
+
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityMasters>("ActivityMasters");
+
+                    List<DataContracts.Activity.ActivityMasters> dataList = new List<DataContracts.Activity.ActivityMasters>();
+
+                    dataList = (from ma in context.m_masterattribute
+                                where ma.IsActive == true && ma.MasterFor == "Activity"
+                                select new DataContracts.Activity.ActivityMasters
+                                {
+                                    Type = ma.Name.Trim(),
+                                    Values = (from mav in context.m_masterattributevalue
+                                              where mav.MasterAttribute_Id == ma.MasterAttribute_Id && mav.IsActive == true
+                                              select mav.AttributeValue.Trim()
+                                              ).ToList()
+                                }).ToList();
+
+
+                    collection.InsertManyAsync(dataList);
 
                     collection = null;
                     _database = null;

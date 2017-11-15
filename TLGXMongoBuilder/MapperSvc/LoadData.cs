@@ -46,6 +46,14 @@ namespace MapperSvc
             }
         }
 
+        public void LoadActivityMasters()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadActivityMasters();
+            }
+        }
+
         public void LoadCountryMaster()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())

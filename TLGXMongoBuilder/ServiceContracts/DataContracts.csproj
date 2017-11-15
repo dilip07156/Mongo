@@ -80,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Activity\ActivityDefinition.cs" />
+    <Compile Include="Activity\ActivityMasters.cs" />
     <Compile Include="AuthenticateContract.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />
