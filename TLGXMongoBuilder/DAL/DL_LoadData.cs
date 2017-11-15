@@ -539,30 +539,6 @@ namespace DAL
                                         where a.CityCode != null
                                         select a);
 
-                    var ActivityClassAttrQuery = (from a in context.Activity_ClassificationAttributes select a).AsQueryable();
-
-                    var ActivityDescQuery = (from a in context.Activity_Descriptions select a).AsQueryable();
-
-                    var ActivityIncQuery = (from a in context.Activity_Inclusions select a).AsQueryable();
-
-                    var ActivityIncDetailsQuery = (from a in context.Activity_InclusionDetails select a).AsQueryable();
-
-                    var ActivityPolicyQuery = (from a in context.Activity_Policy select a).AsQueryable();
-
-                    var ActivityMediaQuery = (from a in context.Activity_Media select a).AsQueryable();
-
-                    var ActivityReviewsQuery = (from a in context.Activity_ReviewsAndScores select a).AsQueryable();
-
-                    var ActivitySPMQuery = (from a in context.Activity_SupplierProductMapping select a).AsQueryable();
-
-                    var ActivityDealsQuery = (from a in context.Activity_Deals select a).AsQueryable();
-
-                    var ActivityPricesQuery = (from a in context.Activity_Prices select a).AsQueryable();
-
-                    var ActivitySPMCAQuery = (from a in context.Activity_SupplierProductMapping_CA select a).AsQueryable();
-
-                    var ActivityFOQuery = (from a in context.Activity_FlavourOptions select a).AsQueryable();
-
                     foreach (var Activity in ActivityList)
                     {
 
@@ -573,53 +549,53 @@ namespace DAL
                         //    continue;
                         //}
 
-                        var ActivityClassAttr = (from a in ActivityClassAttrQuery
+                        var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                 select a);
+                                                 select a).ToList();
 
-                        var ActivityDesc = (from a in ActivityDescQuery
+                        var ActivityDesc = (from a in context.Activity_Descriptions
                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                            select a);
+                                            select a).ToList();
 
-                        var ActivityInc = (from a in ActivityIncQuery
+                        var ActivityInc = (from a in context.Activity_Inclusions
                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                           select a);
+                                           select a).ToList();
 
-                        var ActivityIncDetails = (from a in ActivityIncDetailsQuery
+                        var ActivityIncDetails = (from a in context.Activity_InclusionDetails
                                                   where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                  select a);
+                                                  select a).ToList();
 
-                        var ActivityPolicy = (from a in ActivityPolicyQuery
+                        var ActivityPolicy = (from a in context.Activity_Policy
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                              select a);
+                                              select a).ToList();
 
-                        var ActivityMedia = (from a in ActivityMediaQuery
+                        var ActivityMedia = (from a in context.Activity_Media
                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a);
+                                             select a).ToList();
 
-                        var ActivityReviews = (from a in ActivityReviewsQuery
+                        var ActivityReviews = (from a in context.Activity_ReviewsAndScores
                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                               select a);
+                                               select a).ToList();
 
-                        var ActivitySPM = (from a in ActivitySPMQuery
+                        var ActivitySPM = (from a in context.Activity_SupplierProductMapping
                                            where a.Activity_ID == Activity.Activity_Flavour_Id
-                                           select a);
+                                           select a).ToList();
 
-                        var ActivityDeals = (from a in ActivityDealsQuery
+                        var ActivityDeals = (from a in context.Activity_Deals
                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a);
+                                             select a).ToList();
 
-                        var ActivityPrices = (from a in ActivityPricesQuery
+                        var ActivityPrices = (from a in context.Activity_Prices
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                              select a);
+                                              select a).ToList();
 
-                        var ActivitySPMCA = (from a in ActivitySPMCAQuery
+                        var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
                                              where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
-                                             select a);
+                                             select a).ToList();
 
-                        var ActivityFO = (from a in ActivityFOQuery
+                        var ActivityFO = (from a in context.Activity_FlavourOptions
                                           where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                          select a);
+                                          select a).ToList();
 
                         //create new mongo object record
                         var newActivity = new DataContracts.Activity.ActivityDefinition();
