@@ -82,7 +82,17 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/Keywords", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        [WebGet(UriTemplate = "Load/KeywordMaster", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadKeywords();
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/StateMaster", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadStates();
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/PortMaster", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadPorts();
     }
 }

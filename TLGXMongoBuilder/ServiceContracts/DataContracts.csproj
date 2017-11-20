@@ -95,6 +95,8 @@
     <Compile Include="Masters\DC_City.cs" />
     <Compile Include="Masters\DC_Country.cs" />
     <Compile Include="Masters\DC_Keywords.cs" />
+    <Compile Include="Masters\DC_Port.cs" />
+    <Compile Include="Masters\DC_State.cs" />
     <Compile Include="Masters\DC_Supplier.cs" />
     <Compile Include="ProdContracts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

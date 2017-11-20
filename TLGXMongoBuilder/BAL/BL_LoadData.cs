@@ -116,5 +116,21 @@ namespace BAL
                 obj.LoadKeywords();
             }
         }
+
+        public void LoadStates()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadStates();
+            }
+        }
+
+        public void LoadPorts()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadPorts();
+            }
+        }
     }
 }

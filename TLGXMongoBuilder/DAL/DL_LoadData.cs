@@ -811,5 +811,86 @@ namespace DAL
                 throw ex;
             }
         }
+
+        public void LoadStates()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("StateMaster");
+
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_State>("StateMaster");
+
+                    List<DataContracts.Masters.DC_State> dataList = new List<DataContracts.Masters.DC_State>();
+
+                    dataList = (from s in context.m_States
+                                join c in context.m_CountryMaster on s.Country_Id equals c.Country_Id into cj
+                                from clj in cj.DefaultIfEmpty()
+                                select new DataContracts.Masters.DC_State
+                                {
+                                    CountryCode = clj.Code ?? string.Empty,
+                                    CountryName = clj.Name ?? string.Empty,
+                                    StateCode = s.StateCode ?? string.Empty,
+                                    StateName = s.StateName ?? string.Empty
+                                }).ToList();
+
+
+                    collection.InsertManyAsync(dataList);
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadPorts()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("PortMaster");
+
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_Port>("PortMaster");
+
+                    List<DataContracts.Masters.DC_Port> dataList = new List<DataContracts.Masters.DC_Port>();
+
+                    dataList = (from p in context.m_PortMaster
+                                join c in context.m_CountryMaster on p.Country_Id equals c.Country_Id into cj
+                                from clj in cj.DefaultIfEmpty()
+                                join cty in context.m_CityMaster on p.City_Id equals cty.City_Id into ctyj
+                                from ctylj in ctyj.DefaultIfEmpty()
+                                select new DataContracts.Masters.DC_Port
+                                {
+                                    CountryCode = clj.Code ?? p.oag_ctry,
+                                    CountryName = clj.Name ?? p.oag_ctryname,
+                                    CityCode = ctylj.Name ?? string.Empty,
+                                    CityName = ctylj.Name ?? string.Empty,
+                                    Latitude = p.oag_lat ?? string.Empty,
+                                    Longitude = p.oag_lon ?? string.Empty,
+                                    PortCode = p.OAG_loc ?? string.Empty,
+                                    PortName = p.oag_portname ?? string.Empty
+                                }).ToList();
+
+
+                    collection.InsertManyAsync(dataList);
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
     }
 }

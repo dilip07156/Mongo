@@ -142,5 +142,22 @@ namespace MapperSvc
             }
         }
 
+
+        public void LoadStates()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadStates();
+            }
+        }
+
+        public void LoadPorts()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadPorts();
+            }
+        }
+
     }
 }
