@@ -160,6 +160,12 @@
     <Compile Include="Activity_Content.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_DaysOfOperation.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Activity_DaysOfWeek.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_Deals.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>

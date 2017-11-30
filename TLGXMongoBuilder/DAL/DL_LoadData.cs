@@ -532,22 +532,25 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
 
-                    _database.DropCollection("ActivityDefinitions");
+                    //_database.DropCollection("ActivityDefinitions");
 
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+
                     var ActivityList = (from a in context.Activity_Flavour
-                                        where a.CityCode != null
+                                        join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.SupplierCode == "viator" || spm.SupplierCode == "gta")
                                         select a);
 
                     foreach (var Activity in ActivityList)
                     {
 
-                        ////check if record is already exists
-                        //var searchResultCount = collection.Find(f => f.Le == Acco.CompanyHotelID.ToString()).Count();
-                        //if (searchResultCount > 0)
-                        //{
-                        //    continue;
-                        //}
+                        //check if record is already exists
+                        var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                        var searchResultCount = collection.Find(f => f.SupplierProductCode.ToUpper() == SupplierProductCode.ToUpper()).Count();
+                        if (searchResultCount > 0)
+                        {
+                            continue;
+                        }
 
                         var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -597,6 +600,14 @@ namespace DAL
                                           where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                           select a).ToList();
 
+                        var ActivityDOW = (from a in context.Activity_DaysOfWeek
+                                           where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                           select a).ToList();
+
+                        var ActivityOD = (from a in context.Activity_DaysOfOperation
+                                          where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                          select a).ToList();
+
                         //create new mongo object record
                         var newActivity = new DataContracts.Activity.ActivityDefinition();
 
@@ -618,17 +629,17 @@ namespace DAL
 
                         newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
-                        newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Session").Select(s => new DataContracts.Activity.Session { MappedValue = s.AttributeValue }).FirstOrDefault());
+                        //newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Session").Select(s => new DataContracts.Activity.Session { MappedValue = s.AttributeValue }).FirstOrDefault());
 
-                        newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
+                        //newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "EndTime").Select(s => s.AttributeValue).FirstOrDefault());
+                        //newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "EndTime").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
+                        //newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -681,12 +692,12 @@ namespace DAL
                             Width = s.Media_Width ?? 0
                         }).ToList());
 
-                        newActivity.Duration = new DataContracts.Activity.ActivityDuration
-                        {
-                            Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
-                            Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
-                            Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
-                        };
+                        //newActivity.Duration = new DataContracts.Activity.ActivityDuration
+                        //{
+                        //    Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
+                        //    Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
+                        //    Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                        //};
 
                         newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
 
@@ -739,6 +750,31 @@ namespace DAL
                         newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
 
                         newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
+
+                        newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
+                                                     join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
+                                                     from ODljS in ODlj
+                                                     select new DataContracts.Activity.DaysOfWeek
+                                                     {
+                                                         Duration = DOW.Duration,
+                                                         EndTime = DOW.EndTime,
+                                                         Friday = DOW.Fri ?? false,
+                                                         Monday = DOW.Mon ?? false,
+                                                         OperatingFromDate = ODljS.FromDate.ToString(),
+                                                         OperatingToDate = ODljS.ToDate.ToString(),
+                                                         Saturday = DOW.Sat ?? false,
+                                                         Session = DOW.Session,
+                                                         StartTime = DOW.StartTime,
+                                                         Sunday = DOW.Sun ?? false,
+                                                         SupplierDuration = DOW.SupplierDuration,
+                                                         SupplierEndTime = DOW.SupplierEndTime,
+                                                         SupplierFrequency = DOW.SupplierFrequency,
+                                                         SupplierSession = DOW.SupplierSession,
+                                                         SupplierStartTime = DOW.SupplierStartTime,
+                                                         Thursday = DOW.Thur ?? false,
+                                                         Tuesday = DOW.Tues ?? false,
+                                                         Wednesday = DOW.Wed ?? false
+                                                     }).ToList();
 
                         collection.InsertOneAsync(newActivity);
 

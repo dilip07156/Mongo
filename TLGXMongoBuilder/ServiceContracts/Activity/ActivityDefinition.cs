@@ -21,12 +21,12 @@ namespace DataContracts.Activity
         public string SubType { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public Session Session { get; set; }
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
+        //public Session Session { get; set; }
+        //public string StartTime { get; set; }
+        //public string EndTime { get; set; }
         public string DeparturePoint { get; set; }
         public string ReturnDetails { get; set; }
-        public string DaysOfTheWeek { get; set; }
+        //public string DaysOfTheWeek { get; set; }
         public string PhysicalIntensity { get; set; }
         public string SuitableFor { get; set; }
         public string Overview { get; set; }
@@ -47,7 +47,7 @@ namespace DataContracts.Activity
         public string[] TermsAndConditions { get; set; }
         public List<ImportantInfoAndBookingPolicies> BookingPolicies { get; set; }
         public List<Media> ActivityMedia { get; set; }
-        public ActivityDuration Duration { get; set; }
+        //public ActivityDuration Duration { get; set; }
         public List<ReviewScores> ReviewScores { get; set; }
         public List<CustomerReviews> CustomerReviews { get; set; }
         public ActivityLocation ActivityLocation { get; set; }
@@ -58,6 +58,7 @@ namespace DataContracts.Activity
         public List<Deals> Deals { get; set; }
         public List<Prices> Prices { get; set; }
         public SystemMapping SystemMapping { get; set; }
+        public List<DaysOfWeek> DaysOfTheWeek { get; set; }
     }
 
     public class Session
@@ -98,12 +99,12 @@ namespace DataContracts.Activity
 
     }
 
-    public class ActivityDuration
-    {
-        public string Text { get; set; }
-        public string Hours { get; set; }
-        public string Minutes { get; set; }
-    }
+    //public class ActivityDuration
+    //{
+    //    public string Text { get; set; }
+    //    public string Hours { get; set; }
+    //    public string Minutes { get; set; }
+    //}
 
     public class ReviewScores
     {
@@ -202,6 +203,28 @@ namespace DataContracts.Activity
     {
         public string SystemName { get; set; }
         public string SystemID { get; set; }
+    }
+
+    public class DaysOfWeek
+    {
+        public string SupplierFrequency { get; set; }
+        public bool Monday { get; set; }
+        public bool Tuesday { get; set; }
+        public bool Wednesday { get; set; }
+        public bool Thursday { get; set; }
+        public bool Friday { get; set; }
+        public bool Saturday { get; set; }
+        public bool Sunday { get; set; }
+        public string SupplierStartTime { get; set; }
+        public string StartTime { get; set; }
+        public string SupplierEndTime { get; set; }
+        public string EndTime { get; set; }
+        public string SupplierDuration { get; set; }
+        public string Duration { get; set; }
+        public string SupplierSession { get; set; }
+        public string Session { get; set; }
+        public string OperatingFromDate { get; set; }
+        public string OperatingToDate { get; set; }
     }
 
 }

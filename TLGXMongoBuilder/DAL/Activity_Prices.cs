@@ -30,5 +30,7 @@ namespace DAL
         public string Price_Type { get; set; }
         public string Price_OptionCode { get; set; }
         public Nullable<System.Guid> Activity_FlavourOptions_Id { get; set; }
+        public Nullable<System.DateTime> Price_ValidFrom { get; set; }
+        public Nullable<System.DateTime> Price_ValidTo { get; set; }
     }
 }

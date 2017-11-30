@@ -101,5 +101,7 @@ namespace DAL
         public virtual DbSet<Activity_SupplierProductMapping_Deals> Activity_SupplierProductMapping_Deals { get; set; }
         public virtual DbSet<Activity_Prices> Activity_Prices { get; set; }
         public virtual DbSet<Activity_FlavourOptions> Activity_FlavourOptions { get; set; }
+        public virtual DbSet<Activity_DaysOfOperation> Activity_DaysOfOperation { get; set; }
+        public virtual DbSet<Activity_DaysOfWeek> Activity_DaysOfWeek { get; set; }
     }
 }
