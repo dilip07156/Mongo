@@ -538,7 +538,7 @@ namespace DAL
 
                     var ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.SupplierCode == "tourico")
+                                        where a.CityCode != null //&& (spm.SupplierCode == "tourico")
                                         select a);
 
                     foreach (var Activity in ActivityList)
