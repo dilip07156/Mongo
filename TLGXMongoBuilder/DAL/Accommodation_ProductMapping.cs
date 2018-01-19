@@ -56,5 +56,6 @@ namespace DAL
         public Nullable<System.Guid> City_Id { get; set; }
         public Nullable<System.Guid> stg_AccoMapping_Id { get; set; }
         public string TLGXProductCode { get; set; }
+        public Nullable<bool> IsPentaho { get; set; }
     }
 }

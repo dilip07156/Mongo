@@ -151,6 +151,9 @@
     <Compile Include="Activity_Ancillary.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_CategoriesType.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_ClassificationAttributes.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>

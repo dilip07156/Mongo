@@ -82,5 +82,7 @@ namespace DAL
         public string Location { get; set; }
         public string Area { get; set; }
         public Nullable<bool> IsActive { get; set; }
+        public string SupplierProductID { get; set; }
+        public string SupplierProductUniqueID { get; set; }
     }
 }

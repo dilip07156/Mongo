@@ -541,15 +541,15 @@ namespace DAL
 
                     var ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null //&& (spm.SupplierCode == "tourico")
+                                        where a.CityCode != null
                                         select a);
 
                     foreach (var Activity in ActivityList)
                     {
 
                         //check if record is already exists
-                        var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                        var searchResultCount = collection.Find(f => f.SupplierProductCode.ToUpper() == SupplierProductCode.ToUpper()).Count();
+                        //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                        var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
                         if (searchResultCount > 0)
                         {
                             continue;
@@ -611,6 +611,10 @@ namespace DAL
                                           where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                           select a).ToList();
 
+                        var ActivityCT = (from a in context.Activity_CategoriesType
+                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                          select a).ToList();
+
                         //create new mongo object record
                         var newActivity = new DataContracts.Activity.ActivityDefinition();
 
@@ -622,27 +626,21 @@ namespace DAL
 
                         newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
 
-                        newActivity.Category = Activity.ProductCategorySubType;
+                        newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType));
 
-                        newActivity.Type = Activity.ProductType;
+                        newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType));
 
-                        newActivity.SubType = Activity.ProductNameSubType;
+                        newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType));
+
+                        newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
                         newActivity.Name = Activity.ProductName;
 
                         newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
-                        //newActivity.Session = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Session").Select(s => new DataContracts.Activity.Session { MappedValue = s.AttributeValue }).FirstOrDefault());
-
-                        //newActivity.StartTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "StartTime").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        //newActivity.EndTime = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "EndTime").Select(s => s.AttributeValue).FirstOrDefault());
-
                         newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        //newActivity.DaysOfTheWeek = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "DaysofWeek").Select(s => s.AttributeValue).FirstOrDefault());
 
                         newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -681,6 +679,8 @@ namespace DAL
                         newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
 
                         newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).FirstOrDefault());
+
+                        newActivity.Specials = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Specials").Select(s => s.AttributeValue).ToList());
 
                         newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
                         {
@@ -740,15 +740,15 @@ namespace DAL
 
                         newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
 
-                        newActivity.SimliarProducts = (from afo in ActivityFO
-                                                       select new DataContracts.Activity.SimliarProducts
-                                                       {
-                                                           SystemActivityOptionCode = afo.TLGXActivityOptionCode,
-                                                           OptionCode = afo.Activity_OptionCode,
-                                                           ActivityType = afo.Activity_Type,
-                                                           DealText = afo.Activity_DealText,
-                                                           Options = afo.Activity_OptionName
-                                                       }).ToList();
+                        newActivity.ProductOptions = (from afo in ActivityFO
+                                                      select new DataContracts.Activity.ProductOptions
+                                                      {
+                                                          SystemActivityOptionCode = afo.TLGXActivityOptionCode,
+                                                          OptionCode = afo.Activity_OptionCode,
+                                                          ActivityType = afo.Activity_Type,
+                                                          DealText = afo.Activity_DealText,
+                                                          Options = afo.Activity_OptionName
+                                                      }).ToList();
 
                         newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
 
@@ -756,15 +756,15 @@ namespace DAL
 
                         newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
                                                      join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
-                                                     from ODljS in ODlj
+                                                     from ODljS in ODlj.DefaultIfEmpty()
                                                      select new DataContracts.Activity.DaysOfWeek
                                                      {
                                                          Duration = DOW.Duration,
                                                          EndTime = DOW.EndTime,
                                                          Friday = DOW.Fri ?? false,
                                                          Monday = DOW.Mon ?? false,
-                                                         OperatingFromDate = ODljS.FromDate.ToString(),
-                                                         OperatingToDate = ODljS.ToDate.ToString(),
+                                                         OperatingFromDate = ODljS.FromDate == null ? string.Empty : ODljS.FromDate.ToString(),
+                                                         OperatingToDate = ODljS.ToDate == null ? string.Empty : ODljS.ToDate.ToString(),
                                                          Saturday = DOW.Sat ?? false,
                                                          Session = DOW.Session,
                                                          StartTime = DOW.StartTime,

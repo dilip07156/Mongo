@@ -53,5 +53,11 @@ namespace DAL
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
+        public string Activity_Language { get; set; }
+        public string Activity_LanguageCode { get; set; }
+        public string Activity_Status { get; set; }
+        public string Activity_StatusNotes { get; set; }
+        public string Activity_Status_Edit_User { get; set; }
+        public Nullable<System.DateTime> Activity_Status_Edit_Date { get; set; }
     }
 }

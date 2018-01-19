@@ -11,7 +11,6 @@ namespace DataContracts.Activity
     {
         //[BsonId]
         //public string Activity_Flavour_Id { get; set; }
-
         [BsonId]
         public int SystemActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
@@ -21,12 +20,8 @@ namespace DataContracts.Activity
         public string SubType { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        //public Session Session { get; set; }
-        //public string StartTime { get; set; }
-        //public string EndTime { get; set; }
         public string DeparturePoint { get; set; }
         public string ReturnDetails { get; set; }
-        //public string DaysOfTheWeek { get; set; }
         public string PhysicalIntensity { get; set; }
         public string SuitableFor { get; set; }
         public string Overview { get; set; }
@@ -47,18 +42,23 @@ namespace DataContracts.Activity
         public string[] TermsAndConditions { get; set; }
         public List<ImportantInfoAndBookingPolicies> BookingPolicies { get; set; }
         public List<Media> ActivityMedia { get; set; }
-        //public ActivityDuration Duration { get; set; }
         public List<ReviewScores> ReviewScores { get; set; }
         public List<CustomerReviews> CustomerReviews { get; set; }
         public ActivityLocation ActivityLocation { get; set; }
         public List<TourGuideLanguages> TourGuideLanguages { get; set; }
         public SupplierDetails SupplierDetails { get; set; }
-        public List<SimliarProducts> SimliarProducts { get; set; }
+        public List<ProductOptions> ProductOptions { get; set; }
         public List<ClassificationAttrributes> ClassificationAttrributes { get; set; }
         public List<Deals> Deals { get; set; }
         public List<Prices> Prices { get; set; }
         public SystemMapping SystemMapping { get; set; }
         public List<DaysOfWeek> DaysOfTheWeek { get; set; }
+        public List<string> Specials { get; set; }
+        
+        /// <summary>
+        /// Internal Use
+        /// </summary>
+        public List<string> ProductSubTypeId { get; set; }
     }
 
     public class Session
@@ -98,13 +98,6 @@ namespace DataContracts.Activity
         public string Caption { get; set; }
 
     }
-
-    //public class ActivityDuration
-    //{
-    //    public string Text { get; set; }
-    //    public string Hours { get; set; }
-    //    public string Minutes { get; set; }
-    //}
 
     public class ReviewScores
     {
@@ -162,7 +155,7 @@ namespace DataContracts.Activity
 
     }
 
-    public class SimliarProducts
+    public class ProductOptions
     {
         public string SystemActivityOptionCode { get; set; }
         public string OptionCode { get; set; }

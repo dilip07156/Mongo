@@ -38,5 +38,6 @@ namespace DAL
         public System.DateTime CreateDate { get; set; }
         public string EditUser { get; set; }
         public Nullable<System.DateTime> EditDate { get; set; }
+        public string DurationType { get; set; }
     }
 }
