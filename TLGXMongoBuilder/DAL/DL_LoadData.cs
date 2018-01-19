@@ -123,6 +123,7 @@ namespace DAL
 
                     var collection = _database.GetCollection<BsonDocument>("Supplier");
                     var SupplierList = from s in context.Suppliers
+                                       where (s.StatusCode ?? string.Empty) == "ACTIVE"
                                        orderby s.Name
                                        select new
                                        {
@@ -249,9 +250,10 @@ namespace DAL
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
                     var productMapList = (from apm in context.Accommodation_ProductMapping
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
+                                          join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
-                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierCode = s.Code.Trim().ToUpper(),
                                               SupplierProductCode = apm.SupplierProductReference.ToUpper(),
                                               SupplierCountryCode = apm.CountryCode.ToUpper(),
                                               SupplierCountryName = apm.CountryName.ToUpper(),
@@ -296,9 +298,10 @@ namespace DAL
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ProductMappingLite");
                     var productMapList = (from apm in context.Accommodation_ProductMapping
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
+                                          join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
-                                              SupplierCode = apm.SupplierName.ToUpper(),
+                                              SupplierCode = s.Code.Trim().ToUpper(),
                                               SupplierProductCode = apm.SupplierProductReference.ToUpper(),
                                               MapId = apm.MapId ?? 0,
                                               SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
