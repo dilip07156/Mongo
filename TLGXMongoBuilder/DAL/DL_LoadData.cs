@@ -546,254 +546,261 @@ namespace DAL
 
                     foreach (var Activity in ActivityList)
                     {
-
-                        //check if record is already exists
-                        //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                        var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                        if (searchResultCount > 0)
+                        try
                         {
-                            continue;
-                        }
+                            //check if record is already exists
+                            //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                            var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                            if (searchResultCount > 0)
+                            {
+                                continue;
+                            }
 
-                        var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
-                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                 select a).ToList();
+                            var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
+                                                     where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                     select a).ToList();
 
-                        var ActivityDesc = (from a in context.Activity_Descriptions
-                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                            select a).ToList();
+                            var ActivityDesc = (from a in context.Activity_Descriptions
+                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                select a).ToList();
 
-                        var ActivityInc = (from a in context.Activity_Inclusions
-                                           where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                           select a).ToList();
-
-                        var ActivityIncDetails = (from a in context.Activity_InclusionDetails
-                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                  select a).ToList();
-
-                        var ActivityPolicy = (from a in context.Activity_Policy
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                              select a).ToList();
-
-                        var ActivityMedia = (from a in context.Activity_Media
-                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a).ToList();
-
-                        var ActivityReviews = (from a in context.Activity_ReviewsAndScores
+                            var ActivityInc = (from a in context.Activity_Inclusions
                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                                select a).ToList();
 
-                        var ActivitySPM = (from a in context.Activity_SupplierProductMapping
-                                           where a.Activity_ID == Activity.Activity_Flavour_Id
-                                           select a).ToList();
+                            var ActivityIncDetails = (from a in context.Activity_InclusionDetails
+                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                      select a).ToList();
 
-                        var ActivityDeals = (from a in context.Activity_Deals
-                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a).ToList();
+                            var ActivityPolicy = (from a in context.Activity_Policy
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
 
-                        var ActivityPrices = (from a in context.Activity_Prices
+                            var ActivityMedia = (from a in context.Activity_Media
+                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                            var ActivityReviews = (from a in context.Activity_ReviewsAndScores
+                                                   where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                   select a).ToList();
+
+                            var ActivitySPM = (from a in context.Activity_SupplierProductMapping
+                                               where a.Activity_ID == Activity.Activity_Flavour_Id
+                                               select a).ToList();
+
+                            var ActivityDeals = (from a in context.Activity_Deals
+                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                            var ActivityPrices = (from a in context.Activity_Prices
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
+
+                            var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
+                                                 where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                            var ActivityFO = (from a in context.Activity_FlavourOptions
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
-                        var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
-                                             where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
-                                             select a).ToList();
+                            var ActivityDOW = (from a in context.Activity_DaysOfWeek
+                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                               select a).ToList();
 
-                        var ActivityFO = (from a in context.Activity_FlavourOptions
-                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                          select a).ToList();
+                            var ActivityOD = (from a in context.Activity_DaysOfOperation
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              select a).ToList();
 
-                        var ActivityDOW = (from a in context.Activity_DaysOfWeek
-                                           where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
-                                           select a).ToList();
+                            var ActivityCT = (from a in context.Activity_CategoriesType
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              select a).ToList();
 
-                        var ActivityOD = (from a in context.Activity_DaysOfOperation
-                                          where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
-                                          select a).ToList();
+                            //create new mongo object record
+                            var newActivity = new DataContracts.Activity.ActivityDefinition();
 
-                        var ActivityCT = (from a in context.Activity_CategoriesType
-                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                          select a).ToList();
+                            //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
 
-                        //create new mongo object record
-                        var newActivity = new DataContracts.Activity.ActivityDefinition();
+                            newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
 
-                        //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
+                            newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
 
-                        newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
+                            newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
 
-                        newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType));
 
-                        newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType));
 
-                        newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType));
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType));
 
-                        newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType));
+                            newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
-                        newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType));
+                            newActivity.Name = Activity.ProductName;
 
-                        newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
+                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
-                        newActivity.Name = Activity.ProductName;
+                            newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+                            newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
 
-                        newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
 
-                        newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+                            newActivity.CountryName = Activity.Country;
 
-                        newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
+                            newActivity.CountryCode = Activity.CountryCode;
 
-                        newActivity.CountryName = Activity.Country;
+                            newActivity.CityName = Activity.City;
 
-                        newActivity.CountryCode = Activity.CountryCode;
+                            newActivity.CityCode = Activity.CityCode;
 
-                        newActivity.CityName = Activity.City;
+                            newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.CityCode = Activity.CityCode;
+                            newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Interests").Select(s => s.AttributeValue).ToArray());
 
-                        newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
 
-                        newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Interests").Select(s => s.AttributeValue).ToArray());
+                            newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
 
-                        newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+                            newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
 
-                        newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+                            newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
 
-                        newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
+                            newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
 
-                        newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
+                            newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).FirstOrDefault());
 
-                        newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
+                            newActivity.Specials = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Specials").Select(s => s.AttributeValue).ToList());
 
-                        newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).FirstOrDefault());
+                            newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
+                            {
+                                Caption = s.Media_Caption,
+                                Description = s.Description,
+                                FullUrl = s.Media_URL,
+                                Height = s.Media_Height ?? 0,
+                                MediaType = s.Category,
+                                MediaSubType = s.SubCategory,
+                                SortOrder = (s.Media_Position ?? 0).ToString(),
+                                ThumbUrl = s.Media_URL,
+                                Width = s.Media_Width ?? 0
+                            }).ToList());
 
-                        newActivity.Specials = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Specials").Select(s => s.AttributeValue).ToList());
+                            //newActivity.Duration = new DataContracts.Activity.ActivityDuration
+                            //{
+                            //    Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
+                            //    Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
+                            //    Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                            //};
 
-                        newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
-                        {
-                            Caption = s.Media_Caption,
-                            Description = s.Description,
-                            FullUrl = s.Media_URL,
-                            Height = s.Media_Height ?? 0,
-                            MediaType = s.Category,
-                            MediaSubType = s.SubCategory,
-                            SortOrder = (s.Media_Position ?? 0).ToString(),
-                            ThumbUrl = s.Media_URL,
-                            Width = s.Media_Width ?? 0
-                        }).ToList());
+                            newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
 
-                        //newActivity.Duration = new DataContracts.Activity.ActivityDuration
-                        //{
-                        //    Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
-                        //    Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
-                        //    Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
-                        //};
+                            newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Description, Date = s.Review_PostedDate.ToString(), Title = s.Review_Title }).ToList());
 
-                        newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
+                            newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
+                            {
+                                Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
+                                Area = Activity.Area,
+                                Latitude = Activity.Latitude,
+                                Location = Activity.Location,
+                                Longitude = Activity.Longitude
+                            };
 
-                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Description, Date = s.Review_PostedDate.ToString(), Title = s.Review_Title }).ToList());
+                            newActivity.TourGuideLanguages = (from a in ActivityInc
+                                                              join ad in ActivityIncDetails on a.Activity_Inclusions_Id equals ad.Activity_Inclusions_Id
+                                                              where a.IsInclusion ?? false == true
+                                                              select new DataContracts.Activity.TourGuideLanguages
+                                                              {
+                                                                  Language = ad.GuideLanguage,
+                                                                  LanguageID = ad.GuideLanguageCode
+                                                              }).ToList();
 
-                        newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
-                        {
-                            Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
-                            Area = Activity.Area,
-                            Latitude = Activity.Latitude,
-                            Location = Activity.Location,
-                            Longitude = Activity.Longitude
-                        };
+                            newActivity.SupplierDetails = ActivitySPM.Select(s => new DataContracts.Activity.SupplierDetails
+                            {
+                                SupplierName = s.SupplierName,
+                                SupplierID = s.SupplierCode,
+                                TourActivityID = s.SuplierProductCode,
+                                CountryCode = s.SupplierCountryCode,
+                                CountryName = s.SupplierCountryName,
+                                CityCode = s.SupplierCityCode,
+                                CityName = s.SupplierCityName,
+                                PricingCurrency = s.Currency
+                            }).FirstOrDefault();
 
-                        newActivity.TourGuideLanguages = (from a in ActivityInc
-                                                          join ad in ActivityIncDetails on a.Activity_Inclusions_Id equals ad.Activity_Inclusions_Id
-                                                          where a.IsInclusion ?? false == true
-                                                          select new DataContracts.Activity.TourGuideLanguages
+                            newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
+
+                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+
+                            newActivity.ProductOptions = (from afo in ActivityFO
+                                                          select new DataContracts.Activity.ProductOptions
                                                           {
-                                                              Language = ad.GuideLanguage,
-                                                              LanguageID = ad.GuideLanguageCode
+                                                              SystemActivityOptionCode = afo.TLGXActivityOptionCode,
+                                                              OptionCode = afo.Activity_OptionCode,
+                                                              ActivityType = afo.Activity_Type,
+                                                              DealText = afo.Activity_DealText,
+                                                              Options = afo.Activity_OptionName
                                                           }).ToList();
 
-                        newActivity.SupplierDetails = ActivitySPM.Select(s => new DataContracts.Activity.SupplierDetails
+                            newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
+
+                            newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
+
+                            newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
+                                                         join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
+                                                         from ODljS in ODlj.DefaultIfEmpty()
+                                                         select new DataContracts.Activity.DaysOfWeek
+                                                         {
+                                                             Duration = DOW.Duration,
+                                                             EndTime = DOW.EndTime,
+                                                             Friday = DOW.Fri ?? false,
+                                                             Monday = DOW.Mon ?? false,
+                                                             OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
+                                                             OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
+                                                             Saturday = DOW.Sat ?? false,
+                                                             Session = DOW.Session,
+                                                             StartTime = DOW.StartTime,
+                                                             Sunday = DOW.Sun ?? false,
+                                                             SupplierDuration = DOW.SupplierDuration,
+                                                             SupplierEndTime = DOW.SupplierEndTime,
+                                                             SupplierFrequency = DOW.SupplierFrequency,
+                                                             SupplierSession = DOW.SupplierSession,
+                                                             SupplierStartTime = DOW.SupplierStartTime,
+                                                             Thursday = DOW.Thur ?? false,
+                                                             Tuesday = DOW.Tues ?? false,
+                                                             Wednesday = DOW.Wed ?? false
+                                                         }).ToList();
+
+                            collection.InsertOneAsync(newActivity);
+
+                            newActivity = null;
+                            ActivityClassAttr = null;
+                            ActivityDesc = null;
+                            ActivityInc = null;
+                            ActivityIncDetails = null;
+                            ActivityPolicy = null;
+                            ActivityMedia = null;
+                            ActivityReviews = null;
+                            ActivitySPM = null;
+                            ActivityDeals = null;
+                            ActivityPrices = null;
+                            ActivitySPMCA = null;
+                            ActivityFO = null;
+
+                        }
+                        catch
                         {
-                            SupplierName = s.SupplierName,
-                            SupplierID = s.SupplierCode,
-                            TourActivityID = s.SuplierProductCode,
-                            CountryCode = s.SupplierCountryCode,
-                            CountryName = s.SupplierCountryName,
-                            CityCode = s.SupplierCityCode,
-                            CityName = s.SupplierCityName,
-                            PricingCurrency = s.Currency
-                        }).FirstOrDefault();
-
-                        newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
-
-                        newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
-
-                        newActivity.ProductOptions = (from afo in ActivityFO
-                                                      select new DataContracts.Activity.ProductOptions
-                                                      {
-                                                          SystemActivityOptionCode = afo.TLGXActivityOptionCode,
-                                                          OptionCode = afo.Activity_OptionCode,
-                                                          ActivityType = afo.Activity_Type,
-                                                          DealText = afo.Activity_DealText,
-                                                          Options = afo.Activity_OptionName
-                                                      }).ToList();
-
-                        newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
-
-                        newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
-
-                        newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
-                                                     join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
-                                                     from ODljS in ODlj.DefaultIfEmpty()
-                                                     select new DataContracts.Activity.DaysOfWeek
-                                                     {
-                                                         Duration = DOW.Duration,
-                                                         EndTime = DOW.EndTime,
-                                                         Friday = DOW.Fri ?? false,
-                                                         Monday = DOW.Mon ?? false,
-                                                         OperatingFromDate = ODljS.FromDate == null ? string.Empty : ODljS.FromDate.ToString(),
-                                                         OperatingToDate = ODljS.ToDate == null ? string.Empty : ODljS.ToDate.ToString(),
-                                                         Saturday = DOW.Sat ?? false,
-                                                         Session = DOW.Session,
-                                                         StartTime = DOW.StartTime,
-                                                         Sunday = DOW.Sun ?? false,
-                                                         SupplierDuration = DOW.SupplierDuration,
-                                                         SupplierEndTime = DOW.SupplierEndTime,
-                                                         SupplierFrequency = DOW.SupplierFrequency,
-                                                         SupplierSession = DOW.SupplierSession,
-                                                         SupplierStartTime = DOW.SupplierStartTime,
-                                                         Thursday = DOW.Thur ?? false,
-                                                         Tuesday = DOW.Tues ?? false,
-                                                         Wednesday = DOW.Wed ?? false
-                                                     }).ToList();
-
-                        collection.InsertOneAsync(newActivity);
-
-                        newActivity = null;
-                        ActivityClassAttr = null;
-                        ActivityDesc = null;
-                        ActivityInc = null;
-                        ActivityIncDetails = null;
-                        ActivityPolicy = null;
-                        ActivityMedia = null;
-                        ActivityReviews = null;
-                        ActivitySPM = null;
-                        ActivityDeals = null;
-                        ActivityPrices = null;
-                        ActivitySPMCA = null;
-                        ActivityFO = null;
+                            continue;
+                        }
                     }
 
                     collection = null;
