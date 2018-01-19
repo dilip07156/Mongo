@@ -134,9 +134,8 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="packages.config" />
-    <None Include="Properties\PublishProfiles\LocalDeployFileSys.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_DEV_SQLTOMONGO_CI.pubxml" />
-    <None Include="Properties\PublishProfiles\TLGX_MAPPER_DISTRIBUTION_SVC.pubxml" />
+    <None Include="Properties\PublishProfiles\TLGX_196_SQL_TO_MONGO_CI.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_PREPROD_SQLTOMONGO_CI.pubxml" />
     <None Include="Properties\PublishProfiles\TLGX_QAS_SQLTOMONGO_CI.pubxml" />
     <None Include="Web.Debug.config">
