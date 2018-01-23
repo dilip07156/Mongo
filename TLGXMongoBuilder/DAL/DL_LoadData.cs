@@ -535,10 +535,7 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var ActivityList = (from a in context.Activity_Flavour
-                                        join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null
-                                        select a);
+                    var ActivityList = (from a in context.Activity_Flavour where a.CityCode != null select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id });
                     //int iTotalCount = ActivityList.Count();
                     //int iCounter = 0;
                     foreach (var Activity in ActivityList)
@@ -546,7 +543,7 @@ namespace DAL
                         try
                         {
                             var ActivityCT = (from a in context.Activity_CategoriesType
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
                                               select a).ToList();
 
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
@@ -673,7 +670,7 @@ namespace DAL
                                               select a).ToList();
 
                             var ActivityCT = (from a in context.Activity_CategoriesType
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
                                               select a).ToList();
 
                             //create new mongo object record
