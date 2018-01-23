@@ -246,5 +246,15 @@ namespace BAL
             }
         }
         #endregion
+
+        #region Activity Definition
+        public void Sync_ActivityDefinition_ByActivityFlavourId(string ActivityFlavourId)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Upsert_ActivityDefinition(Guid.Parse(ActivityFlavourId));
+            }
+        }
+        #endregion
     }
 }

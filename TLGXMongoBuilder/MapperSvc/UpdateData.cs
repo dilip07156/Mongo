@@ -249,5 +249,15 @@ namespace MapperSvc
             }
         }
         #endregion
+
+        #region Activity Definition
+        public void Sync_ActivityDefinition_ByActivityFlavourId(string ActivityFlavourId)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Sync_ActivityDefinition_ByActivityFlavourId(ActivityFlavourId);
+            }
+        }
+        #endregion
     }
 }

@@ -167,5 +167,13 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Delete/ActivityMaster/ActivityId/{ActivityId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void Delete_ActivityMaster_ByActivityId(string ActivityId);
         #endregion
+
+        #region Activity Definition
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Sync/ActivityDefinition/{ActivityFlavourId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Sync_ActivityDefinition_ByActivityFlavourId(string ActivityFlavourId);
+        #endregion
+
     }
 }

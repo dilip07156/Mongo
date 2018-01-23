@@ -952,5 +952,22 @@ namespace DAL
             }
         }
         #endregion
+
+        #region Upsert_ActivityDefinition
+        public void Upsert_ActivityDefinition(Guid Activity_Flavour_Id)
+        {
+            try
+            {
+                using (DL_LoadData obj = new DL_LoadData())
+                {
+                    obj.LoadActivityDefinition(Activity_Flavour_Id);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
     }
 }

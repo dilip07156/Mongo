@@ -16,7 +16,7 @@ namespace BAL
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
             {
-                obj.LoadActivityDefinition();
+                obj.LoadActivityDefinition(Guid.Empty);
             }
         }
 

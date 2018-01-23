@@ -574,7 +574,8 @@ namespace DAL
                 throw ex;
             }
         }
-        public void LoadActivityDefinition()
+
+        public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
             {
@@ -586,21 +587,35 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
 
-                    var ActivityList = (from a in context.Activity_Flavour
+                    IQueryable<Activity_Flavour> ActivityList;
+
+                    if (Activity_Flavour_Id == Guid.Empty)
+                    {
+                        ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null
                                         select a);
+                    }
+                    else
+                    {
+                        ActivityList = (from a in context.Activity_Flavour
+                                        where a.Activity_Flavour_Id == Activity_Flavour_Id
+                                        select a);
+                    }
 
                     foreach (var Activity in ActivityList)
                     {
                         try
                         {
-                            //check if record is already exists
-                            //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                            var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                            if (searchResultCount > 0)
+                            if (Activity_Flavour_Id == Guid.Empty)
                             {
-                                continue;
+                                //check if record is already exists
+                                //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                                var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                                if (searchResultCount > 0)
+                                {
+                                    continue;
+                                }
                             }
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes
@@ -827,7 +842,15 @@ namespace DAL
                                                              Wednesday = DOW.Wed ?? false
                                                          }).ToList();
 
-                            collection.InsertOneAsync(newActivity);
+                            if (Activity_Flavour_Id == Guid.Empty)
+                            {
+                                collection.InsertOneAsync(newActivity);
+                            }
+                            else
+                            {
+                                var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                                collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                            }
 
                             newActivity = null;
                             ActivityClassAttr = null;
