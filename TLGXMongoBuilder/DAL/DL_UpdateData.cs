@@ -113,7 +113,6 @@ namespace DAL
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
         #endregion
 

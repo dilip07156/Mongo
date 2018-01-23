@@ -539,27 +539,25 @@ namespace DAL
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null
                                         select a);
-                    int iTotalCount = ActivityList.Count();
-                    int iCounter = 0;
+                    //int iTotalCount = ActivityList.Count();
+                    //int iCounter = 0;
                     foreach (var Activity in ActivityList)
                     {
                         try
                         {
-
-
                             var ActivityCT = (from a in context.Activity_CategoriesType
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Category, string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType)));
-                            UpdateData = UpdateData.Set(x => x.Type, string.Join(",", ActivityCT.Select(s => s.SystemProductType)));
-                            UpdateData = UpdateData.Set(x => x.SubType, string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType)));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Category, string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct()));
+                            UpdateData = UpdateData.Set(x => x.Type, string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct()));
+                            UpdateData = UpdateData.Set(x => x.SubType, string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct()));
                             UpdateData = UpdateData.Set(x => x.ProductSubTypeId, ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList());
 
                             var updateResult = collection.FindOneAndUpdateAsync(filter, UpdateData).Status;
 
-                            iCounter++;
+                            //iCounter++;
 
                         }
                         catch (Exception e)
@@ -689,11 +687,11 @@ namespace DAL
 
                             newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
 
-                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType));
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
-                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType));
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
 
-                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType));
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
 
                             newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 

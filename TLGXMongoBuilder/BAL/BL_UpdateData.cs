@@ -35,7 +35,6 @@ namespace BAL
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
         #endregion
 
