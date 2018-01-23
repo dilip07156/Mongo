@@ -46,6 +46,14 @@ namespace MapperSvc
             }
         }
 
+        public void UpdateActivityCategoryTypes()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateActivityCategoryTypes();
+            }
+        }
+
         public void LoadActivityMasters()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())

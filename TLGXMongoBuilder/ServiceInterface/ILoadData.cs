@@ -27,6 +27,11 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Update/ActivityCategoryTypes", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void UpdateActivityCategoryTypes();
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ActivityMasters", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadActivityMasters();
 

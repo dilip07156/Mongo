@@ -20,6 +20,14 @@ namespace BAL
             }
         }
 
+        public void UpdateActivityCategoryTypes()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityCategoryTypes();
+            }
+        }
+
         public void LoadActivityMasters()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())

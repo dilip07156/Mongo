@@ -527,6 +527,53 @@ namespace DAL
             }
         }
 
+        public void UpdateActivityCategoryTypes()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour
+                                        join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null
+                                        select a);
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+
+                            var ActivityCT = (from a in context.Activity_CategoriesType
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Category, string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType)));
+                            UpdateData = UpdateData.Set(x => x.Type, string.Join(",", ActivityCT.Select(s => s.SystemProductType)));
+                            UpdateData = UpdateData.Set(x => x.SubType, string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType)));
+                            UpdateData = UpdateData.Set(x => x.ProductSubTypeId, ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList());
+
+                            var updateResult = collection.FindOneAndUpdateAsync(filter, UpdateData).Status;
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         public void LoadActivityDefinition()
         {
             try
