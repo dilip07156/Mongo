@@ -594,7 +594,7 @@ namespace DAL
                     else
                     {
                         ActivityList = (from a in context.Activity_Flavour
-                                        where a.Activity_Flavour_Id == Activity_Flavour_Id
+                                        where a.Activity_Flavour_Id == Activity_Flavour_Id && a.CityCode != null
                                         select a);
                     }
 
