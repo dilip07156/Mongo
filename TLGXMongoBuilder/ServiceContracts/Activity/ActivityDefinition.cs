@@ -23,7 +23,7 @@ namespace DataContracts.Activity
         public string DeparturePoint { get; set; }
         public string ReturnDetails { get; set; }
         public string PhysicalIntensity { get; set; }
-        public string SuitableFor { get; set; }
+        public string[] SuitableFor { get; set; }
         public string Overview { get; set; }
         public string Recommended { get; set; }
         public string CountryName { get; set; }
