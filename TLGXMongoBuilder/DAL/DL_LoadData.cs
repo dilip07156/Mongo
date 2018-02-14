@@ -578,7 +578,8 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var ActivityList = (from a in context.Activity_Flavour where a.CityCode != null select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
+                    var ActivityList = (from a in context.Activity_Flavour where a.Edit_Date > fromDate select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
                     foreach (var Activity in ActivityList)
@@ -679,8 +680,19 @@ namespace DAL
                                                    select a).ToList();
 
                             var ActivitySPM = (from a in context.Activity_SupplierProductMapping
+                                               join s in context.Suppliers on a.Supplier_ID equals s.Supplier_Id
                                                where a.Activity_ID == Activity.Activity_Flavour_Id
-                                               select a).ToList();
+                                               select new
+                                               {
+                                                   SupplierName = s.Name,
+                                                   SupplierCode = s.Code.ToLower(),
+                                                   SuplierProductCode = a.SuplierProductCode,
+                                                   SupplierCountryCode = a.SupplierCountryCode,
+                                                   SupplierCountryName = a.SupplierCountryName,
+                                                   SupplierCityCode = a.SupplierCityCode,
+                                                   SupplierCityName = a.SupplierCityName,
+                                                   Currency = a.Currency
+                                               }).ToList();
 
                             var ActivityDeals = (from a in context.Activity_Deals
                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -847,7 +859,7 @@ namespace DAL
 
                             newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
 
-                            newActivity.SystemMapping = ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
+                            newActivity.SystemMapping = new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty };//ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
 
                             newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
                                                          join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
