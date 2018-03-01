@@ -36,5 +36,7 @@ namespace DAL
         public string Latitude { get; set; }
         public string Longitude { get; set; }
         public Nullable<System.Guid> stg_City_Id { get; set; }
+        public Nullable<int> MatchedBy { get; set; }
+        public string ListedService { get; set; }
     }
 }

@@ -140,5 +140,13 @@ namespace BAL
                 obj.LoadPorts();
             }
         }
+
+        public void LoadAccoStaticData()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadAccoStaticData();
+            }
+        }
     }
 }

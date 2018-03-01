@@ -54,7 +54,7 @@ namespace DataContracts.Activity
         public SystemMapping SystemMapping { get; set; }
         public List<DaysOfWeek> DaysOfTheWeek { get; set; }
         public List<string> Specials { get; set; }
-        
+
         /// <summary>
         /// Internal Use
         /// </summary>
@@ -162,7 +162,8 @@ namespace DataContracts.Activity
         public string DealText { get; set; }
         public string Options { get; set; }
         public string ActivityType { get; set; }
-
+        public string LanguageCode { get; set; }
+        public string Language { get; set; }
     }
 
     public class ClassificationAttrributes
@@ -218,6 +219,8 @@ namespace DataContracts.Activity
         public string Session { get; set; }
         public string OperatingFromDate { get; set; }
         public string OperatingToDate { get; set; }
+        public string DepartureCode { get; set; }
+        public string DeparturePoint { get; set; }
     }
 
 }

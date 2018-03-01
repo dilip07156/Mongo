@@ -686,7 +686,7 @@ namespace DAL
                                                {
                                                    SupplierName = s.Name,
                                                    SupplierCode = s.Code.ToLower(),
-                                                   SuplierProductCode = a.SuplierProductCode,
+                                                   SuplierProductCode = a.SuplierProductCode.ToUpper(),
                                                    SupplierCountryCode = a.SupplierCountryCode,
                                                    SupplierCountryName = a.SupplierCountryName,
                                                    SupplierCityCode = a.SupplierCityCode,
@@ -720,6 +720,10 @@ namespace DAL
 
                             var ActivityCT = (from a in context.Activity_CategoriesType
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
+                                              select a).ToList();
+
+                            var ActivityDP = (from a in context.Activity_DeparturePoints
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
                             //create new mongo object record
@@ -854,7 +858,9 @@ namespace DAL
                                                               OptionCode = afo.Activity_OptionCode,
                                                               ActivityType = afo.Activity_Type,
                                                               DealText = afo.Activity_DealText,
-                                                              Options = afo.Activity_OptionName
+                                                              Options = afo.Activity_OptionName,
+                                                              Language = afo.Activity_Language,
+                                                              LanguageCode = afo.Activity_LanguageCode
                                                           }).ToList();
 
                             newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
@@ -864,6 +870,8 @@ namespace DAL
                             newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
                                                          join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
                                                          from ODljS in ODlj.DefaultIfEmpty()
+                                                         join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
+                                                         from DPljS in DPlj.DefaultIfEmpty()
                                                          select new DataContracts.Activity.DaysOfWeek
                                                          {
                                                              Duration = DOW.Duration,
@@ -883,7 +891,9 @@ namespace DAL
                                                              SupplierStartTime = DOW.SupplierStartTime,
                                                              Thursday = DOW.Thur ?? false,
                                                              Tuesday = DOW.Tues ?? false,
-                                                             Wednesday = DOW.Wed ?? false
+                                                             Wednesday = DOW.Wed ?? false,
+                                                             DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode.ToString(),
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint.ToString(),
                                                          }).ToList();
 
                             if (Activity_Flavour_Id == Guid.Empty)
@@ -1041,6 +1051,255 @@ namespace DAL
 
 
                     collection.InsertManyAsync(dataList);
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadAccoStaticData()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    //Get Master Attributes and Supplier Attribute Mapping
+                    string[] MasterFor = "HotelInfo,FacilityInfo,RoomInfo,RoomAmenities,Media".Split(',');
+                    var MappingAttributes = (from MA in context.m_masterattribute
+                                             join MAM in context.m_MasterAttributeMapping on MA.MasterAttribute_Id equals MAM.SystemMasterAttribute_Id
+                                             join S in context.Suppliers on MAM.Supplier_Id equals S.Supplier_Id
+                                             where MasterFor.Contains(MA.MasterFor)
+                                             select new
+                                             {
+                                                 S.Supplier_Id,
+                                                 SupplierCode = S.Code,
+                                                 MA.MasterFor,
+                                                 MasterAttribute = MA.Name.ToUpper(),
+                                                 MAM.SupplierMasterAttribute,
+                                                 MAM.MasterAttributeMapping_Id
+                                             }).ToList();
+
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("AccoStaticData");
+
+                    var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
+
+                    IQueryable<SupplierEntity> SupplierProducts;
+
+                    SupplierProducts = (from a in context.SupplierEntities
+                                        where a.Entity == "HotelInfo"
+                                        select a);
+
+                    foreach (var product in SupplierProducts)
+                    {
+                        try
+                        {
+                            var newProduct = new DataContracts.StaticData.Accomodation();
+
+                            var HotelInfoDetails = (from a in context.SupplierEntityValues
+                                                    where a.SupplierEntity_Id == product.SupplierEntity_Id
+                                                    select new
+                                                    {
+                                                        a.SupplierProperty,
+                                                        Value = (a.SystemValue ?? a.SupplierValue),
+                                                        a.AttributeMap_Id,
+                                                        SystemAttribute = string.Empty
+                                                    }).ToList();
+
+                            //Get System Attribute values joined with Entity Value data
+                            HotelInfoDetails = (from a in HotelInfoDetails
+                                                join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
+                                                where b.Supplier_Id == product.Supplier_Id
+                                                select new
+                                                {
+                                                    a.SupplierProperty,
+                                                    a.Value,
+                                                    a.AttributeMap_Id,
+                                                    SystemAttribute = b.MasterAttribute
+                                                }).ToList();
+
+                            //Supplier Level Details
+                            //newProduct.SupplierDetails = new DataContracts.StaticData.SupplierDetails
+                            //{
+                            //    SupplierCode = product.SupplierName,
+                            //    SupplierProductCode = product.SupplierProductCode
+                            //};
+
+                            //Accommodation Info
+                            newProduct.AccomodationInfo = new DataContracts.StaticData.AccomodationInfo
+                            {
+                                Address = new DataContracts.StaticData.Address
+                                {
+                                    HouseNumber = string.Empty,
+                                    Street = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET").Select(s => s.Value).FirstOrDefault(),
+                                    Street2 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET2").Select(s => s.Value).FirstOrDefault(),
+                                    Street3 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET3").Select(s => s.Value).FirstOrDefault(),
+                                    Street4 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET4").Select(s => s.Value).FirstOrDefault(),
+                                    Street5 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET5").Select(s => s.Value).FirstOrDefault(),
+                                    Area = HotelInfoDetails.Where(w => w.SystemAttribute == "AREA").Select(s => s.Value).FirstOrDefault(),
+                                    City = HotelInfoDetails.Where(w => w.SystemAttribute == "CITY").Select(s => s.Value).FirstOrDefault(),
+                                    Country = HotelInfoDetails.Where(w => w.SystemAttribute == "COUNTRY").Select(s => s.Value).FirstOrDefault(),
+                                    Geometry = new DataContracts.StaticData.Geometry
+                                    {
+                                        Type = "LatLng",
+                                        Coordinates = HotelInfoDetails.Where(w => w.SystemAttribute == "LATITUDE" || w.SystemAttribute == "LONGITUDE").OrderBy(o => o.SystemAttribute).Select(s => Convert.ToDecimal(s.Value)).ToList()
+                                    },
+                                    Location = HotelInfoDetails.Where(w => w.SystemAttribute == "LOCATION").Select(s => s.Value).FirstOrDefault(),
+                                    PostalCode = HotelInfoDetails.Where(w => w.SystemAttribute == "POSTALCODE").Select(s => s.Value).FirstOrDefault(),
+                                    State = HotelInfoDetails.Where(w => w.SystemAttribute == "STATE").Select(s => s.Value).FirstOrDefault(),
+                                    Zone = HotelInfoDetails.Where(w => w.SystemAttribute == "ZONE").Select(s => s.Value).FirstOrDefault()
+                                },
+                                Affiliations = string.Empty,
+                                Brand = HotelInfoDetails.Where(w => w.SystemAttribute == "BRAND").Select(s => s.Value).FirstOrDefault(),
+                                Chain = HotelInfoDetails.Where(w => w.SystemAttribute == "CHAIN").Select(s => s.Value).FirstOrDefault(),
+                                CheckInTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKINTIME").Select(s => s.Value).FirstOrDefault(),
+                                CheckOutTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKOUTTIME").Select(s => s.Value).FirstOrDefault(),
+                                CommonProductId = string.Empty,
+                                CompanyId = product.SupplierName,
+                                CompanyName = product.SupplierName,
+                                CompanyProductId = product.SupplierProductCode,
+                                CompanyRating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
+                                ContactDetails = new List<DataContracts.StaticData.ContactDetails>
+                                {
+                                    new DataContracts.StaticData.ContactDetails
+                                    {
+                                        EmailAddress = HotelInfoDetails.Where(w => w.SystemAttribute == "EMAILADDRESS").Select(s => s.Value).FirstOrDefault(),
+                                        Fax = new DataContracts.StaticData.TelephoneFormat
+                                        {
+                                            CityCode  = string.Empty,
+                                            CountryCode = string.Empty,
+                                            Number = HotelInfoDetails.Where(w => w.SystemAttribute == "FAX").Select(s => s.Value).FirstOrDefault()
+                                        },
+                                        Phone = new DataContracts.StaticData.TelephoneFormat
+                                        {
+                                            CityCode  = string.Empty,
+                                            CountryCode = string.Empty,
+                                            Number = HotelInfoDetails.Where(w => w.SystemAttribute == "TELEPHONE").Select(s => s.Value).FirstOrDefault()
+                                        },
+                                        Website = HotelInfoDetails.Where(w => w.SystemAttribute == "WEBSITE").Select(s => s.Value).FirstOrDefault()
+                                    }
+                                },
+                                DisplayName = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
+                                FamilyDetails = null,
+                                FinanceControlId = null,
+                                General = new DataContracts.StaticData.General
+                                {
+                                    Extras = new List<DataContracts.StaticData.Extras> { new DataContracts.StaticData.Extras {  Label = "Short", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "SHORTDESCRIPTION").Select(s => s.Value).FirstOrDefault() } ,
+                                     new DataContracts.StaticData.Extras {  Label = "Long", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "LONGDESCRIPTION").Select(s => s.Value).FirstOrDefault() } }
+                                },
+                                IsMysteryProduct = false,
+                                IsTwentyFourHourCheckout = false,
+                                Name = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
+                                NoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
+                                NoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
+                                ProductCatSubType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault(),
+                                Rating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
+                                RatingDatedOn = null,
+                                RecommendedFor = null,
+                                ResortType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault()
+                            };
+
+                            newProduct.Overview = new DataContracts.StaticData.Overview
+                            {
+                                IsCompanyRecommended = false,
+                                Duration = null,
+                                HashTag = null,
+                                Highlights = null,
+                                Interest = null,
+                                SellingTips = null,
+                                Usp = null
+                            };
+
+                            //Get & Set Facilities
+                            newProduct.Facility = new List<DataContracts.StaticData.Facility>();
+                            var FacilityInfoList = (from a in context.SupplierEntities
+                                                    where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "FacilityInfo"
+                                                    select a).ToList();
+
+                            foreach (var Facility in FacilityInfoList)
+                            {
+                                var FacilityInfoDetails = (from a in context.SupplierEntityValues
+                                                           where a.SupplierEntity_Id == Facility.SupplierEntity_Id
+                                                           select new
+                                                           {
+                                                               a.SupplierProperty,
+                                                               Value = (a.SystemValue ?? a.SupplierValue),
+                                                               a.AttributeMap_Id,
+                                                               SystemAttribute = string.Empty
+                                                           }).ToList();
+
+                                //Get System Attribute values joined with Entity Value data
+                                FacilityInfoDetails = (from a in FacilityInfoDetails
+                                                       join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
+                                                       where b.Supplier_Id == product.Supplier_Id
+                                                       select new
+                                                       {
+                                                           a.SupplierProperty,
+                                                           a.Value,
+                                                           a.AttributeMap_Id,
+                                                           SystemAttribute = b.MasterAttribute
+                                                       }).ToList();
+
+
+                                newProduct.Facility.Add(new DataContracts.StaticData.Facility
+                                {
+                                    Type = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYTYPE").Select(s => s.Value).FirstOrDefault()
+                                });
+                            }
+
+                            //Get & Set Media
+                            newProduct.Media = new List<DataContracts.StaticData.Media>();
+                            var MediaList = (from a in context.SupplierEntities
+                                             where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "Media"
+                                             select a).ToList();
+
+                            foreach (var Media in MediaList)
+                            {
+                                var MediaDetails = (from a in context.SupplierEntityValues
+                                                    where a.SupplierEntity_Id == Media.SupplierEntity_Id
+                                                    select new
+                                                    {
+                                                        a.SupplierProperty,
+                                                        Value = (a.SystemValue ?? a.SupplierValue),
+                                                        a.AttributeMap_Id,
+                                                        SystemAttribute = string.Empty
+                                                    }).ToList();
+
+                                //Get System Attribute values joined with Entity Value data
+                                MediaDetails = (from a in MediaDetails
+                                                join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
+                                                where b.Supplier_Id == product.Supplier_Id
+                                                select new
+                                                {
+                                                    a.SupplierProperty,
+                                                    a.Value,
+                                                    a.AttributeMap_Id,
+                                                    SystemAttribute = b.MasterAttribute
+                                                }).ToList();
+
+
+                                newProduct.Media.Add(new DataContracts.StaticData.Media
+                                {
+                                    MediaId = MediaDetails.Where(w => w.SystemAttribute == "MEDIAID").Select(s => s.Value).FirstOrDefault(),
+                                    Description = MediaDetails.Where(w => w.SystemAttribute == "DESCRIPTION").Select(s => s.Value).FirstOrDefault(),
+                                    FileType = "IMAGE",
+                                    FileName = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault() ?? MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault()
+                                });
+                            }
+
+
+                            collection.InsertOneAsync(newProduct);
+                        }
+                        catch (Exception ex)
+                        {
+                            continue;
+                        }
+                    }
 
                     collection = null;
                     _database = null;

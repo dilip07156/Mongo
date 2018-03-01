@@ -99,5 +99,10 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/PortMaster", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadPorts();
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/AccoStaticData", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadAccoStaticData();
     }
 }

@@ -33,5 +33,6 @@ namespace DAL
         public string ContinentCode { get; set; }
         public string ContinentName { get; set; }
         public Nullable<System.Guid> stg_Country_Id { get; set; }
+        public Nullable<int> MatchedBy { get; set; }
     }
 }

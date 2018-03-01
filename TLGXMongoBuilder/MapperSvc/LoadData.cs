@@ -167,5 +167,14 @@ namespace MapperSvc
             }
         }
 
+
+        public void LoadAccoStaticData()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadAccoStaticData();
+            }
+        }
+
     }
 }

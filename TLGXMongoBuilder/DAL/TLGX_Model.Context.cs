@@ -104,5 +104,8 @@ namespace DAL
         public virtual DbSet<Activity_DaysOfOperation> Activity_DaysOfOperation { get; set; }
         public virtual DbSet<Activity_DaysOfWeek> Activity_DaysOfWeek { get; set; }
         public virtual DbSet<Activity_CategoriesType> Activity_CategoriesType { get; set; }
+        public virtual DbSet<SupplierEntity> SupplierEntities { get; set; }
+        public virtual DbSet<SupplierEntityValue> SupplierEntityValues { get; set; }
+        public virtual DbSet<Activity_DeparturePoints> Activity_DeparturePoints { get; set; }
     }
 }

@@ -78,5 +78,8 @@ namespace DAL
         public Nullable<bool> InsertFrom { get; set; }
         public string Address_Tx { get; set; }
         public string Telephone_Tx { get; set; }
+        public string HotelName_Tx { get; set; }
+        public string Latitude_Tx { get; set; }
+        public string Longitude_Tx { get; set; }
     }
 }
