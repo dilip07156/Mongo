@@ -1160,9 +1160,9 @@ namespace DAL
                                 CheckInTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKINTIME").Select(s => s.Value).FirstOrDefault(),
                                 CheckOutTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKOUTTIME").Select(s => s.Value).FirstOrDefault(),
                                 CommonProductId = string.Empty,
-                                CompanyId = product.SupplierName,
-                                CompanyName = product.SupplierName,
-                                CompanyProductId = product.SupplierProductCode,
+                                CompanyId = product.SupplierName.ToUpper(),
+                                CompanyName = product.SupplierName.ToUpper(),
+                                CompanyProductId = product.SupplierProductCode.ToUpper(),
                                 CompanyRating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
                                 ContactDetails = new List<DataContracts.StaticData.ContactDetails>
                                 {
