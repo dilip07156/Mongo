@@ -249,8 +249,18 @@ namespace DAL
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
                     var productMapList = (from apm in context.Accommodation_ProductMapping
-                                          join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
+
                                           join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
+
+                                          join cm in context.m_CityMaster on apm.City_Id equals cm.City_Id into LJCityMaster
+                                          from citymaster in LJCityMaster.DefaultIfEmpty()
+
+                                          join con in context.m_CountryMaster on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                          from countrymaster in LJCountryMaster.DefaultIfEmpty()
+
+                                          join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                          from acco in LJAcco.DefaultIfEmpty()
+                                          
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
                                               SupplierCode = s.Code.Trim().ToUpper(),
@@ -262,18 +272,28 @@ namespace DAL
                                               SupplierProductName = apm.ProductName.ToUpper(),
                                               MappingStatus = apm.Status.ToUpper(),
                                               MapId = apm.MapId ?? 0,
-                                              SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
-                                              SystemProductName = a.HotelName.ToUpper(),
-                                              SystemCountryName = a.country.ToUpper(),
-                                              SystemCityName = a.city.ToUpper(),
-                                              SystemProductType = a.ProductCategorySubType.ToUpper()
+
+                                              SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
+                                              SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
+                                              SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+
+                                              SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
+                                              SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
+                                              SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
+                                              SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
+
                                           }).ToList();
 
                     if (productMapList.Count() > 0)
                     {
-                        collection.InsertMany(productMapList);
+                        foreach (var productmap in productMapList)
+                        {
+                            collection.InsertOneAsync(productmap);
+                        }
+
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
                     }
 
                     collection = null;

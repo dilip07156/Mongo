@@ -41,6 +41,10 @@ namespace DataContracts.Mapping
         [DataMember]
         public string SystemCityName { get; set; }
         [DataMember]
+        public string SystemCountryCode { get; set; }
+        [DataMember]
+        public string SystemCityCode { get; set; }
+        [DataMember]
         public string SystemProductType { get; set; }
     }
 }
