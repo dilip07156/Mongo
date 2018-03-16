@@ -19,6 +19,7 @@ namespace DAL
         }
 
         protected static IMongoDatabase _database;
+
         public void LoadCountryMaster()
         {
             try
@@ -30,13 +31,13 @@ namespace DAL
 
                     var collection = _database.GetCollection<BsonDocument>("CountryMaster");
 
-                    var CountryList = from c in context.m_CountryMaster
+                    var CountryList = (from c in context.m_CountryMaster
                                       orderby c.Name
                                       select new
                                       {
-                                          c.Name,
-                                          c.Code
-                                      };
+                                          Name = c.Name.Trim().ToUpper(),
+                                          Code = c.Code.Trim().ToUpper()
+                                      }).ToList();
 
                     List<BsonDocument> docs = new List<BsonDocument>();
                     foreach (var country in CountryList)
@@ -77,12 +78,12 @@ namespace DAL
                                    orderby country.Name, city.Name
                                    select new
                                    {
-                                       CountryName = country.Name,
-                                       CountryCode = country.Code ?? string.Empty,
-                                       CityName = city.Name,
-                                       CityCode = city.Code ?? string.Empty,
-                                       StateName = city.StateName ?? string.Empty,
-                                       StateCode = city.StateCode ?? string.Empty
+                                       CountryName = country.Name.Trim().ToUpper(),
+                                       CountryCode = (country.Code ?? string.Empty).Trim().ToUpper(),
+                                       CityName = city.Name.Trim().ToUpper(),
+                                       CityCode = (city.Code ?? string.Empty).Trim().ToUpper(),
+                                       StateName = (city.StateName ?? string.Empty).Trim().ToUpper(),
+                                       StateCode = (city.StateCode ?? string.Empty).Trim().ToUpper()
                                    };
 
                     List<BsonDocument> docs = new List<BsonDocument>();
@@ -127,10 +128,10 @@ namespace DAL
                                        orderby s.Name
                                        select new
                                        {
-                                           SupplierName = s.Name,
-                                           SupplierCode = s.Code,
-                                           SupplierType = s.SupplierType ?? string.Empty,
-                                           SupplierOwner = s.SupplierOwner ?? string.Empty
+                                           SupplierName = s.Name.Trim().ToUpper(),
+                                           SupplierCode = s.Code.Trim().ToUpper(),
+                                           SupplierType = (s.SupplierType ?? string.Empty).Trim().ToUpper(),
+                                           SupplierOwner = (s.SupplierOwner ?? string.Empty).Trim().ToUpper()
                                        };
 
                     List<BsonDocument> docs = new List<BsonDocument>();
@@ -173,15 +174,15 @@ namespace DAL
                                         join s in context.Suppliers on cm.Supplier_Id equals s.Supplier_Id
                                         select new DataContracts.Mapping.DC_CountryMapping
                                         {
-                                            SupplierName = s.Name,
-                                            SupplierCode = s.Code,
-                                            CountryCode = c.Code,
-                                            CountryName = c.Name,
+                                            SupplierName = s.Name.Trim().ToUpper(),
+                                            SupplierCode = s.Code.Trim().ToUpper(),
+                                            CountryCode = c.Code.Trim().ToUpper(),
+                                            CountryName = c.Name.Trim().ToUpper(),
                                             //CountryMapping_Id = cm.CountryMapping_Id.ToString(),
                                             //Supplier_Id = s.Supplier_Id.ToString(),
                                             //Country_Id = c.Country_Id.ToString(),
-                                            SupplierCountryName = (cm.CountryName ?? string.Empty),
-                                            SupplierCountryCode = (cm.CountryCode ?? string.Empty),
+                                            SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                            SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
                                             MapId = cm.MapID ?? 0
                                         }).ToList();
 
@@ -214,16 +215,16 @@ namespace DAL
                                     select new DataContracts.Mapping.DC_CityMapping
                                     {
                                         //CityMapping_Id = cm.CityMapping_Id.ToString(),
-                                        CityName = (city.Name ?? string.Empty),
-                                        CityCode = (city.Code ?? string.Empty),
-                                        SupplierCityCode = (cm.CityCode ?? string.Empty),
-                                        SupplierCityName = (cm.CityName ?? string.Empty),
-                                        SupplierName = supplier.Name,
-                                        SupplierCode = supplier.Code,
-                                        CountryCode = country.Code,
-                                        CountryName = country.Name,
-                                        SupplierCountryName = (cm.CountryName ?? string.Empty),
-                                        SupplierCountryCode = (cm.CountryCode ?? string.Empty),
+                                        CityName = (city.Name ?? string.Empty).ToUpper(),
+                                        CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                        SupplierCityCode = (cm.CityCode ?? string.Empty).ToUpper(),
+                                        SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                        SupplierName = supplier.Name.ToUpper(),
+                                        SupplierCode = supplier.Code.ToUpper(),
+                                        CountryCode = country.Code.ToUpper(),
+                                        CountryName = country.Name.ToUpper(),
+                                        SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                        SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
                                         MapId = cm.MapID ?? 0
                                     }).ToList();
 
@@ -646,7 +647,7 @@ namespace DAL
                     {
                         ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null
+                                        where a.CityCode != null && (spm.SupplierCode == "Acampora" || spm.SupplierCode == "WHL")
                                         select a);
                     }
                     else
@@ -1020,10 +1021,10 @@ namespace DAL
                                 from clj in cj.DefaultIfEmpty()
                                 select new DataContracts.Masters.DC_State
                                 {
-                                    CountryCode = clj.Code ?? string.Empty,
-                                    CountryName = clj.Name ?? string.Empty,
-                                    StateCode = s.StateCode ?? string.Empty,
-                                    StateName = s.StateName ?? string.Empty
+                                    CountryCode = (clj.Code ?? string.Empty).Trim().ToUpper(),
+                                    CountryName = (clj.Name ?? string.Empty).Trim().ToUpper(),
+                                    StateCode = (s.StateCode ?? string.Empty).Trim().ToUpper(),
+                                    StateName = (s.StateName ?? string.Empty).Trim().ToUpper()
                                 }).ToList();
 
 
@@ -1059,14 +1060,14 @@ namespace DAL
                                 from ctylj in ctyj.DefaultIfEmpty()
                                 select new DataContracts.Masters.DC_Port
                                 {
-                                    CountryCode = clj.Code ?? p.oag_ctry,
-                                    CountryName = clj.Name ?? p.oag_ctryname,
-                                    CityCode = ctylj.Name ?? string.Empty,
-                                    CityName = ctylj.Name ?? string.Empty,
-                                    Latitude = p.oag_lat ?? string.Empty,
-                                    Longitude = p.oag_lon ?? string.Empty,
-                                    PortCode = p.OAG_loc ?? string.Empty,
-                                    PortName = p.oag_portname ?? string.Empty
+                                    CountryCode = (clj.Code ?? p.oag_ctry).Trim().ToUpper(),
+                                    CountryName = (clj.Name ?? p.oag_ctryname).Trim().ToUpper(),
+                                    CityCode = (ctylj.Name ?? string.Empty).Trim().ToUpper(),
+                                    CityName = (ctylj.Name ?? string.Empty).Trim().ToUpper(),
+                                    Latitude = (p.oag_lat ?? string.Empty).Trim().ToUpper(),
+                                    Longitude = (p.oag_lon ?? string.Empty).Trim().ToUpper(),
+                                    PortCode = (p.OAG_loc ?? string.Empty).Trim().ToUpper(),
+                                    PortName = (p.oag_portname ?? string.Empty).Trim().ToUpper()
                                 }).ToList();
 
 
@@ -1105,23 +1106,35 @@ namespace DAL
                                              }).ToList();
 
                     _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("AccoStaticData");
+                    //_database.DropCollection("AccoStaticData");
 
                     var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
 
-                    IQueryable<SupplierEntity> SupplierProducts;
+                    List<SupplierEntity> SupplierProducts;
 
                     SupplierProducts = (from a in context.SupplierEntities
                                         where a.Entity == "HotelInfo"
-                                        select a);
+                                        select a).ToList();
+
+                    var SupplierProductValues = (from a in context.SupplierEntities
+                                                 join b in context.SupplierEntityValues on a.SupplierEntity_Id equals b.SupplierEntity_Id
+                                                 where a.Entity == "HotelInfo"
+                                                 select b).ToList();
 
                     foreach (var product in SupplierProducts)
                     {
                         try
                         {
+                            //check if the product already exists
+                            var searchResultCount = collection.Find(f => f.AccomodationInfo.CompanyId == product.SupplierName.ToUpper() && f.AccomodationInfo.CompanyProductId == product.SupplierProductCode.ToUpper()).Count();
+                            if (searchResultCount > 0)
+                            {
+                                continue;
+                            }
+
                             var newProduct = new DataContracts.StaticData.Accomodation();
 
-                            var HotelInfoDetails = (from a in context.SupplierEntityValues
+                            var HotelInfoDetails = (from a in SupplierProductValues
                                                     where a.SupplierEntity_Id == product.SupplierEntity_Id
                                                     select new
                                                     {
@@ -1142,13 +1155,24 @@ namespace DAL
                                                     a.AttributeMap_Id,
                                                     SystemAttribute = b.MasterAttribute
                                                 }).ToList();
-
+                            
                             //Supplier Level Details
                             //newProduct.SupplierDetails = new DataContracts.StaticData.SupplierDetails
                             //{
                             //    SupplierCode = product.SupplierName,
                             //    SupplierProductCode = product.SupplierProductCode
                             //};
+
+                            //Get All Child Entity Elements and their values
+                            var ChildEntities = (from a in context.SupplierEntities
+                                                 where a.Parent_Id == product.SupplierEntity_Id
+                                                 select a).ToList();
+
+                            var ChildEntityValues = (from a in context.SupplierEntities
+                                                     join b in context.SupplierEntityValues on a.SupplierEntity_Id equals b.SupplierEntity_Id
+                                                     where a.Parent_Id == product.SupplierEntity_Id
+                                                     select b).ToList();
+
 
                             //Accommodation Info
                             newProduct.AccomodationInfo = new DataContracts.StaticData.AccomodationInfo
@@ -1237,13 +1261,18 @@ namespace DAL
 
                             //Get & Set Facilities
                             newProduct.Facility = new List<DataContracts.StaticData.Facility>();
-                            var FacilityInfoList = (from a in context.SupplierEntities
-                                                    where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "FacilityInfo"
+                            
+                            //var FacilityInfoList = (from a in context.SupplierEntities
+                            //                        where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "FacilityInfo"
+                            //                        select a).ToList();
+
+                            var FacilityInfoList = (from a in ChildEntities
+                                                    where a.Entity == "FacilityInfo"
                                                     select a).ToList();
 
                             foreach (var Facility in FacilityInfoList)
                             {
-                                var FacilityInfoDetails = (from a in context.SupplierEntityValues
+                                var FacilityInfoDetails = (from a in ChildEntityValues
                                                            where a.SupplierEntity_Id == Facility.SupplierEntity_Id
                                                            select new
                                                            {
@@ -1274,13 +1303,17 @@ namespace DAL
 
                             //Get & Set Media
                             newProduct.Media = new List<DataContracts.StaticData.Media>();
-                            var MediaList = (from a in context.SupplierEntities
-                                             where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "Media"
+                            //var MediaList = (from a in context.SupplierEntities
+                            //                 where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "Media"
+                            //                 select a).ToList();
+
+                            var MediaList = (from a in ChildEntities
+                                             where a.Entity == "Media"
                                              select a).ToList();
 
                             foreach (var Media in MediaList)
                             {
-                                var MediaDetails = (from a in context.SupplierEntityValues
+                                var MediaDetails = (from a in ChildEntityValues
                                                     where a.SupplierEntity_Id == Media.SupplierEntity_Id
                                                     select new
                                                     {
@@ -1312,8 +1345,8 @@ namespace DAL
                                 });
                             }
 
-
                             collection.InsertOneAsync(newProduct);
+
                         }
                         catch (Exception ex)
                         {
