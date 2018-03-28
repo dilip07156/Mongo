@@ -54,11 +54,22 @@ namespace DataContracts.Activity
         public SystemMapping SystemMapping { get; set; }
         public List<DaysOfWeek> DaysOfTheWeek { get; set; }
         public List<string> Specials { get; set; }
+        public List<SupplierCityDepartureCode> SupplierCityDepartureCodes { get; set; }
 
         /// <summary>
         /// Internal Use
         /// </summary>
         public List<string> ProductSubTypeId { get; set; }
+    }
+
+    public class SupplierCityDepartureCode
+    {
+        public string CityName { get; set; }
+        public string CityCode { get; set; }
+        public string HotelName { get; set; }
+        public string HotelCode { get; set; }
+        public string DepartureName { get; set; }
+        public string DepartureCode { get; set; }
     }
 
     public class Session

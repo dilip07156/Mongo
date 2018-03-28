@@ -107,5 +107,6 @@ namespace DAL
         public virtual DbSet<SupplierEntity> SupplierEntities { get; set; }
         public virtual DbSet<SupplierEntityValue> SupplierEntityValues { get; set; }
         public virtual DbSet<Activity_DeparturePoints> Activity_DeparturePoints { get; set; }
+        public virtual DbSet<tbl_SupplierCityDepartureCode> tbl_SupplierCityDepartureCode { get; set; }
     }
 }

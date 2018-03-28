@@ -76,6 +76,7 @@
           <Property Name="HotelName_Tx" Type="nvarchar" MaxLength="510" />
           <Property Name="Latitude_Tx" Type="nvarchar" MaxLength="510" />
           <Property Name="Longitude_Tx" Type="nvarchar" MaxLength="510" />
+          <Property Name="GeoLocation" Type="geography" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -311,6 +312,12 @@
           <Property Name="Latitude_Tx" Type="nvarchar" MaxLength="510" />
           <Property Name="Longitude_Tx" Type="nvarchar" MaxLength="510" />
           <Property Name="MatchedByString" Type="nvarchar" MaxLength="510" />
+          <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="Batch" Type="int" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="ProductType" Type="nvarchar" MaxLength="500" />
+          <Property Name="GeoLocation" Type="geography" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -464,6 +471,11 @@
           <Property Name="Accommodation_RoomInfo_Id" Type="uniqueidentifier" />
           <Property Name="stg_SupplierHotelRoomMapping_Id" Type="uniqueidentifier" />
           <Property Name="RoomDescription" Type="nvarchar(max)" />
+          <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="Batch" Type="int" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="RoomSize" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -1402,6 +1414,10 @@
           <Property Name="stg_City_Id" Type="uniqueidentifier" />
           <Property Name="MatchedBy" Type="int" />
           <Property Name="ListedService" Type="nvarchar" MaxLength="255" />
+          <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="Batch" Type="int" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="ReRun_Batch" Type="int" />
         </EntityType>
         <EntityType Name="m_CityMaster">
           <Key>
@@ -1449,6 +1465,10 @@
           <Property Name="ContinentName" Type="nvarchar" MaxLength="255" />
           <Property Name="stg_Country_Id" Type="uniqueidentifier" />
           <Property Name="MatchedBy" Type="int" />
+          <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="Batch" Type="int" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
+          <Property Name="ReRun_Batch" Type="int" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -1804,6 +1824,20 @@
           <Property Name="AttributeValueMap_Id" Type="uniqueidentifier" />
           <Property Name="SupplierProperty" Type="nvarchar" MaxLength="500" />
           <Property Name="SystemValue" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="tbl_SupplierCityDepartureCode">
+          <Key>
+            <PropertyRef Name="DepartureID" />
+          </Key>
+          <Property Name="DepartureID" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="City" Type="nvarchar(max)" />
+          <Property Name="CityCode" Type="nvarchar" MaxLength="150" />
+          <Property Name="Hotel" Type="nvarchar(max)" />
+          <Property Name="HotelCode" Type="nvarchar" MaxLength="150" />
+          <Property Name="DepartureCode" Type="nvarchar" MaxLength="150" />
+          <Property Name="DepartureName" Type="nvarchar(max)" />
         </EntityType>
         <EntityContainer Name="TLGX_DEV_ModelStoreContainer">
           <EntitySet Name="Accommodation" EntityType="Self.Accommodation" Schema="dbo" store:Type="Tables" />
@@ -1888,6 +1922,7 @@
           <EntitySet Name="Supplier_Schedule" EntityType="Self.Supplier_Schedule" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SupplierEntity" EntityType="Self.SupplierEntity" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SupplierEntityValues" EntityType="Self.SupplierEntityValues" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="tbl_SupplierCityDepartureCode" EntityType="Self.tbl_SupplierCityDepartureCode" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -1976,6 +2011,7 @@
           <EntitySet Name="SupplierEntities" EntityType="TLGX_DEV_Model.SupplierEntity" />
           <EntitySet Name="SupplierEntityValues" EntityType="TLGX_DEV_Model.SupplierEntityValue" />
           <EntitySet Name="Activity_DeparturePoints" EntityType="TLGX_DEV_Model.Activity_DeparturePoints" />
+          <EntitySet Name="tbl_SupplierCityDepartureCode" EntityType="TLGX_DEV_Model.tbl_SupplierCityDepartureCode" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2338,6 +2374,10 @@
           <Property Name="stg_City_Id" Type="Guid" />
           <Property Name="MatchedBy" Type="Int32" />
           <Property Name="ListedService" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierImportFile_Id" Type="Guid" />
+          <Property Name="Batch" Type="Int32" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
+          <Property Name="ReRun_Batch" Type="Int32" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -2363,6 +2403,10 @@
           <Property Name="ContinentName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="stg_Country_Id" Type="Guid" />
           <Property Name="MatchedBy" Type="Int32" />
+          <Property Name="SupplierImportFile_Id" Type="Guid" />
+          <Property Name="Batch" Type="Int32" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
+          <Property Name="ReRun_Batch" Type="Int32" />
         </EntityType>
         <EntityType Name="m_MasterAttributeMapping">
           <Key>
@@ -2628,6 +2672,12 @@
           <Property Name="Latitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
           <Property Name="Longitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
           <Property Name="MatchedByString" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierImportFile_Id" Type="Guid" />
+          <Property Name="Batch" Type="Int32" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
+          <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="ProductType" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="GeoLocation" Type="Geography" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -2781,6 +2831,11 @@
           <Property Name="Accommodation_RoomInfo_Id" Type="Guid" />
           <Property Name="stg_SupplierHotelRoomMapping_Id" Type="Guid" />
           <Property Name="RoomDescription" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierImportFile_Id" Type="Guid" />
+          <Property Name="Batch" Type="Int32" />
+          <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
+          <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="RoomSize" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -2869,6 +2924,7 @@
           <Property Name="HotelName_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
           <Property Name="Latitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
           <Property Name="Longitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
+          <Property Name="GeoLocation" Type="Geography" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -3758,6 +3814,8 @@
           <Property Name="AttributeValueMap_Id" Type="Guid" />
           <Property Name="SupplierProperty" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="SystemValue" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Activity_DeparturePoints">
           <Key>
@@ -3776,6 +3834,18 @@
           <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="EditUser" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="EditDate" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="tbl_SupplierCityDepartureCode">
+          <Key>
+            <PropertyRef Name="DepartureID" />
+          </Key>
+          <Property Name="DepartureID" Type="Guid" Nullable="false" />
+          <Property Name="City" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="CityCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="Hotel" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="HotelCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="DepartureCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
+          <Property Name="DepartureName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4139,6 +4209,10 @@
           <EntitySetMapping Name="m_CityMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMapping">
               <MappingFragment StoreEntitySet="m_CityMapping">
+                <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
+                <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
+                <ScalarProperty Name="Batch" ColumnName="Batch" />
+                <ScalarProperty Name="SupplierImportFile_Id" ColumnName="SupplierImportFile_Id" />
                 <ScalarProperty Name="ListedService" ColumnName="ListedService" />
                 <ScalarProperty Name="MatchedBy" ColumnName="MatchedBy" />
                 <ScalarProperty Name="stg_City_Id" ColumnName="stg_City_Id" />
@@ -4169,6 +4243,10 @@
           <EntitySetMapping Name="m_CountryMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMapping">
               <MappingFragment StoreEntitySet="m_CountryMapping">
+                <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
+                <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
+                <ScalarProperty Name="Batch" ColumnName="Batch" />
+                <ScalarProperty Name="SupplierImportFile_Id" ColumnName="SupplierImportFile_Id" />
                 <ScalarProperty Name="MatchedBy" ColumnName="MatchedBy" />
                 <ScalarProperty Name="stg_Country_Id" ColumnName="stg_Country_Id" />
                 <ScalarProperty Name="ContinentName" ColumnName="ContinentName" />
@@ -4418,6 +4496,12 @@
           <EntitySetMapping Name="Accommodation_ProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_ProductMapping">
               <MappingFragment StoreEntitySet="Accommodation_ProductMapping">
+                <ScalarProperty Name="GeoLocation" ColumnName="GeoLocation" />
+                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
+                <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
+                <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
+                <ScalarProperty Name="Batch" ColumnName="Batch" />
+                <ScalarProperty Name="SupplierImportFile_Id" ColumnName="SupplierImportFile_Id" />
                 <ScalarProperty Name="MatchedByString" ColumnName="MatchedByString" />
                 <ScalarProperty Name="Longitude_Tx" ColumnName="Longitude_Tx" />
                 <ScalarProperty Name="Latitude_Tx" ColumnName="Latitude_Tx" />
@@ -4596,6 +4680,11 @@
           <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping">
               <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping">
+                <ScalarProperty Name="RoomSize" ColumnName="RoomSize" />
+                <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
+                <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
+                <ScalarProperty Name="Batch" ColumnName="Batch" />
+                <ScalarProperty Name="SupplierImportFile_Id" ColumnName="SupplierImportFile_Id" />
                 <ScalarProperty Name="RoomDescription" ColumnName="RoomDescription" />
                 <ScalarProperty Name="stg_SupplierHotelRoomMapping_Id" ColumnName="stg_SupplierHotelRoomMapping_Id" />
                 <ScalarProperty Name="Accommodation_RoomInfo_Id" ColumnName="Accommodation_RoomInfo_Id" />
@@ -4649,6 +4738,7 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="GeoLocation" ColumnName="GeoLocation" />
                 <ScalarProperty Name="Longitude_Tx" ColumnName="Longitude_Tx" />
                 <ScalarProperty Name="Latitude_Tx" ColumnName="Latitude_Tx" />
                 <ScalarProperty Name="HotelName_Tx" ColumnName="HotelName_Tx" />
@@ -5636,6 +5726,8 @@
           <EntitySetMapping Name="SupplierEntityValues">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.SupplierEntityValue">
               <MappingFragment StoreEntitySet="SupplierEntityValues">
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
                 <ScalarProperty Name="SystemValue" ColumnName="SystemValue" />
                 <ScalarProperty Name="SupplierProperty" ColumnName="SupplierProperty" />
                 <ScalarProperty Name="AttributeValueMap_Id" ColumnName="AttributeValueMap_Id" />
@@ -5662,6 +5754,19 @@
                 <ScalarProperty Name="Activity_DaysOfOperation_Id" ColumnName="Activity_DaysOfOperation_Id" />
                 <ScalarProperty Name="Activity_Flavor_ID" ColumnName="Activity_Flavor_ID" />
                 <ScalarProperty Name="Activity_DeparturePoints_ID" ColumnName="Activity_DeparturePoints_ID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_SupplierCityDepartureCode">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.tbl_SupplierCityDepartureCode">
+              <MappingFragment StoreEntitySet="tbl_SupplierCityDepartureCode">
+                <ScalarProperty Name="DepartureName" ColumnName="DepartureName" />
+                <ScalarProperty Name="DepartureCode" ColumnName="DepartureCode" />
+                <ScalarProperty Name="HotelCode" ColumnName="HotelCode" />
+                <ScalarProperty Name="Hotel" ColumnName="Hotel" />
+                <ScalarProperty Name="CityCode" ColumnName="CityCode" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="DepartureID" ColumnName="DepartureID" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

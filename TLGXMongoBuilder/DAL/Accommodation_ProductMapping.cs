@@ -62,5 +62,11 @@ namespace DAL
         public string Latitude_Tx { get; set; }
         public string Longitude_Tx { get; set; }
         public string MatchedByString { get; set; }
+        public Nullable<System.Guid> SupplierImportFile_Id { get; set; }
+        public Nullable<int> Batch { get; set; }
+        public Nullable<System.Guid> ReRun_SupplierImportFile_Id { get; set; }
+        public Nullable<int> ReRun_Batch { get; set; }
+        public string ProductType { get; set; }
+        public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
     }
 }

@@ -38,5 +38,9 @@ namespace DAL
         public Nullable<System.Guid> stg_City_Id { get; set; }
         public Nullable<int> MatchedBy { get; set; }
         public string ListedService { get; set; }
+        public Nullable<System.Guid> SupplierImportFile_Id { get; set; }
+        public Nullable<int> Batch { get; set; }
+        public Nullable<System.Guid> ReRun_SupplierImportFile_Id { get; set; }
+        public Nullable<int> ReRun_Batch { get; set; }
     }
 }

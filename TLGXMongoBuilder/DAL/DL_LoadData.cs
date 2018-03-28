@@ -32,12 +32,12 @@ namespace DAL
                     var collection = _database.GetCollection<BsonDocument>("CountryMaster");
 
                     var CountryList = (from c in context.m_CountryMaster
-                                      orderby c.Name
-                                      select new
-                                      {
-                                          Name = c.Name.Trim().ToUpper(),
-                                          Code = c.Code.Trim().ToUpper()
-                                      }).ToList();
+                                       orderby c.Name
+                                       select new
+                                       {
+                                           Name = c.Name.Trim().ToUpper(),
+                                           Code = c.Code.Trim().ToUpper()
+                                       }).ToList();
 
                     List<BsonDocument> docs = new List<BsonDocument>();
                     foreach (var country in CountryList)
@@ -261,7 +261,7 @@ namespace DAL
 
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
                                           from acco in LJAcco.DefaultIfEmpty()
-                                          
+
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
                                               SupplierCode = s.Code.Trim().ToUpper(),
@@ -647,8 +647,9 @@ namespace DAL
                     {
                         ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.SupplierCode == "Acampora" || spm.SupplierCode == "WHL")
+                                        where a.CityCode != null && (spm.SupplierCode == "gta") && (spm.IsActive ?? false) == true
                                         select a);
+                        int count = ActivityList.Count();
                     }
                     else
                     {
@@ -713,7 +714,7 @@ namespace DAL
                                                    SupplierCityCode = a.SupplierCityCode,
                                                    SupplierCityName = a.SupplierCityName,
                                                    Currency = a.Currency
-                                               }).ToList();
+                                               }).FirstOrDefault();
 
                             var ActivityDeals = (from a in context.Activity_Deals
                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -723,9 +724,9 @@ namespace DAL
                                                   where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                                   select a).ToList();
 
-                            var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
-                                                 where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
-                                                 select a).ToList();
+                            //var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
+                            //                     where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
+                            //                     select a).ToList();
 
                             var ActivityFO = (from a in context.Activity_FlavourOptions
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -754,9 +755,22 @@ namespace DAL
 
                             newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
 
-                            newActivity.SupplierCompanyCode = ActivitySPM.Select(s => s.SupplierCode).FirstOrDefault();
+                            newActivity.SupplierCompanyCode = ActivitySPM.SupplierCode;
 
-                            newActivity.SupplierProductCode = ActivitySPM.Select(s => s.SuplierProductCode).FirstOrDefault();//Activity.CompanyProductNameSubType_Id;
+                            if (ActivitySPM.SupplierCode == "gta")
+                            {
+                                newActivity.SupplierCityDepartureCodes = context.tbl_SupplierCityDepartureCode.Where(w => w.CityCode == ActivitySPM.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                                {
+                                    CityCode = s.CityCode,
+                                    CityName = s.City,
+                                    DepartureCode = s.DepartureCode,
+                                    DepartureName = s.DepartureName,
+                                    HotelCode = s.HotelCode,
+                                    HotelName = s.Hotel
+                                }).ToList();
+                            }
+
+                            newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
                             newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
@@ -856,17 +870,21 @@ namespace DAL
                                                                   LanguageID = ad.GuideLanguageCode
                                                               }).ToList();
 
-                            newActivity.SupplierDetails = ActivitySPM.Select(s => new DataContracts.Activity.SupplierDetails
+                            if (ActivitySPM != null)
                             {
-                                SupplierName = s.SupplierName,
-                                SupplierID = s.SupplierCode,
-                                TourActivityID = s.SuplierProductCode,
-                                CountryCode = s.SupplierCountryCode,
-                                CountryName = s.SupplierCountryName,
-                                CityCode = s.SupplierCityCode,
-                                CityName = s.SupplierCityName,
-                                PricingCurrency = s.Currency
-                            }).FirstOrDefault();
+                                newActivity.SupplierDetails = new DataContracts.Activity.SupplierDetails
+                                {
+                                    SupplierName = ActivitySPM.SupplierName,
+                                    SupplierID = ActivitySPM.SupplierCode,
+                                    TourActivityID = ActivitySPM.SuplierProductCode,
+                                    CountryCode = ActivitySPM.SupplierCountryCode,
+                                    CountryName = ActivitySPM.SupplierCountryName,
+                                    CityCode = ActivitySPM.SupplierCityCode,
+                                    CityName = ActivitySPM.SupplierCityName,
+                                    PricingCurrency = ActivitySPM.Currency
+                                };
+                            }
+
 
                             newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
@@ -893,28 +911,34 @@ namespace DAL
                                                          from ODljS in ODlj.DefaultIfEmpty()
                                                          join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
                                                          from DPljS in DPlj.DefaultIfEmpty()
+                                                         where (ODljS.IsOperatingDays ?? false) == true
                                                          select new DataContracts.Activity.DaysOfWeek
                                                          {
-                                                             Duration = DOW.Duration,
-                                                             EndTime = DOW.EndTime,
-                                                             Friday = DOW.Fri ?? false,
-                                                             Monday = DOW.Mon ?? false,
                                                              OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
                                                              OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
-                                                             Saturday = DOW.Sat ?? false,
-                                                             Session = DOW.Session,
-                                                             StartTime = DOW.StartTime,
-                                                             Sunday = DOW.Sun ?? false,
+
                                                              SupplierDuration = DOW.SupplierDuration,
                                                              SupplierEndTime = DOW.SupplierEndTime,
                                                              SupplierFrequency = DOW.SupplierFrequency,
                                                              SupplierSession = DOW.SupplierSession,
                                                              SupplierStartTime = DOW.SupplierStartTime,
-                                                             Thursday = DOW.Thur ?? false,
+
+                                                             Session = DOW.Session,
+                                                             StartTime = DOW.StartTime,
+                                                             EndTime = DOW.EndTime,
+                                                             Duration = DOW.Duration,
+
+                                                             Sunday = DOW.Sun ?? false,
+                                                             Monday = DOW.Mon ?? false,
                                                              Tuesday = DOW.Tues ?? false,
                                                              Wednesday = DOW.Wed ?? false,
-                                                             DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode.ToString(),
-                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint.ToString(),
+                                                             Thursday = DOW.Thur ?? false,
+                                                             Friday = DOW.Fri ?? false,
+                                                             Saturday = DOW.Sat ?? false,
+                                                             
+                                                             DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+
                                                          }).ToList();
 
                             if (Activity_Flavour_Id == Guid.Empty)
@@ -938,11 +962,11 @@ namespace DAL
                             ActivitySPM = null;
                             ActivityDeals = null;
                             ActivityPrices = null;
-                            ActivitySPMCA = null;
+                            //ActivitySPMCA = null;
                             ActivityFO = null;
 
                         }
-                        catch
+                        catch (Exception ex)
                         {
                             continue;
                         }
@@ -1155,7 +1179,7 @@ namespace DAL
                                                     a.AttributeMap_Id,
                                                     SystemAttribute = b.MasterAttribute
                                                 }).ToList();
-                            
+
                             //Supplier Level Details
                             //newProduct.SupplierDetails = new DataContracts.StaticData.SupplierDetails
                             //{
@@ -1261,7 +1285,7 @@ namespace DAL
 
                             //Get & Set Facilities
                             newProduct.Facility = new List<DataContracts.StaticData.Facility>();
-                            
+
                             //var FacilityInfoList = (from a in context.SupplierEntities
                             //                        where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "FacilityInfo"
                             //                        select a).ToList();

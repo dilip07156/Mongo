@@ -21,5 +21,7 @@ namespace DAL
         public Nullable<System.Guid> AttributeValueMap_Id { get; set; }
         public string SupplierProperty { get; set; }
         public string SystemValue { get; set; }
+        public Nullable<System.DateTime> Create_Date { get; set; }
+        public string Create_User { get; set; }
     }
 }

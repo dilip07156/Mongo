@@ -34,5 +34,9 @@ namespace DAL
         public string ContinentName { get; set; }
         public Nullable<System.Guid> stg_Country_Id { get; set; }
         public Nullable<int> MatchedBy { get; set; }
+        public Nullable<System.Guid> SupplierImportFile_Id { get; set; }
+        public Nullable<int> Batch { get; set; }
+        public Nullable<System.Guid> ReRun_SupplierImportFile_Id { get; set; }
+        public Nullable<int> ReRun_Batch { get; set; }
     }
 }

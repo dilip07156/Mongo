@@ -81,5 +81,6 @@ namespace DAL
         public string HotelName_Tx { get; set; }
         public string Latitude_Tx { get; set; }
         public string Longitude_Tx { get; set; }
+        public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
     }
 }
