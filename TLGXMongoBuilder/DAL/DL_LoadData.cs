@@ -1126,6 +1126,9 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
+
                     //Get Master Attributes and Supplier Attribute Mapping
                     string[] MasterFor = "HotelInfo,FacilityInfo,RoomInfo,RoomAmenities,Media".Split(',');
                     var MappingAttributes = (from MA in context.m_masterattribute
@@ -1153,10 +1156,7 @@ namespace DAL
                                         where a.Entity == "HotelInfo"
                                         select a).ToList();
 
-                    var SupplierProductValues = (from a in context.SupplierEntities
-                                                 join b in context.SupplierEntityValues on a.SupplierEntity_Id equals b.SupplierEntity_Id
-                                                 where a.Entity == "HotelInfo"
-                                                 select b).ToList();
+                   
 
                     foreach (var product in SupplierProducts)
                     {
@@ -1170,6 +1170,17 @@ namespace DAL
                             }
 
                             var newProduct = new DataContracts.StaticData.Accomodation();
+
+                            var SupplierProductValues = (from b in context.SupplierEntityValues.AsNoTracking()
+                                                         where b.SupplierEntity_Id == product.SupplierEntity_Id
+                                                         select new
+                                                         {
+                                                             b.SupplierEntity_Id,
+                                                             b.SupplierProperty,
+                                                             b.SupplierValue,
+                                                             b.SystemValue,
+                                                             b.AttributeMap_Id
+                                                         }).ToList();
 
                             var HotelInfoDetails = (from a in SupplierProductValues
                                                     where a.SupplierEntity_Id == product.SupplierEntity_Id
@@ -1201,15 +1212,25 @@ namespace DAL
                             //};
 
                             //Get All Child Entity Elements and their values
-                            var ChildEntities = (from a in context.SupplierEntities
+                            var ChildEntities = (from a in context.SupplierEntities.AsNoTracking()
                                                  where a.Parent_Id == product.SupplierEntity_Id
-                                                 select a).ToList();
+                                                 select new
+                                                 {
+                                                     a.Entity,
+                                                     a.SupplierEntity_Id
+                                                 }).ToList();
 
-                            var ChildEntityValues = (from a in context.SupplierEntities
-                                                     join b in context.SupplierEntityValues on a.SupplierEntity_Id equals b.SupplierEntity_Id
+                            var ChildEntityValues = (from a in context.SupplierEntities.AsNoTracking()
+                                                     join b in context.SupplierEntityValues.AsNoTracking() on a.SupplierEntity_Id equals b.SupplierEntity_Id
                                                      where a.Parent_Id == product.SupplierEntity_Id
-                                                     select b).ToList();
-
+                                                     select new
+                                                     {
+                                                         b.SupplierEntity_Id,
+                                                         b.SupplierProperty,
+                                                         b.SupplierValue,
+                                                         b.SystemValue,
+                                                         b.AttributeMap_Id
+                                                     }).ToList();
 
                             //Accommodation Info
                             newProduct.AccomodationInfo = new DataContracts.StaticData.AccomodationInfo
