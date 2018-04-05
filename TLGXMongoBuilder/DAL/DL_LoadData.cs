@@ -243,63 +243,67 @@ namespace DAL
         {
             try
             {
+                List<DataContracts.Mapping.DC_ProductMapping> productMapList = new List<DataContracts.Mapping.DC_ProductMapping>();
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+
+                    productMapList = (from apm in context.Accommodation_ProductMapping
+
+                                      join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
+
+                                      join cm in context.m_CityMaster on apm.City_Id equals cm.City_Id into LJCityMaster
+                                      from citymaster in LJCityMaster.DefaultIfEmpty()
+
+                                      join con in context.m_CountryMaster on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                      from countrymaster in LJCountryMaster.DefaultIfEmpty()
+
+                                      join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                      from acco in LJAcco.DefaultIfEmpty()
+
+                                      select new DataContracts.Mapping.DC_ProductMapping
+                                      {
+                                          SupplierCode = s.Code.Trim().ToUpper(),
+                                          SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                          SupplierCountryCode = apm.CountryCode.ToUpper(),
+                                          SupplierCountryName = apm.CountryName.ToUpper(),
+                                          SupplierCityCode = apm.CityCode.ToUpper(),
+                                          SupplierCityName = apm.CityName.ToUpper(),
+                                          SupplierProductName = apm.ProductName.ToUpper(),
+                                          MappingStatus = apm.Status.ToUpper(),
+                                          MapId = apm.MapId ?? 0,
+
+                                          SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
+                                          SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
+                                          SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+
+                                          SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
+                                          SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
+                                          SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
+                                          SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
+
+                                      }).ToList();
+                    _database = null;
+                }
+
+                if (productMapList.Count() > 0)
                 {
                     _database = MongoDBHandler.mDatabase();
                     _database.DropCollection("ProductMapping");
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
-                    var productMapList = (from apm in context.Accommodation_ProductMapping
-
-                                          join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
-
-                                          join cm in context.m_CityMaster on apm.City_Id equals cm.City_Id into LJCityMaster
-                                          from citymaster in LJCityMaster.DefaultIfEmpty()
-
-                                          join con in context.m_CountryMaster on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
-                                          from countrymaster in LJCountryMaster.DefaultIfEmpty()
-
-                                          join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
-                                          from acco in LJAcco.DefaultIfEmpty()
-
-                                          select new DataContracts.Mapping.DC_ProductMapping
-                                          {
-                                              SupplierCode = s.Code.Trim().ToUpper(),
-                                              SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                              SupplierCountryCode = apm.CountryCode.ToUpper(),
-                                              SupplierCountryName = apm.CountryName.ToUpper(),
-                                              SupplierCityCode = apm.CityCode.ToUpper(),
-                                              SupplierCityName = apm.CityName.ToUpper(),
-                                              SupplierProductName = apm.ProductName.ToUpper(),
-                                              MappingStatus = apm.Status.ToUpper(),
-                                              MapId = apm.MapId ?? 0,
-
-                                              SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
-                                              SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
-                                              SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
-
-                                              SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
-                                              SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
-                                              SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
-                                              SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
-
-                                          }).ToList();
-
-                    if (productMapList.Count() > 0)
+                    foreach (var productmap in productMapList)
                     {
-                        foreach (var productmap in productMapList)
-                        {
-                            collection.InsertOneAsync(productmap);
-                        }
-
-                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
+                        collection.InsertOneAsync(productmap);
                     }
 
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
+
                     collection = null;
-                    _database = null;
                 }
+
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -320,6 +324,7 @@ namespace DAL
                     var productMapList = (from apm in context.Accommodation_ProductMapping
                                           join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
                                           join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
+                                          where apm.Status == "MAPPED"
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
                                               SupplierCode = s.Code.Trim().ToUpper(),
@@ -556,26 +561,35 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var ActivityList = (from a in context.Activity_Flavour where a.CityCode != null select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id });
-                    //int iTotalCount = ActivityList.Count();
-                    //int iCounter = 0;
+
+                    var ActivityList = (from a in context.Activity_Flavour
+                                        join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.SupplierCode == "gta") && (spm.IsActive ?? false) == true
+                                        select new { a.CommonProductNameSubType_Id, a.Activity_Flavour_Id, spm.SupplierCityCode }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+
                     foreach (var Activity in ActivityList)
                     {
                         try
                         {
-                            var ActivityCT = (from a in context.Activity_CategoriesType
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
-                                              select a).ToList();
-
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Category, string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct()));
-                            UpdateData = UpdateData.Set(x => x.Type, string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct()));
-                            UpdateData = UpdateData.Set(x => x.SubType, string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct()));
-                            UpdateData = UpdateData.Set(x => x.ProductSubTypeId, ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList());
+
+                            var SupplierCityDepartureCodes = context.tbl_SupplierCityDepartureCode.Where(w => w.CityCode == Activity.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                            {
+                                CityCode = s.CityCode,
+                                CityName = s.City,
+                                DepartureCode = s.DepartureCode,
+                                DepartureName = s.DepartureName,
+                                HotelCode = s.HotelCode,
+                                HotelName = s.Hotel
+                            }).ToList();
+
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.SupplierCityDepartureCodes, SupplierCityDepartureCodes);
 
                             var updateResult = collection.FindOneAndUpdateAsync(filter, UpdateData).Status;
 
-                            //iCounter++;
+                            iCounter++;
 
                         }
                         catch (Exception e)
@@ -647,9 +661,8 @@ namespace DAL
                     {
                         ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.SupplierCode == "gta") && (spm.IsActive ?? false) == true
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
                                         select a);
-                        int count = ActivityList.Count();
                     }
                     else
                     {
@@ -935,7 +948,7 @@ namespace DAL
                                                              Thursday = DOW.Thur ?? false,
                                                              Friday = DOW.Fri ?? false,
                                                              Saturday = DOW.Sat ?? false,
-                                                             
+
                                                              DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
                                                              DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
 
