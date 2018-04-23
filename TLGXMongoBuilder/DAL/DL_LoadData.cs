@@ -75,6 +75,7 @@ namespace DAL
                     var collection = _database.GetCollection<BsonDocument>("CityMaster");
                     var CityList = from city in context.m_CityMaster
                                    join country in context.m_CountryMaster on city.Country_Id equals country.Country_Id
+                                   where city.Status != "DELETED"
                                    orderby country.Name, city.Name
                                    select new
                                    {
@@ -661,7 +662,8 @@ namespace DAL
                     {
                         ActivityList = (from a in context.Activity_Flavour
                                         join spm in context.Activity_SupplierProductMapping on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true 
+                                        && (spm.SupplierCode == "xoxoday" || spm.SupplierCode == "Hotelbeds" || spm.SupplierCode == "Sports Event 365")
                                         select a);
                     }
                     else
@@ -751,6 +753,7 @@ namespace DAL
 
                             var ActivityOD = (from a in context.Activity_DaysOfOperation
                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              && (a.IsOperatingDays ?? true) == true
                                               select a).ToList();
 
                             var ActivityCT = (from a in context.Activity_CategoriesType
@@ -924,22 +927,21 @@ namespace DAL
                                                          from ODljS in ODlj.DefaultIfEmpty()
                                                          join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
                                                          from DPljS in DPlj.DefaultIfEmpty()
-                                                         where (ODljS.IsOperatingDays ?? false) == true
                                                          select new DataContracts.Activity.DaysOfWeek
                                                          {
                                                              OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
                                                              OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
 
-                                                             SupplierDuration = DOW.SupplierDuration,
-                                                             SupplierEndTime = DOW.SupplierEndTime,
-                                                             SupplierFrequency = DOW.SupplierFrequency,
-                                                             SupplierSession = DOW.SupplierSession,
-                                                             SupplierStartTime = DOW.SupplierStartTime,
+                                                             SupplierDuration = DOW.SupplierDuration ?? string.Empty,
+                                                             SupplierEndTime = DOW.SupplierEndTime ?? string.Empty,
+                                                             SupplierFrequency = DOW.SupplierFrequency ?? string.Empty,
+                                                             SupplierSession = DOW.SupplierSession ?? string.Empty,
+                                                             SupplierStartTime = DOW.SupplierStartTime ?? string.Empty,
 
-                                                             Session = DOW.Session,
-                                                             StartTime = DOW.StartTime,
-                                                             EndTime = DOW.EndTime,
-                                                             Duration = DOW.Duration,
+                                                             Session = DOW.Session ?? string.Empty,
+                                                             StartTime = DOW.StartTime ?? string.Empty,
+                                                             EndTime = DOW.EndTime ?? string.Empty,
+                                                             Duration = DOW.Duration ?? string.Empty,
 
                                                              Sunday = DOW.Sun ?? false,
                                                              Monday = DOW.Mon ?? false,
