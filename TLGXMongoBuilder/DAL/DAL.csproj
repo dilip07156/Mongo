@@ -262,6 +262,9 @@
     </Compile>
     <Compile Include="AuthenticateDAL.cs" />
     <Compile Include="ConversionClass.cs" />
+    <Compile Include="DistributionLayerRefresh_Log.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="DL_LoadData.cs" />
     <Compile Include="DL_Mapping.cs" />
     <Compile Include="DL_Masters.cs" />

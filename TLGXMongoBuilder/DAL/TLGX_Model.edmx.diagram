@@ -97,6 +97,9 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.SupplierEntity" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.SupplierEntityValue" Width="1.5" PointX="2.75" PointY="0.75" />
       </Diagram>
+      <Diagram DiagramId="5ee1d76f04134866ba50ee476b36d6d6" Name="AuditLog" >
+        <EntityTypeShape EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" Width="1.5" PointX="0.75" PointY="0.75" />
+      </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>
 </edmx:Edmx>

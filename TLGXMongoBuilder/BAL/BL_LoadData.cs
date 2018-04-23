@@ -36,43 +36,63 @@ namespace BAL
             }
         }
 
-        public void LoadCountryMaster()
+        public void LoadCountryMaster(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadCountryMaster();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCountryMaster(gLogId);
+                }
             }
         }
 
-        public void LoadCityMaster()
+        public void LoadCityMaster(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadCityMaster();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCityMaster(gLogId);
+                }
             }
         }
 
-        public void LoadSupplierMaster()
+        public void LoadSupplierMaster(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadSupplierMaster();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadSupplierMaster(gLogId);
+                }
             }
         }
 
-        public void LoadCountryMapping()
+        public void LoadCountryMapping(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadCountryMapping();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCountryMapping(gLogId);
+                }
             }
         }
 
-        public void LoadCityMapping()
+        public void LoadCityMapping(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadCityMapping();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCityMapping(gLogId);
+                }
             }
         }
 
@@ -93,11 +113,15 @@ namespace BAL
             }
         }
 
-        public void LoadActivityMapping()
+        public void LoadActivityMapping(string LogId)
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
             {
-                obj.LoadActivityMapping();
+                Guid gLogId;
+                if (Guid.TryParse(LogId, out gLogId))
+                {
+                    obj.LoadActivityMapping(gLogId);
+                }
             }
         }
 
@@ -125,19 +149,27 @@ namespace BAL
             }
         }
 
-        public void LoadStates()
+        public void LoadStates(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadStates();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadStates(gLogId);
+                }
             }
         }
 
-        public void LoadPorts()
+        public void LoadPorts(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadPorts();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadPorts(gLogId);
+                }
             }
         }
 
@@ -146,6 +178,18 @@ namespace BAL
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
             {
                 obj.LoadAccoStaticData();
+            }
+        }
+
+        public void LoadHotelMapping(string LogId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadHotelMapping(gLogId);
+                }
             }
         }
     }

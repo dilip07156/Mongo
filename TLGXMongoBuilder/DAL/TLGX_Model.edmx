@@ -1359,6 +1359,17 @@
           <Property Name="Street2" Type="nvarchar(max)" />
           <Property Name="PostalCode" Type="nvarchar(max)" />
         </EntityType>
+        <EntityType Name="DistributionLayerRefresh_Log">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Element" Type="nvarchar" MaxLength="50" />
+          <Property Name="Type" Type="nvarchar" MaxLength="50" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Create_User" Type="nvarchar" MaxLength="50" />
+          <Property Name="Status" Type="nvarchar" MaxLength="50" />
+        </EntityType>
         <EntityType Name="m_CityArea">
           <Key>
             <PropertyRef Name="CityArea_Id" />
@@ -1631,8 +1642,8 @@
           <Property Name="oag_state" Type="nvarchar" MaxLength="10" />
           <Property Name="oag_substate" Type="nvarchar" MaxLength="50" />
           <Property Name="oag_timediv" Type="nvarchar" MaxLength="50" />
-          <Property Name="oag_lat" Type="nvarchar" MaxLength="10" />
-          <Property Name="oag_lon" Type="nvarchar" MaxLength="10" />
+          <Property Name="oag_lat" Type="nvarchar" MaxLength="500" />
+          <Property Name="oag_lon" Type="nvarchar" MaxLength="500" />
           <Property Name="oag_inactive" Type="nvarchar" MaxLength="10" />
           <Property Name="Country_Id" Type="uniqueidentifier" />
           <Property Name="State_Id" Type="uniqueidentifier" />
@@ -1895,6 +1906,7 @@
           <EntitySet Name="Activity_Updates" EntityType="Self.Activity_Updates" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_WeatherInformation" EntityType="Self.Activity_WeatherInformation" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="ActivityGeneralInfo" EntityType="Self.ActivityGeneralInfo" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="DistributionLayerRefresh_Log" EntityType="Self.DistributionLayerRefresh_Log" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="m_CityArea" EntityType="Self.m_CityArea" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="m_CityAreaLocation" EntityType="Self.m_CityAreaLocation" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="m_CityMapping" EntityType="Self.m_CityMapping" Schema="dbo" store:Type="Tables" />
@@ -2012,6 +2024,7 @@
           <EntitySet Name="SupplierEntityValues" EntityType="TLGX_DEV_Model.SupplierEntityValue" />
           <EntitySet Name="Activity_DeparturePoints" EntityType="TLGX_DEV_Model.Activity_DeparturePoints" />
           <EntitySet Name="tbl_SupplierCityDepartureCode" EntityType="TLGX_DEV_Model.tbl_SupplierCityDepartureCode" />
+          <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2193,8 +2206,8 @@
           <Property Name="oag_state" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="oag_substate" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="oag_timediv" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="oag_lat" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
-          <Property Name="oag_lon" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="oag_lat" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="oag_lon" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="oag_inactive" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
           <Property Name="Country_Id" Type="Guid" />
           <Property Name="State_Id" Type="Guid" />
@@ -3846,6 +3859,17 @@
           <Property Name="HotelCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="DepartureCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="DepartureName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="DistributionLayerRefresh_Log">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Guid" Nullable="false" />
+          <Property Name="Element" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -5767,6 +5791,18 @@
                 <ScalarProperty Name="CityCode" ColumnName="CityCode" />
                 <ScalarProperty Name="City" ColumnName="City" />
                 <ScalarProperty Name="DepartureID" ColumnName="DepartureID" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DistributionLayerRefresh_Log">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.DistributionLayerRefresh_Log">
+              <MappingFragment StoreEntitySet="DistributionLayerRefresh_Log">
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="Element" ColumnName="Element" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

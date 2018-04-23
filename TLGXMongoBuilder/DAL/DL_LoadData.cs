@@ -20,7 +20,7 @@ namespace DAL
 
         protected static IMongoDatabase _database;
 
-        public void LoadCountryMaster()
+        public void LoadCountryMaster(Guid LogId)
         {
             try
             {
@@ -54,6 +54,14 @@ namespace DAL
                     docs = null;
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -63,7 +71,7 @@ namespace DAL
 
         }
 
-        public void LoadCityMaster()
+        public void LoadCityMaster(Guid LogId)
         {
             try
             {
@@ -105,6 +113,13 @@ namespace DAL
                     docs = null;
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -113,7 +128,7 @@ namespace DAL
             }
         }
 
-        public void LoadSupplierMaster()
+        public void LoadSupplierMaster(Guid LogId)
         {
             try
             {
@@ -151,7 +166,15 @@ namespace DAL
                     docs = null;
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
+
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -159,7 +182,7 @@ namespace DAL
             }
         }
 
-        public void LoadCountryMapping()
+        public void LoadCountryMapping(Guid LogId)
         {
             try
             {
@@ -189,6 +212,14 @@ namespace DAL
                     collection.InsertMany(SupplierList);
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -197,7 +228,7 @@ namespace DAL
             }
         }
 
-        public void LoadCityMapping()
+        public void LoadCityMapping(Guid LogId)
         {
             try
             {
@@ -231,6 +262,13 @@ namespace DAL
                     collection.InsertMany(CityList);
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -349,7 +387,7 @@ namespace DAL
             }
         }
 
-        public void LoadActivityMapping()
+        public void LoadActivityMapping(Guid LogId)
         {
             try
             {
@@ -385,6 +423,13 @@ namespace DAL
 
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1040,7 +1085,7 @@ namespace DAL
             }
         }
 
-        public void LoadStates()
+        public void LoadStates(Guid LogId)
         {
             try
             {
@@ -1069,6 +1114,13 @@ namespace DAL
 
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1077,7 +1129,7 @@ namespace DAL
             }
         }
 
-        public void LoadPorts()
+        public void LoadPorts(Guid LogId)
         {
             try
             {
@@ -1112,6 +1164,14 @@ namespace DAL
 
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1156,7 +1216,7 @@ namespace DAL
                                         where a.Entity == "HotelInfo"
                                         select a).ToList();
 
-                   
+
 
                     foreach (var product in SupplierProducts)
                     {
@@ -1420,6 +1480,27 @@ namespace DAL
             {
                 throw ex;
             }
+        }
+
+        public void LoadHotelMapping(Guid LogId)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                { 
+                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                if (Log != null)
+                {
+                    Log.Status = "Completed";
+                    context.SaveChanges();
+                }
+            }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+
         }
 
     }

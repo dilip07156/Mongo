@@ -62,43 +62,43 @@ namespace MapperSvc
             }
         }
 
-        public void LoadCountryMaster()
+        public void LoadCountryMaster(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadCountryMaster();
+                objBL.LoadCountryMaster(LogId);
             }
         }
 
-        public void LoadCityMaster()
+        public void LoadCityMaster(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadCityMaster();
+                objBL.LoadCityMaster(LogId);
             }
         }
 
-        public void LoadSupplierMaster()
+        public void LoadSupplierMaster(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadSupplierMaster();
+                objBL.LoadSupplierMaster(LogId);
             }
         }
 
-        public void LoadCountryMapping()
+        public void LoadCountryMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadCountryMapping();
+                objBL.LoadCountryMapping(LogId);
             }
         }
 
-        public void LoadCityMapping()
+        public void LoadCityMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadCityMapping();
+                objBL.LoadCityMapping(LogId);
             }
         }
 
@@ -118,11 +118,11 @@ namespace MapperSvc
             }
         }
 
-        public void LoadActivityMapping()
+        public void LoadActivityMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadActivityMapping();
+                objBL.LoadActivityMapping(LogId);
             }
         }
 
@@ -151,19 +151,19 @@ namespace MapperSvc
         }
 
 
-        public void LoadStates()
+        public void LoadStates(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadStates();
+                objBL.LoadStates(LogId);
             }
         }
 
-        public void LoadPorts()
+        public void LoadPorts(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadPorts();
+                objBL.LoadPorts(LogId);
             }
         }
 
@@ -173,6 +173,14 @@ namespace MapperSvc
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.LoadAccoStaticData();
+            }
+        }
+
+        public void LoadHotelMapping(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadHotelMapping(LogId);
             }
         }
 
