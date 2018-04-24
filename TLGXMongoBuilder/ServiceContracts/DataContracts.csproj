@@ -89,6 +89,8 @@
     <Compile Include="Activity\ActivityDefinition.cs" />
     <Compile Include="Activity\ActivityMasters.cs" />
     <Compile Include="AuthenticateContract.cs" />
+    <Compile Include="DC_SupplierEntity.cs" />
+    <Compile Include="DC_SupplierProductValues.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />
     <Compile Include="HotelDescription.cs" />
