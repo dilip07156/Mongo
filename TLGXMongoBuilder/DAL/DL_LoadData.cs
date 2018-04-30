@@ -236,13 +236,11 @@ namespace DAL
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("CityMapping");
-
-                    var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
-                    var CityList = (from cm in context.m_CityMapping
-                                    join city in context.m_CityMaster on cm.City_Id equals city.City_Id
-                                    join country in context.m_CountryMaster on cm.Country_Id equals country.Country_Id
-                                    join supplier in context.Suppliers on cm.Supplier_Id equals supplier.Supplier_Id
+                    
+                    var CityList = (from cm in context.m_CityMapping.AsNoTracking()
+                                    join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
+                                    join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
+                                    join supplier in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals supplier.Supplier_Id
                                     where (cm.Status ?? string.Empty) != "UNMAPPED"
                                     select new DataContracts.Mapping.DC_CityMapping
                                     {
@@ -260,8 +258,14 @@ namespace DAL
                                         MapId = cm.MapID ?? 0
                                     }).ToList();
 
-                    collection.InsertMany(CityList);
-                    collection = null;
+                    if(CityList != null && CityList.Count > 0)
+                    {
+                        var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
+                        _database.DropCollection("CityMapping");
+                        collection.InsertMany(CityList);
+                        collection = null;
+                    }
+                   
                     _database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
@@ -1183,7 +1187,7 @@ namespace DAL
         }
 
 
-        
+
         //// public void LoadAccoStaticData()
         // {
         //     try
@@ -1524,9 +1528,9 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
 
                     //Get Master Attributes and Supplier Attribute Mapping
-                    
+
                     string sqlMasterFor = "'HotelInfo','FacilityInfo','RoomInfo','RoomAmenities','Media'";
-                   
+
                     _database = MongoDBHandler.mDatabase();
                     //_database.DropCollection("AccoStaticData");
 
@@ -1534,6 +1538,7 @@ namespace DAL
 
                     string sqlSupplierProducts = "";
                     sqlSupplierProducts = "Select  SupplierEntity_Id,Parent_Id,Supplier_Id,SupplierName,SupplierProductCode,Entity,Create_Date,Create_User from SupplierEntity with (NoLock) where Entity ='HotelInfo'";
+                    sqlSupplierProducts = sqlSupplierProducts + " and SupplierName = 'FITRUMS'";
                     var SupplierProducts = context.Database.SqlQuery<DC_SupplierEntity>(sqlSupplierProducts.ToString()).ToList();
 
                     foreach (var product in SupplierProducts)
@@ -1549,7 +1554,7 @@ namespace DAL
 
                             var newProduct = new DataContracts.StaticData.Accomodation();
 
-                            
+
                             string sql = "";
                             sql = "Select a.SupplierProperty, IIF(a.SystemValue<> null,a.SystemValue,a.SupplierValue ) as Value, a.AttributeMap_Id, SystemAttribute = Upper(MAM.Name)";
                             sql = sql + "from SupplierEntityValues a with (NoLock)  join m_MasterAttributeMapping MA with (NoLock)  on a.AttributeMap_Id = MA.MasterAttributeMapping_Id ";
@@ -1612,7 +1617,7 @@ namespace DAL
                                         Website = HotelInfoDetails.Where(w => w.SystemAttribute == "WEBSITE").Select(s => s.Value).FirstOrDefault()
                                     }
                                 },
-                                DisplayName = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
+                                DisplayName = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELNAME").Select(s => s.Value).FirstOrDefault(),
                                 FamilyDetails = null,
                                 FinanceControlId = null,
                                 General = new DataContracts.StaticData.General
@@ -1622,15 +1627,41 @@ namespace DAL
                                 },
                                 IsMysteryProduct = false,
                                 IsTwentyFourHourCheckout = false,
-                                Name = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
-                                NoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
-                                NoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
+                                Name = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELNAME").Select(s => s.Value).FirstOrDefault(),
+
                                 ProductCatSubType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault(),
                                 Rating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
                                 RatingDatedOn = null,
                                 RecommendedFor = null,
                                 ResortType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault()
                             };
+
+                            //NoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => s.Value).FirstOrDefault(),
+                            //    NoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => s.Value).FirstOrDefault(),
+
+                            int NoOfFloors, NoOfRooms;
+
+                            var strNoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => s.Value).FirstOrDefault();
+                            if (strNoOfFloors != null)
+                            {
+                                strNoOfFloors = Regex.Match(strNoOfFloors, @"\d+").Value;
+                            }
+
+                            var strNoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => s.Value).FirstOrDefault();
+                            if (strNoOfRooms != null)
+                            {
+                                strNoOfRooms = Regex.Match(strNoOfRooms, @"\d+").Value;
+                            }
+
+                            if (int.TryParse(strNoOfFloors, out NoOfFloors))
+                            {
+                                newProduct.AccomodationInfo.NoOfFloors = NoOfFloors;
+                            }
+
+                            if (int.TryParse(strNoOfRooms, out NoOfRooms))
+                            {
+                                newProduct.AccomodationInfo.NoOfRooms = NoOfRooms;
+                            }
 
                             newProduct.Overview = new DataContracts.StaticData.Overview
                             {
@@ -1715,20 +1746,67 @@ namespace DAL
             try
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                { 
-                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                if (Log != null)
                 {
-                    Log.Status = "Completed";
-                    context.SaveChanges();
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
-            }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 throw ex;
             }
 
+        }
+
+
+        public void UpdateAccoStaticDataSingleColumn()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
+
+                    string sql = "";
+                    sql = "Select UPPER(S.Name) SupplierName, SE.SupplierProductCode, SEV.SupplierValue from SupplierEntityValues SEV WITH (NOLOCK) ";
+                    sql = sql + "INNER JOIN SupplierEntity SE  WITH (NOLOCK) ON SEV.SupplierEntity_Id = SE.SupplierEntity_Id ";
+                    sql = sql + "INNER JOIN Supplier S  WITH (NOLOCK) ON SE.Supplier_Id = S.Supplier_Id ";
+                    sql = sql + "INNER JOIN m_MasterAttributeMapping MAM  WITH (NOLOCK) ON SEV.AttributeMap_Id = MAM.MasterAttributeMapping_Id ";
+                    sql = sql + "INNER JOIN m_masterattribute MA  WITH (NOLOCK) ON MA.MasterAttribute_Id = MAM.SystemMasterAttribute_Id ";
+                    sql = sql + "WHERE MA.MasterFor = 'HotelInfo' and MA.Name = 'HotelName' AND SE.Entity = 'HotelInfo';";
+
+                    var HotelInfoDetails = context.Database.SqlQuery<Dc_SupplierEntitySingleValue>(sql.ToString()).ToList();
+                    int iTotalCount = HotelInfoDetails.Count();
+                    int iCounter = 0;
+                    foreach (var HotelInfo in HotelInfoDetails)
+                    {
+                        try
+                        {
+                            var filter = Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyName, HotelInfo.SupplierName);
+                            filter = filter & Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyProductId, HotelInfo.SupplierProductCode);
+
+                            var UpdateData = Builders<DataContracts.StaticData.Accomodation>.Update.Set(x => x.AccomodationInfo.DisplayName, HotelInfo.SupplierValue).Set(x => x.AccomodationInfo.Name, HotelInfo.SupplierValue);
+                            var updateResult = collection.FindOneAndUpdateAsync(filter, UpdateData).Status;
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
     }

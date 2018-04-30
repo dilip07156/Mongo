@@ -192,5 +192,14 @@ namespace BAL
                 }
             }
         }
+
+        public void UpdateAccoStaticDataSingleColumn()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateAccoStaticDataSingleColumn();
+            }
+        }
+
     }
 }
