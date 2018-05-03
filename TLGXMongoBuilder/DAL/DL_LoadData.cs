@@ -235,8 +235,9 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    _database = MongoDBHandler.mDatabase();
-                    
+
+                    context.Configuration.AutoDetectChangesEnabled = false;
+
                     var CityList = (from cm in context.m_CityMapping.AsNoTracking()
                                     join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
                                     join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
@@ -258,20 +259,25 @@ namespace DAL
                                         MapId = cm.MapID ?? 0
                                     }).ToList();
 
-                    if(CityList != null && CityList.Count > 0)
+                    if (CityList != null && CityList.Count > 0)
                     {
+                        _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
                         _database.DropCollection("CityMapping");
                         collection.InsertMany(CityList);
+
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_CityMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode));
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_CityMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.CityCode));
+
                         collection = null;
+                        _database = null;
                     }
-                   
-                    _database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
                     {
                         Log.Status = "Completed";
+                        Log.Create_Date = DateTime.Now;
                         context.SaveChanges();
                     }
                 }
@@ -291,17 +297,17 @@ namespace DAL
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
 
-                    productMapList = (from apm in context.Accommodation_ProductMapping
+                    productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
 
-                                      join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
+                                      join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
 
-                                      join cm in context.m_CityMaster on apm.City_Id equals cm.City_Id into LJCityMaster
+                                      join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
                                       from citymaster in LJCityMaster.DefaultIfEmpty()
 
-                                      join con in context.m_CountryMaster on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                      join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
                                       from countrymaster in LJCountryMaster.DefaultIfEmpty()
 
-                                      join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                      join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
                                       from acco in LJAcco.DefaultIfEmpty()
 
                                       select new DataContracts.Mapping.DC_ProductMapping
@@ -326,7 +332,6 @@ namespace DAL
                                           SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
 
                                       }).ToList();
-                    _database = null;
                 }
 
                 if (productMapList.Count() > 0)
@@ -360,13 +365,12 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("ProductMappingLite");
 
+                    context.Configuration.AutoDetectChangesEnabled = false;
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ProductMappingLite");
-                    var productMapList = (from apm in context.Accommodation_ProductMapping
-                                          join a in context.Accommodations on apm.Accommodation_Id equals a.Accommodation_Id
-                                          join s in context.Suppliers on apm.Supplier_Id equals s.Supplier_Id
+                    var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                                          join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                          join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
                                           where apm.Status == "MAPPED"
                                           select new DataContracts.Mapping.DC_ProductMappingLite
                                           {
@@ -378,12 +382,15 @@ namespace DAL
 
                     if (productMapList.Count() > 0)
                     {
+                        _database = MongoDBHandler.mDatabase();
+                        _database.DropCollection("ProductMappingLite");
                         collection.InsertMany(productMapList);
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                        collection = null;
+                        _database = null;
                     }
-                    collection = null;
-                    _database = null;
+
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -398,12 +405,11 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("ActivityMapping");
+                    context.Configuration.AutoDetectChangesEnabled = false;
 
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ActivityMapping");
-                    var productMapList = (from apm in context.Activity_SupplierProductMapping
-                                          join a in context.Activities on apm.Activity_ID equals a.Activity_Id
+                    var productMapList = (from apm in context.Activity_SupplierProductMapping.AsNoTracking()
+                                          join a in context.Activities.AsNoTracking() on apm.Activity_ID equals a.Activity_Id
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
                                               SupplierCode = apm.SupplierName.ToUpper(),
@@ -422,12 +428,16 @@ namespace DAL
                                               SystemProductType = "Activity".ToUpper() //a.ProductCategorySubType
                                           }).ToList();
 
-                    collection.InsertMany(productMapList);
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-
-                    collection = null;
-                    _database = null;
+                    if (productMapList.Count > 0)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        _database.DropCollection("ActivityMapping");
+                        collection.InsertMany(productMapList);
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
+                        collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
+                        collection = null;
+                        _database = null;
+                    }
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -1141,10 +1151,7 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("PortMaster");
-
-                    var collection = _database.GetCollection<DataContracts.Masters.DC_Port>("PortMaster");
+                    
 
                     List<DataContracts.Masters.DC_Port> dataList = new List<DataContracts.Masters.DC_Port>();
 
@@ -1153,23 +1160,59 @@ namespace DAL
                                 from clj in cj.DefaultIfEmpty()
                                 join cty in context.m_CityMaster on p.City_Id equals cty.City_Id into ctyj
                                 from ctylj in ctyj.DefaultIfEmpty()
+                                join st in context.m_States on ctylj.State_Id equals st.State_Id into stj
+                                from stlj in stj.DefaultIfEmpty()
                                 select new DataContracts.Masters.DC_Port
                                 {
-                                    CountryCode = (clj.Code ?? p.oag_ctry).Trim().ToUpper(),
-                                    CountryName = (clj.Name ?? p.oag_ctryname).Trim().ToUpper(),
-                                    CityCode = (ctylj.Name ?? string.Empty).Trim().ToUpper(),
-                                    CityName = (ctylj.Name ?? string.Empty).Trim().ToUpper(),
-                                    Latitude = (p.oag_lat ?? string.Empty).Trim().ToUpper(),
-                                    Longitude = (p.oag_lon ?? string.Empty).Trim().ToUpper(),
-                                    PortCode = (p.OAG_loc ?? string.Empty).Trim().ToUpper(),
-                                    PortName = (p.oag_portname ?? string.Empty).Trim().ToUpper()
+                                    oag_country_code = p.oag_ctry ?? string.Empty,
+                                    oag_country_name = p.oag_ctryname ?? string.Empty,
+                                    oag_country_subcode = p.oag_subctry ?? string.Empty,
+                                    oag_inactive_indicator = p.oag_inactive ?? string.Empty,
+                                    oag_latitiude = p.oag_lat ?? string.Empty,
+                                    oag_location_code = p.OAG_loc ?? string.Empty,
+                                    oag_location_name = p.oag_name ?? string.Empty,
+                                    oag_location_subtype = (
+                                                                p.OAG_subtype == "A" ? "Airport" :
+                                                                p.OAG_subtype == "B" ? "Bus Station" :
+                                                                p.OAG_subtype == "H" ? "Harbour" :
+                                                                p.OAG_subtype == "O" ? "Off-line Point" :
+                                                                p.OAG_subtype == "R" ? "Rail Station" :
+                                                                p.OAG_subtype == "U" ? "Metro/Underground" :
+                                                                p.OAG_subtype == "V" ? "Miscellaneous" : "Multi Airport City"
+                                                            ),
+                                    oag_location_subtype_code = p.OAG_subtype ?? string.Empty,
+                                    oag_location_type = (
+                                                            p.OAG_type == "L" ? "Location with one port" :
+                                                            p.OAG_type == "A" ? "Airport belonging to multi airport city" :
+                                                            p.OAG_type == "M" ? "Multi airport city" : string.Empty
+                                                        ),
+                                    oag_location_type_code = p.OAG_type ?? string.Empty,
+                                    oag_longitude = p.oag_lon ?? string.Empty,
+                                    oag_multi_airport_citycode = p.OAG_multicity ?? string.Empty,
+                                    oag_port_name = p.oag_portname ?? string.Empty,
+                                    oag_state_code = p.oag_state ?? string.Empty,
+                                    oag_state_subcode = p.oag_substate ?? string.Empty,
+                                    oag_time_division = p.oag_timediv ?? string.Empty,
+
+                                    tlgx_country_code = (clj.Code ?? string.Empty),
+                                    tlgx_country_name = (clj.Name ?? string.Empty),
+                                    tlgx_city_code = (ctylj.Code ?? string.Empty),
+                                    tlgx_city_name = (ctylj.Name ?? string.Empty),
+                                    tlgx_state_code = (stlj.StateCode ?? string.Empty),
+                                    tlgx_state_name = (stlj.StateName ?? string.Empty)
+
                                 }).ToList();
 
+                    if(dataList.Count > 0)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        _database.DropCollection("PortMaster");
+                        var collection = _database.GetCollection<DataContracts.Masters.DC_Port>("PortMaster");
+                        collection.InsertManyAsync(dataList);
 
-                    collection.InsertManyAsync(dataList);
-
-                    collection = null;
-                    _database = null;
+                        collection = null;
+                        _database = null;
+                    }
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -1185,8 +1228,6 @@ namespace DAL
                 throw ex;
             }
         }
-
-
 
         //// public void LoadAccoStaticData()
         // {
@@ -1538,7 +1579,7 @@ namespace DAL
 
                     string sqlSupplierProducts = "";
                     sqlSupplierProducts = "Select  SupplierEntity_Id,Parent_Id,Supplier_Id,SupplierName,SupplierProductCode,Entity,Create_Date,Create_User from SupplierEntity with (NoLock) where Entity ='HotelInfo'";
-                    sqlSupplierProducts = sqlSupplierProducts + " and SupplierName = 'FITRUMS'";
+                    sqlSupplierProducts = sqlSupplierProducts + " and SupplierName = 'EXPEDIA'";
                     var SupplierProducts = context.Database.SqlQuery<DC_SupplierEntity>(sqlSupplierProducts.ToString()).ToList();
 
                     foreach (var product in SupplierProducts)
