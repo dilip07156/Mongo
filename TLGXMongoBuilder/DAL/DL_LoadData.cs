@@ -1151,7 +1151,7 @@ namespace DAL
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    
+
 
                     List<DataContracts.Masters.DC_Port> dataList = new List<DataContracts.Masters.DC_Port>();
 
@@ -1203,7 +1203,7 @@ namespace DAL
 
                                 }).ToList();
 
-                    if(dataList.Count > 0)
+                    if (dataList.Count > 0)
                     {
                         _database = MongoDBHandler.mDatabase();
                         _database.DropCollection("PortMaster");
@@ -1588,7 +1588,7 @@ namespace DAL
 
                     string sqlSupplierProducts = "";
                     sqlSupplierProducts = "Select  SupplierEntity_Id,Parent_Id,Supplier_Id,SupplierName,SupplierProductCode,Entity,Create_Date,Create_User from SupplierEntity with (NoLock) where Entity ='HotelInfo'";
-                    sqlSupplierProducts = sqlSupplierProducts + " and SupplierName = 'EXPEDIA'";
+                    sqlSupplierProducts = sqlSupplierProducts + " and Supplier_Id = '" + SupplierId.ToString() + "';";
                     var SupplierProducts = context.Database.SqlQuery<DC_SupplierEntity>(sqlSupplierProducts.ToString()).ToList();
                     int iTotalCount = SupplierProducts.Count();
                     int iCounter = 0;
@@ -1796,7 +1796,7 @@ namespace DAL
                     UpdateCount(iTotalCount, iCounter, log_id);
 
                     context.Configuration.AutoDetectChangesEnabled = true;
-                    //set the distribution log to running statusk
+                    //set the distribution log to running status
                     Log = context.DistributionLayerRefresh_Log.Find(log_id);
                     if (Log != null)
                     {
@@ -1814,6 +1814,19 @@ namespace DAL
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(log_id);
+                    if (Log != null)
+                    {
+                        Log.Status = "Error";
+                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_User = "MongoPush";
+                        context.SaveChanges();
+                    }
+                    Log = null;
+                }
+
                 throw ex;
             }
         }
@@ -1825,9 +1838,10 @@ namespace DAL
                 var Log = context.DistributionLayerRefresh_Log.Find(log_id);
                 if (Log != null)
                 {
-
                     Log.MongoPushCount = MongoPushCount;
                     Log.TotalCount = totalcount;
+                    Log.Edit_date = DateTime.Now;
+                    Log.Edit_User = "MongoPush";
                     context.SaveChanges();
                 }
             }
