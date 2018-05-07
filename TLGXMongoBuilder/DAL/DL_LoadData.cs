@@ -1229,8 +1229,6 @@ namespace DAL
             }
         }
 
-
-
         //// public void LoadAccoStaticData()
         // {
         //     try
@@ -1581,14 +1579,11 @@ namespace DAL
                     }
                     Log = null;
 
-
                     context.Configuration.AutoDetectChangesEnabled = false;
                     //Get Master Attributes and Supplier Attribute Mapping
                     string sqlMasterFor = "'HotelInfo','FacilityInfo','RoomInfo','RoomAmenities','Media'";
 
                     _database = MongoDBHandler.mDatabase();
-                    //_database.DropCollection("AccoStaticData");
-
                     var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
 
                     string sqlSupplierProducts = "";
@@ -1602,17 +1597,17 @@ namespace DAL
                     {
                         try
                         {
-                            //check if the product already exists
-                            var searchResultCount = collection.Find(f => f.AccomodationInfo.CompanyId == product.SupplierName.ToUpper() && f.AccomodationInfo.CompanyProductId == product.SupplierProductCode.ToUpper()).Count();
-                            if (searchResultCount > 0)
-                            {
-                                if (iCounter % 500 == 0)
-                                {
-                                    UpdateCount(iTotalCount, iCounter, log_id);
-                                }
-                                iCounter++;
-                                continue;
-                            }
+                            ////check if the product already exists
+                            //var searchResultCount = collection.Find(f => f.AccomodationInfo.CompanyId == product.SupplierName.ToUpper() && f.AccomodationInfo.CompanyProductId == product.SupplierProductCode.ToUpper()).Count();
+                            //if (searchResultCount > 0)
+                            //{
+                            //    if (iCounter % 500 == 0)
+                            //    {
+                            //        UpdateCount(iTotalCount, iCounter, log_id);
+                            //    }
+                            //    iCounter++;
+                            //    continue;
+                            //}
 
                             var newProduct = new DataContracts.StaticData.Accomodation();
 
@@ -1623,7 +1618,6 @@ namespace DAL
                             sql = sql + "join m_masterattribute MAM with (NoLock)  on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock)  on MA.Supplier_Id = S.Supplier_Id where a.SupplierEntity_Id = '" + product.SupplierEntity_Id + "'" + "and  MAM.MasterFor in  (" + sqlMasterFor + ")";
 
                             var HotelInfoDetails = context.Database.SqlQuery<DC_SupplierProductValues>(sql.ToString()).ToList();
-
 
                             //Accommodation Info
                             newProduct.AccomodationInfo = new DataContracts.StaticData.AccomodationInfo
@@ -1748,7 +1742,7 @@ namespace DAL
                                 string resFacility = "";
                                 resFacility = "select b.SupplierProperty, IIF(b.SystemValue<> null,b.SystemValue,b.SupplierValue ) as Value,b.AttributeMap_Id,SystemAttribute = Upper(MAM.Name) from SupplierEntity a with (NoLock) ";
                                 resFacility = resFacility + " join SupplierEntityValues b with (NoLock) on a.SupplierEntity_Id = b.SupplierEntity_Id" + " join m_MasterAttributeMapping MA with (NoLock) on b.AttributeMap_Id = MA.MasterAttributeMapping_Id join m_masterattribute MAM with (NoLock) on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock) on MA.Supplier_Id = S.Supplier_Id where MAM.MasterFor in  (" + sqlMasterFor + ")";
-                                resFacility = resFacility + " and a.Supplier_Id = '" + product.Supplier_Id + "' and a.SupplierEntity_Id = '" + Facility.SupplierEntity_Id + " ' and a.Supplier_Id = '" + product.Supplier_Id + "'";
+                                resFacility = resFacility + " and a.Supplier_Id = '" + product.Supplier_Id + "' and a.SupplierEntity_Id = '" + Facility.SupplierEntity_Id + " ' ";
                                 var FacilityInfoDetails = context.Database.SqlQuery<DC_SupplierProductValues>(resFacility.ToString()).ToList();
 
                                 newProduct.Facility.Add(new DataContracts.StaticData.Facility
@@ -1783,8 +1777,9 @@ namespace DAL
                                 });
                             }
 
-                            collection.InsertOneAsync(newProduct);
-
+                            var filter = Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyId, product.SupplierName.ToUpper());
+                            filter = filter & Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyProductId, product.SupplierProductCode.ToUpper());
+                            collection.ReplaceOneAsync(filter, newProduct, new UpdateOptions { IsUpsert = true });
 
                             if (iCounter % 500 == 0)
                             {
@@ -1806,7 +1801,8 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Completed";
-
+                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
 
@@ -1837,7 +1833,6 @@ namespace DAL
             }
         }
 
-
         public void LoadHotelMapping(Guid LogId)
         {
             try
@@ -1858,7 +1853,6 @@ namespace DAL
             }
 
         }
-
 
         public void UpdateAccoStaticDataSingleColumn()
         {
@@ -1905,7 +1899,5 @@ namespace DAL
                 throw ex;
             }
         }
-
-
     }
 }
