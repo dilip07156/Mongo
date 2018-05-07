@@ -168,11 +168,11 @@ namespace MapperSvc
         }
 
 
-        public void LoadAccoStaticData()
+        public void LoadAccoStaticData(string log_id, string supplier_id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadAccoStaticData();
+                objBL.LoadAccoStaticData(log_id, supplier_id);
             }
         }
 
@@ -184,5 +184,6 @@ namespace MapperSvc
             }
         }
 
+        
     }
 }

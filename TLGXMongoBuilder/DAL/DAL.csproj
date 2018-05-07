@@ -239,6 +239,9 @@
     <Compile Include="Activity_SupplierActivityTypeMapping.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="Activity_SupplierCityDepartureCode.cs">
+      <DependentUpon>TLGX_Model.tt</DependentUpon>
+    </Compile>
     <Compile Include="Activity_SupplierProductMapping.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
@@ -351,9 +354,6 @@
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="Supplier_Schedule.cs">
-      <DependentUpon>TLGX_Model.tt</DependentUpon>
-    </Compile>
-    <Compile Include="tbl_SupplierCityDepartureCode.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
     <Compile Include="TLGX_Model.Context.cs">

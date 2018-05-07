@@ -82,5 +82,9 @@ namespace DAL
         public string Latitude_Tx { get; set; }
         public string Longitude_Tx { get; set; }
         public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
+        public string gArea { get; set; }
+        public string gLocation { get; set; }
+        public Nullable<System.Guid> Area_Id { get; set; }
+        public Nullable<System.Guid> Location_Id { get; set; }
     }
 }

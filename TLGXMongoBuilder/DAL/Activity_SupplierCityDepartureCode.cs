@@ -12,7 +12,7 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class tbl_SupplierCityDepartureCode
+    public partial class Activity_SupplierCityDepartureCode
     {
         public System.Guid DepartureID { get; set; }
         public string City { get; set; }

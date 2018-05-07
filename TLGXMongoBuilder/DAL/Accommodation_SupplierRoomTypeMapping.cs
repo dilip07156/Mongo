@@ -49,5 +49,26 @@ namespace DAL
         public Nullable<System.Guid> ReRun_SupplierImportFile_Id { get; set; }
         public Nullable<int> ReRun_Batch { get; set; }
         public string RoomSize { get; set; }
+        public string BathRoomType { get; set; }
+        public string RoomViewCode { get; set; }
+        public string FloorName { get; set; }
+        public Nullable<int> FloorNumber { get; set; }
+        public string SupplierProvider { get; set; }
+        public string Amenities { get; set; }
+        public string RoomLocationCode { get; set; }
+        public Nullable<int> ChildAge { get; set; }
+        public string ExtraBed { get; set; }
+        public string Bedrooms { get; set; }
+        public string Smoking { get; set; }
+        public string BedTypeCode { get; set; }
+        public Nullable<int> MinGuestOccupancy { get; set; }
+        public string PromotionalVendorCode { get; set; }
+        public string BeddingConfig { get; set; }
+        public string CityName { get; set; }
+        public string CityCode { get; set; }
+        public string StateName { get; set; }
+        public string StateCode { get; set; }
+        public string CountryName { get; set; }
+        public string CountryCode { get; set; }
     }
 }

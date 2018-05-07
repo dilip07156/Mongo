@@ -621,7 +621,7 @@ namespace DAL
                         {
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
 
-                            var SupplierCityDepartureCodes = context.tbl_SupplierCityDepartureCode.Where(w => w.CityCode == Activity.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                            var SupplierCityDepartureCodes = context.Activity_SupplierCityDepartureCode.Where(w => w.CityCode == Activity.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
                             {
                                 CityCode = s.CityCode,
                                 CityName = s.City,
@@ -820,7 +820,7 @@ namespace DAL
 
                             if (ActivitySPM.SupplierCode == "gta")
                             {
-                                newActivity.SupplierCityDepartureCodes = context.tbl_SupplierCityDepartureCode.Where(w => w.CityCode == ActivitySPM.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                                newActivity.SupplierCityDepartureCodes = context.Activity_SupplierCityDepartureCode.Where(w => w.CityCode == ActivitySPM.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
                                 {
                                     CityCode = s.CityCode,
                                     CityName = s.City,
@@ -1183,7 +1183,7 @@ namespace DAL
         }
 
 
-        
+
         //// public void LoadAccoStaticData()
         // {
         //     try
@@ -1514,19 +1514,31 @@ namespace DAL
         //     }
         // }
 
-        public void LoadAccoStaticData()
+        public void LoadAccoStaticData(Guid log_id, Guid SupplierId)
         {
             try
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Database.CommandTimeout = 0;
-                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Configuration.AutoDetectChangesEnabled = true;
+                    //set the distribution log to running status
 
+                    var Log = context.DistributionLayerRefresh_Log.Find(log_id);
+                    if (Log != null)
+                    {
+                        Log.Status = "Running";
+                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_User = "MongoPush";
+                        context.SaveChanges();
+                    }
+                    Log = null;
+
+
+                    context.Configuration.AutoDetectChangesEnabled = false;
                     //Get Master Attributes and Supplier Attribute Mapping
-                    
                     string sqlMasterFor = "'HotelInfo','FacilityInfo','RoomInfo','RoomAmenities','Media'";
-                   
+
                     _database = MongoDBHandler.mDatabase();
                     //_database.DropCollection("AccoStaticData");
 
@@ -1535,6 +1547,8 @@ namespace DAL
                     string sqlSupplierProducts = "";
                     sqlSupplierProducts = "Select  SupplierEntity_Id,Parent_Id,Supplier_Id,SupplierName,SupplierProductCode,Entity,Create_Date,Create_User from SupplierEntity with (NoLock) where Entity ='HotelInfo'";
                     var SupplierProducts = context.Database.SqlQuery<DC_SupplierEntity>(sqlSupplierProducts.ToString()).ToList();
+                    int iTotalCount = SupplierProducts.Count();
+                    int iCounter = 0;
 
                     foreach (var product in SupplierProducts)
                     {
@@ -1544,12 +1558,17 @@ namespace DAL
                             var searchResultCount = collection.Find(f => f.AccomodationInfo.CompanyId == product.SupplierName.ToUpper() && f.AccomodationInfo.CompanyProductId == product.SupplierProductCode.ToUpper()).Count();
                             if (searchResultCount > 0)
                             {
+                                if (iCounter % 500 == 0)
+                                {
+                                    UpdateCount(iTotalCount, iCounter, log_id);
+                                }
+                                iCounter++;
                                 continue;
                             }
 
                             var newProduct = new DataContracts.StaticData.Accomodation();
 
-                            
+
                             string sql = "";
                             sql = "Select a.SupplierProperty, IIF(a.SystemValue<> null,a.SystemValue,a.SupplierValue ) as Value, a.AttributeMap_Id, SystemAttribute = Upper(MAM.Name)";
                             sql = sql + "from SupplierEntityValues a with (NoLock)  join m_MasterAttributeMapping MA with (NoLock)  on a.AttributeMap_Id = MA.MasterAttributeMapping_Id ";
@@ -1692,12 +1711,32 @@ namespace DAL
 
                             collection.InsertOneAsync(newProduct);
 
+
+                            if (iCounter % 500 == 0)
+                            {
+                                UpdateCount(iTotalCount, iCounter, log_id);
+                            }
+                            iCounter++;
                         }
                         catch (Exception ex)
                         {
                             continue;
                         }
                     }
+
+                    UpdateCount(iTotalCount, iCounter, log_id);
+
+                    context.Configuration.AutoDetectChangesEnabled = true;
+                    //set the distribution log to running statusk
+                    Log = context.DistributionLayerRefresh_Log.Find(log_id);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+
+                        context.SaveChanges();
+                    }
+
+                    Log = null;
 
                     collection = null;
                     _database = null;
@@ -1709,20 +1748,35 @@ namespace DAL
             }
         }
 
+        public void UpdateCount(int totalcount, int MongoPushCount, Guid log_id)
+        {
+            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            {
+                var Log = context.DistributionLayerRefresh_Log.Find(log_id);
+                if (Log != null)
+                {
+
+                    Log.MongoPushCount = MongoPushCount;
+                    Log.TotalCount = totalcount;
+                    context.SaveChanges();
+                }
+            }
+        }
+
 
         public void LoadHotelMapping(Guid LogId)
         {
             try
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                { 
-                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                if (Log != null)
                 {
-                    Log.Status = "Completed";
-                    context.SaveChanges();
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
                 }
-            }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -1730,6 +1784,7 @@ namespace DAL
             }
 
         }
+
 
     }
 }

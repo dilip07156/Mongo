@@ -20,5 +20,10 @@ namespace DAL
         public Nullable<System.DateTime> Create_Date { get; set; }
         public string Create_User { get; set; }
         public string Status { get; set; }
+        public Nullable<System.Guid> Supplier_Id { get; set; }
+        public Nullable<System.DateTime> Edit_date { get; set; }
+        public string Edit_User { get; set; }
+        public Nullable<int> TotalCount { get; set; }
+        public Nullable<int> MongoPushCount { get; set; }
     }
 }

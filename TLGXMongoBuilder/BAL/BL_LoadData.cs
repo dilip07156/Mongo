@@ -173,11 +173,16 @@ namespace BAL
             }
         }
 
-        public void LoadAccoStaticData()
+        public void LoadAccoStaticData(string LogId,string Supplier_Id)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid logid = new Guid();
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out logid) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
             {
-                obj.LoadAccoStaticData();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadAccoStaticData(logid, gSupplier_Id);
+                }
             }
         }
 
@@ -191,6 +196,6 @@ namespace BAL
                     obj.LoadHotelMapping(gLogId);
                 }
             }
-        }
+        }        
     }
 }

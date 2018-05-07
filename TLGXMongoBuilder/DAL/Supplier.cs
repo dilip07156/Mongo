@@ -25,5 +25,6 @@ namespace DAL
         public string SupplierOwner { get; set; }
         public string StatusCode { get; set; }
         public Nullable<int> Priority { get; set; }
+        public string EZ1_SupplierName { get; set; }
     }
 }

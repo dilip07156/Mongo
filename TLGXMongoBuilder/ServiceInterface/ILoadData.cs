@@ -102,12 +102,14 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/AccoStaticData", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadAccoStaticData();
+        [WebGet(UriTemplate = "Load/AccoStaticData/{LogId}/{SupplierId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadAccoStaticData(string LogId, string supplierId);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/HotelMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadHotelMapping(string LogId);
+
+        
     }
 }
