@@ -14,7 +14,7 @@ namespace DataContracts.StaticData
     [DataContract]
     public class Accomodation
     {
-        public ObjectId _id { get; set; }
+        public ObjectId _id { get; set; } = ObjectId.GenerateNewId();
         public List<string> RoomIds { get; set; }
 
         public AccomodationInfo AccomodationInfo { get; set; }
