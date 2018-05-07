@@ -110,6 +110,9 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Load/HotelMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadHotelMapping(string LogId);
 
-        
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/UpdateAccoStaticDataSingleColumn", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void UpdateAccoStaticDataSingleColumn();
     }
 }

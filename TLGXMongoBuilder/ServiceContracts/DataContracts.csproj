@@ -90,6 +90,7 @@
     <Compile Include="Activity\ActivityMasters.cs" />
     <Compile Include="AuthenticateContract.cs" />
     <Compile Include="DC_SupplierEntity.cs" />
+    <Compile Include="Dc_SupplierEntitySingleValue.cs" />
     <Compile Include="DC_SupplierProductValues.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />

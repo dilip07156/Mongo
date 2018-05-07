@@ -184,6 +184,12 @@ namespace MapperSvc
             }
         }
 
-        
+        public void UpdateAccoStaticDataSingleColumn()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateAccoStaticDataSingleColumn();
+            }
+        }
     }
 }

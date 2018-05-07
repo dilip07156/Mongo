@@ -196,6 +196,15 @@ namespace BAL
                     obj.LoadHotelMapping(gLogId);
                 }
             }
-        }        
+        }
+
+        public void UpdateAccoStaticDataSingleColumn()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateAccoStaticDataSingleColumn();
+            }
+        }
+
     }
 }

@@ -13,27 +13,73 @@ namespace DataContracts.Masters
     public class DC_Port
     {
         [DataMember]
-        public string CountryName { get; set; }
+        public string oag_location_code { get; set; }
 
         [DataMember]
-        public string CountryCode { get; set; }
+        public string oag_multi_airport_citycode { get; set; }
 
         [DataMember]
-        public string CityName { get; set; }
+        public string oag_location_type_code { get; set; }
 
         [DataMember]
-        public string CityCode { get; set; }
+        public string oag_location_type { get; set; }
 
         [DataMember]
-        public string PortName { get; set; }
+        public string oag_location_subtype_code { get; set; }
 
         [DataMember]
-        public string PortCode  { get; set; }
+        public string oag_location_subtype { get; set; }
 
         [DataMember]
-        public string Latitude { get; set; }
+        public string oag_location_name { get; set; }
 
         [DataMember]
-        public string Longitude { get; set; }
+        public string oag_port_name  { get; set; }
+
+        [DataMember]
+        public string oag_country_code { get; set; }
+
+        [DataMember]
+        public string oag_country_subcode { get; set; }
+
+        [DataMember]
+        public string oag_country_name { get; set; }
+
+        [DataMember]
+        public string oag_state_code { get; set; }
+
+        [DataMember]
+        public string oag_state_subcode { get; set; }
+
+        [DataMember]
+        public string oag_time_division { get; set; }
+
+        [DataMember]
+        public string oag_latitiude { get; set; }
+
+        [DataMember]
+        public string oag_longitude { get; set; }
+
+        [DataMember]
+        public string oag_inactive_indicator { get; set; }
+
+        [DataMember]
+        public string tlgx_country_code { get; set; }
+
+        [DataMember]
+        public string tlgx_country_name { get; set; }
+
+        [DataMember]
+        public string tlgx_state_code { get; set; }
+
+        [DataMember]
+        public string tlgx_state_name { get; set; }
+
+        [DataMember]
+        public string tlgx_city_code { get; set; }
+
+        [DataMember]
+        public string tlgx_city_name { get; set; }
+
     }
 }
