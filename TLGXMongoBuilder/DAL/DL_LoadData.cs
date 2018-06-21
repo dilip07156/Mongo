@@ -305,6 +305,7 @@ namespace DAL
                     context.Database.CommandTimeout = 0;
 
                     List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => s.Code.ToUpper()).Distinct().ToList();
+                    //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     foreach (var SupplierCode in SupplierCodes)
                     {
                        var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
@@ -376,6 +377,7 @@ namespace DAL
                     context.Database.CommandTimeout = 0;
 
                     List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => s.Code.ToUpper()).Distinct().ToList();
+                    //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     foreach (var SupplierCode in SupplierCodes)
                     {
                         var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
