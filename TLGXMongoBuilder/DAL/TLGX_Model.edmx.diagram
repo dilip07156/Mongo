@@ -46,6 +46,9 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_Market" Width="1.5" PointX="6.75" PointY="12.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_ProductCategory" Width="1.5" PointX="12.75" PointY="8.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_Schedule" Width="1.5" PointX="12.75" PointY="12.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.m_ZoneMaster" Width="1.5" PointX="0.5" PointY="16.25" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.ZoneProduct_Mapping" Width="2.5" PointX="4.375" PointY="16.25" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.ZoneCity_Mapping" Width="1.5" PointX="7.875" PointY="16.625" />
       </Diagram>
       <Diagram DiagramId="087092cd16664163ac6f791461e858e8" Name="Mapping" ZoomLevel="41" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMapping" Width="1.5" PointX="6.75" PointY="5.75" />

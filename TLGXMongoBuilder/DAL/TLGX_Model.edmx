@@ -370,6 +370,7 @@
           <Property Name="Edit_User" Type="varchar" MaxLength="50" />
           <Property Name="Edit_Date" Type="datetime" />
           <Property Name="IsActive" Type="bit" />
+          <Property Name="TLGXAccoRoomId" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Accommodation_RouteInfo">
           <Key>
@@ -501,6 +502,7 @@
           <Property Name="StateCode" Type="nvarchar" MaxLength="50" />
           <Property Name="CountryName" Type="nvarchar" MaxLength="255" />
           <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="MatchingScore" Type="float" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -570,10 +572,12 @@
           <Property Name="SystemProductCategorySubType" Type="nvarchar" MaxLength="250" />
           <Property Name="SystemProductType" Type="nvarchar" MaxLength="250" />
           <Property Name="SystemProductNameSubType" Type="nvarchar" MaxLength="250" />
+          <Property Name="SystemInterestType" Type="nvarchar" MaxLength="250" />
           <Property Name="SystemProductCategory_ID" Type="uniqueidentifier" />
           <Property Name="SystemProductCategorySubType_ID" Type="uniqueidentifier" />
           <Property Name="SystemProductType_ID" Type="uniqueidentifier" />
           <Property Name="SystemProductNameSubType_ID" Type="uniqueidentifier" />
+          <Property Name="SystemInterestType_ID" Type="uniqueidentifier" />
           <Property Name="IsActive" Type="bit" />
           <Property Name="Create_Date" Type="datetime" Nullable="false" />
           <Property Name="Edit_Date" Type="datetime" />
@@ -773,6 +777,7 @@
           <Property Name="CompanyProductNameSubType_Id" Type="nvarchar" MaxLength="255" />
           <Property Name="FinanceControlId" Type="nvarchar" MaxLength="255" />
           <Property Name="ProductNameSubType" Type="nvarchar" MaxLength="255" />
+          <Property Name="InterestType" Type="nvarchar" MaxLength="255" />
           <Property Name="PlaceOfEvent" Type="nvarchar" MaxLength="255" />
           <Property Name="StartingPoint" Type="nvarchar" MaxLength="255" />
           <Property Name="EndingPoint" Type="nvarchar" MaxLength="255" />
@@ -1753,6 +1758,29 @@
           <Property Name="Priority" Type="int" />
           <Property Name="Description" Type="nvarchar" MaxLength="255" />
           <Property Name="AttributeValue_ID" Type="uniqueidentifier" />
+          <Property Name="AttributeValueType" Type="nvarchar" MaxLength="100" />
+          <Property Name="Comparison" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="m_ZoneMaster">
+          <Key>
+            <PropertyRef Name="Zone_id" />
+          </Key>
+          <Property Name="Zone_id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Zone_Type" Type="varchar" MaxLength="100" />
+          <Property Name="Zone_SubType" Type="varchar" MaxLength="500" />
+          <Property Name="Zone_Name" Type="varchar" MaxLength="500" />
+          <Property Name="Latitude" Type="varchar" MaxLength="50" />
+          <Property Name="Longitude" Type="varchar" MaxLength="50" />
+          <Property Name="Status" Type="varchar" MaxLength="50" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="Zone_Radius" Type="decimal" Precision="18" Scale="2" />
+          <Property Name="Geography" Type="geography" />
+          <Property Name="GooglePlace_Id" Type="varchar" MaxLength="100" />
+          <Property Name="Create_User" Type="varchar" MaxLength="500" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="500" />
+          <Property Name="Edit_Date" Type="datetime" />
+          <Property Name="Country_Id" Type="uniqueidentifier" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -1881,6 +1909,38 @@
           <Property Name="Create_Date" Type="datetime" />
           <Property Name="Create_User" Type="varchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="ZoneCity_Mapping">
+          <Key>
+            <PropertyRef Name="ZoneCityMapping_Id" />
+          </Key>
+          <Property Name="ZoneCityMapping_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Zone_Id" Type="uniqueidentifier" />
+          <Property Name="City_Id" Type="uniqueidentifier" />
+          <Property Name="Status" Type="varchar" MaxLength="50" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="Create_User" Type="varchar" MaxLength="500" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="500" />
+          <Property Name="Edit_Date" Type="datetime" />
+        </EntityType>
+        <EntityType Name="ZoneProduct_Mapping">
+          <Key>
+            <PropertyRef Name="ZoneProductMapping_Id" />
+          </Key>
+          <Property Name="ZoneProductMapping_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Zone_Id" Type="uniqueidentifier" />
+          <Property Name="Product_Id" Type="uniqueidentifier" />
+          <Property Name="ProductType" Type="varchar" MaxLength="100" />
+          <Property Name="Unit" Type="varchar" MaxLength="50" />
+          <Property Name="Distance" Type="decimal" Precision="18" Scale="4" />
+          <Property Name="Status" Type="varchar" MaxLength="50" />
+          <Property Name="IsActive" Type="bit" Nullable="false" />
+          <Property Name="Included" Type="bit" />
+          <Property Name="Create_User" Type="varchar" MaxLength="100" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="100" />
+          <Property Name="Edit_Date" Type="datetime" />
+        </EntityType>
         <EntityContainer Name="TLGX_DEV_ModelStoreContainer">
           <EntitySet Name="Accommodation" EntityType="Self.Accommodation" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Accommodation_ClassificationAttributes" EntityType="Self.Accommodation_ClassificationAttributes" Schema="dbo" store:Type="Tables" />
@@ -1958,6 +2018,7 @@
           <EntitySet Name="m_Statuses" EntityType="Self.m_Statuses" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="m_SupplierImportAttributes" EntityType="Self.m_SupplierImportAttributes" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="m_SupplierImportAttributeValues" EntityType="Self.m_SupplierImportAttributeValues" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="m_ZoneMaster" EntityType="Self.m_ZoneMaster" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Media_Attributes" EntityType="Self.Media_Attributes" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Supplier" EntityType="Self.Supplier" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Supplier_APILocation" EntityType="Self.Supplier_APILocation" Schema="dbo" store:Type="Tables" />
@@ -1966,6 +2027,8 @@
           <EntitySet Name="Supplier_Schedule" EntityType="Self.Supplier_Schedule" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SupplierEntity" EntityType="Self.SupplierEntity" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="SupplierEntityValues" EntityType="Self.SupplierEntityValues" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ZoneCity_Mapping" EntityType="Self.ZoneCity_Mapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ZoneProduct_Mapping" EntityType="Self.ZoneProduct_Mapping" Schema="dbo" store:Type="Tables" />
         </EntityContainer>
       </Schema></edmx:StorageModels>
     <!-- CSDL content -->
@@ -2056,6 +2119,9 @@
           <EntitySet Name="Activity_DeparturePoints" EntityType="TLGX_DEV_Model.Activity_DeparturePoints" />
           <EntitySet Name="Activity_SupplierCityDepartureCode" EntityType="TLGX_DEV_Model.Activity_SupplierCityDepartureCode" />
           <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
+          <EntitySet Name="m_ZoneMaster" EntityType="TLGX_DEV_Model.m_ZoneMaster" />
+          <EntitySet Name="ZoneProduct_Mapping" EntityType="TLGX_DEV_Model.ZoneProduct_Mapping" />
+          <EntitySet Name="ZoneCity_Mapping" EntityType="TLGX_DEV_Model.ZoneCity_Mapping" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2306,6 +2372,8 @@
           <Property Name="Priority" Type="Int32" />
           <Property Name="Description" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="AttributeValue_ID" Type="Guid" />
+          <Property Name="AttributeValueType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Comparison" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Supplier">
           <Key>
@@ -2771,6 +2839,7 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="IsActive" Type="Boolean" />
+          <Property Name="TLGXAccoRoomId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Accommodation_RouteInfo">
           <Key>
@@ -2902,6 +2971,7 @@
           <Property Name="StateCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="CountryName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MatchingScore" Type="Double" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -3211,6 +3281,7 @@
           <Property Name="Activity_StatusNotes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
           <Property Name="Activity_Status_Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="InterestType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
@@ -3859,6 +3930,8 @@
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="Create_User" Type="String" Nullable="false" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SystemInterestType" Type="String" MaxLength="250" FixedLength="false" Unicode="true" />
+          <Property Name="SystemInterestType_ID" Type="Guid" />
         </EntityType>
         <EntityType Name="SupplierEntity">
           <Key>
@@ -3932,6 +4005,59 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="TotalCount" Type="Int32" />
           <Property Name="MongoPushCount" Type="Int32" />
+        </EntityType>
+        <EntityType Name="m_ZoneMaster">
+          <Key>
+            <PropertyRef Name="Zone_id" />
+          </Key>
+          <Property Name="Zone_id" Type="Guid" Nullable="false" />
+          <Property Name="Zone_Type" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Zone_SubType" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Zone_Name" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Latitude" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Longitude" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="Zone_Radius" Type="Decimal" Precision="18" Scale="2" />
+          <Property Name="Geography" Type="Geography" />
+          <Property Name="GooglePlace_Id" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Country_Id" Type="Guid" />
+        </EntityType>
+        <EntityType Name="ZoneProduct_Mapping">
+          <Key>
+            <PropertyRef Name="ZoneProductMapping_Id" />
+          </Key>
+          <Property Name="ZoneProductMapping_Id" Type="Guid" Nullable="false" />
+          <Property Name="Zone_Id" Type="Guid" />
+          <Property Name="Product_Id" Type="Guid" />
+          <Property Name="ProductType" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Unit" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Distance" Type="Decimal" Precision="18" Scale="4" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="Included" Type="Boolean" />
+          <Property Name="Create_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="ZoneCity_Mapping">
+          <Key>
+            <PropertyRef Name="ZoneCityMapping_Id" />
+          </Key>
+          <Property Name="ZoneCityMapping_Id" Type="Guid" Nullable="false" />
+          <Property Name="Zone_Id" Type="Guid" />
+          <Property Name="City_Id" Type="Guid" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="IsActive" Type="Boolean" Nullable="false" />
+          <Property Name="Create_User" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4188,6 +4314,8 @@
           <EntitySetMapping Name="m_SupplierImportAttributeValues">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_SupplierImportAttributeValues">
               <MappingFragment StoreEntitySet="m_SupplierImportAttributeValues">
+                <ScalarProperty Name="Comparison" ColumnName="Comparison" />
+                <ScalarProperty Name="AttributeValueType" ColumnName="AttributeValueType" />
                 <ScalarProperty Name="AttributeValue_ID" ColumnName="AttributeValue_ID" />
                 <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="Priority" ColumnName="Priority" />
@@ -4660,6 +4788,7 @@
           <EntitySetMapping Name="Accommodation_RoomInfo">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_RoomInfo">
               <MappingFragment StoreEntitySet="Accommodation_RoomInfo">
+                <ScalarProperty Name="TLGXAccoRoomId" ColumnName="TLGXAccoRoomId" />
                 <ScalarProperty Name="IsActive" ColumnName="IsActive" />
                 <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
@@ -4767,6 +4896,7 @@
           <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping">
               <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping">
+                <ScalarProperty Name="MatchingScore" ColumnName="MatchingScore" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
                 <ScalarProperty Name="CountryName" ColumnName="CountryName" />
                 <ScalarProperty Name="StateCode" ColumnName="StateCode" />
@@ -5098,6 +5228,7 @@
           <EntitySetMapping Name="Activity_Flavour">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Flavour">
               <MappingFragment StoreEntitySet="Activity_Flavour">
+                <ScalarProperty Name="InterestType" ColumnName="InterestType" />
                 <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
                 <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
                 <ScalarProperty Name="Activity_StatusNotes" ColumnName="Activity_StatusNotes" />
@@ -5798,6 +5929,8 @@
           <EntitySetMapping Name="Activity_CategoriesType">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_CategoriesType">
               <MappingFragment StoreEntitySet="Activity_CategoriesType">
+                <ScalarProperty Name="SystemInterestType_ID" ColumnName="SystemInterestType_ID" />
+                <ScalarProperty Name="SystemInterestType" ColumnName="SystemInterestType" />
                 <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
                 <ScalarProperty Name="Create_User" ColumnName="Create_User" />
                 <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
@@ -5896,6 +6029,62 @@
                 <ScalarProperty Name="Type" ColumnName="Type" />
                 <ScalarProperty Name="Element" ColumnName="Element" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="m_ZoneMaster">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.m_ZoneMaster">
+              <MappingFragment StoreEntitySet="m_ZoneMaster">
+                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="GooglePlace_Id" ColumnName="GooglePlace_Id" />
+                <ScalarProperty Name="Geography" ColumnName="Geography" />
+                <ScalarProperty Name="Zone_Radius" ColumnName="Zone_Radius" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+                <ScalarProperty Name="Zone_Name" ColumnName="Zone_Name" />
+                <ScalarProperty Name="Zone_SubType" ColumnName="Zone_SubType" />
+                <ScalarProperty Name="Zone_Type" ColumnName="Zone_Type" />
+                <ScalarProperty Name="Zone_id" ColumnName="Zone_id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ZoneProduct_Mapping">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.ZoneProduct_Mapping">
+              <MappingFragment StoreEntitySet="ZoneProduct_Mapping">
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Included" ColumnName="Included" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Distance" ColumnName="Distance" />
+                <ScalarProperty Name="Unit" ColumnName="Unit" />
+                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
+                <ScalarProperty Name="Product_Id" ColumnName="Product_Id" />
+                <ScalarProperty Name="Zone_Id" ColumnName="Zone_Id" />
+                <ScalarProperty Name="ZoneProductMapping_Id" ColumnName="ZoneProductMapping_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ZoneCity_Mapping">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.ZoneCity_Mapping">
+              <MappingFragment StoreEntitySet="ZoneCity_Mapping">
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
+                <ScalarProperty Name="Zone_Id" ColumnName="Zone_Id" />
+                <ScalarProperty Name="ZoneCityMapping_Id" ColumnName="ZoneCityMapping_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

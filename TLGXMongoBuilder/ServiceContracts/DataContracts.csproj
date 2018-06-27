@@ -108,6 +108,7 @@
     <Compile Include="Masters\DC_Port.cs" />
     <Compile Include="Masters\DC_State.cs" />
     <Compile Include="Masters\DC_Supplier.cs" />
+    <Compile Include="Masters\DC_ZoneMaster.cs" />
     <Compile Include="ProdContracts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StaticData\AccommodationRoom.cs" />

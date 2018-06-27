@@ -27,5 +27,7 @@ namespace DAL
         public Nullable<int> Priority { get; set; }
         public string Description { get; set; }
         public Nullable<System.Guid> AttributeValue_ID { get; set; }
+        public string AttributeValueType { get; set; }
+        public string Comparison { get; set; }
     }
 }

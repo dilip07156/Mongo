@@ -34,5 +34,7 @@ namespace DAL
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
+        public string SystemInterestType { get; set; }
+        public Nullable<System.Guid> SystemInterestType_ID { get; set; }
     }
 }

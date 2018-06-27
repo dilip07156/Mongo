@@ -206,5 +206,19 @@ namespace BAL
             }
         }
 
+        #region ZoneMaster
+        public void LoadZoneMaster(string LogId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadZoneMaster(gLogId);
+                }
+            }
+        }
+        #endregion
+
     }
 }

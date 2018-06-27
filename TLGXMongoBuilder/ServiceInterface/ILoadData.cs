@@ -114,5 +114,12 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/UpdateAccoStaticDataSingleColumn", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void UpdateAccoStaticDataSingleColumn();
+
+        #region ZoneMaster
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/ZoneMasters/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadZoneMaster(string LogId);
+        #endregion
     }
 }

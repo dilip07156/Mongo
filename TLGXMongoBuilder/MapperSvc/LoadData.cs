@@ -191,5 +191,16 @@ namespace MapperSvc
                 objBL.UpdateAccoStaticDataSingleColumn();
             }
         }
+
+
+        #region ZoneMaster
+        public void LoadZoneMaster(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadZoneMaster(LogId);
+            }
+        }
+        #endregion
     }
 }

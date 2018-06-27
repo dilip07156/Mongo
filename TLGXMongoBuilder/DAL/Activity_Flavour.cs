@@ -59,5 +59,6 @@ namespace DAL
         public string Activity_StatusNotes { get; set; }
         public string Activity_Status_Edit_User { get; set; }
         public Nullable<System.DateTime> Activity_Status_Edit_Date { get; set; }
+        public string InterestType { get; set; }
     }
 }

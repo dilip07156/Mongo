@@ -2033,5 +2033,78 @@ namespace DAL
                 throw ex;
             }
         }
+
+        #region ZoneMaster
+        public void LoadZoneMaster(Guid LogId)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
+
+                    _ZoneList = (from ma in context.m_ZoneMaster
+                                 where ma.IsActive == true
+                                 select new DataContracts.Masters.DC_Zone_Master
+                                 {
+                                     Zone_Name = ma.Zone_Name.Trim(),
+                                     Zone_Type = ma.Zone_Type.ToUpper(),
+                                     Zone_SubType = ma.Zone_SubType.ToUpper(),
+                                     Zone_Radius = ma.Zone_Radius,
+                                     Latitude = ma.Latitude,
+                                     Longitude = ma.Longitude,
+                                     TLGXCountryCode = (from a in context.m_CountryMaster where a.Country_Id == ma.Country_Id select a.Code).FirstOrDefault().ToUpper(),
+
+                                     Zone_CityMapping=( from zc in context.ZoneCity_Mapping
+                                                       join cm in context.m_CityMaster on  zc.City_Id equals cm.City_Id
+                                                       where zc.Zone_Id == ma.Zone_id
+                                                       select new DataContracts.Masters.DC_Zone_CityMapping
+                                                       {
+                                                           TLGXCityCode= cm.Code.ToUpper()
+                                                       }).ToList(),
+
+                                     Zone_ProductMapping = (from zp in context.ZoneProduct_Mapping
+                                                            join ac in context.Accommodations on zp.Product_Id equals ac.Accommodation_Id
+                                                            where zp.Zone_Id == ma.Zone_id
+                                                            select new DataContracts.Masters.DC_Zone_ProductMapping
+                                                            {
+                                                                //Accommodation_Id= zp.Product_Id,
+                                                                TLGXCompanyHotelID=ac.CompanyHotelID,
+                                                                Distance= zp.Distance,
+                                                                TLGXHotelName=ac.HotelName,
+                                                                IsIncluded = zp.Included,
+                                                                TLGXProductType= zp.ProductType,
+                                                                Unit=zp.Unit
+                                                            } ).ToList()
+                                }).ToList();
+
+
+                    if (_ZoneList.Count > 0)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        _database.DropCollection("ZoneMaster");
+                        var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
+                        collection.InsertManyAsync(_ZoneList);
+                        collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
+
+                        collection = null;
+                        _database = null;
+                    }
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
     }
 }
