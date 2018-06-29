@@ -12,6 +12,14 @@ using MongoDB.Driver.Builders;
 
 namespace DAL
 {
+    public enum PushStatus
+    {
+        SCHEDULED,
+        RUNNNING,
+        COMPLETED,
+        ERROR
+    }
+
     public class DL_LoadData : IDisposable
     {
         public void Dispose()
@@ -290,8 +298,12 @@ namespace DAL
 
         public void LoadProductMapping(Guid LogId)
         {
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
             try
             {
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
 
@@ -299,11 +311,13 @@ namespace DAL
                 //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
                 //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
 
+                StringBuilder setNewStatus = new StringBuilder();
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
-
+                    //ALL APM Count
+                     TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Count();
                     List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     foreach (var SupplierCode in SupplierCodes)
@@ -322,7 +336,7 @@ namespace DAL
                                               from acco in LJAcco.DefaultIfEmpty()
 
                                               where s.Code == SupplierCode
-                                              
+
                                               select new DataContracts.Mapping.DC_ProductMapping
                                               {
                                                   SupplierCode = s.Code.Trim().ToUpper(),
@@ -349,44 +363,52 @@ namespace DAL
                         if (productMapList.Count() > 0)
                         {
                             var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                            collection.InsertMany(productMapList);
+                            collection.InsertManyAsync(productMapList);
+
+                            #region To update CounterIn DistributionLog
+                            MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                            #endregion
                         }
                     }
+
                     collection = null;
                     _database = null;
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.Create_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+                throw ex;
                 throw ex;
             }
         }
 
         public void LoadProductMappingLite(Guid LogId)
         {
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+
             try
             {
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ProductMappingLite");
 
                 //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                 //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
 
-
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
+                    //TotalCount
+                    TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.Status == "MAPPED" || w.Status == "AUTOMAPPED").Count();
 
                     List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => s.Code.ToUpper()).Distinct().ToList();
-                    //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     foreach (var SupplierCode in SupplierCodes)
                     {
                         var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
@@ -404,24 +426,24 @@ namespace DAL
                         if (productMapList.Count() > 0)
                         {
                             var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                            collection.InsertMany(productMapList);
+                            collection.InsertManyAsync(productMapList);
+
+                            #region To update CounterIn DistributionLog
+                            MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                            #endregion
                         }
                     }
                     collection = null;
                     _database = null;
 
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.Create_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
 
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
                 throw ex;
             }
         }
@@ -2052,6 +2074,37 @@ namespace DAL
             }
         }
 
+        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0)
+        {
+            string Status = string.Empty;
+            string EditUser = "MPUSH";
+
+            if (status == PushStatus.RUNNNING)
+            {
+                Status = "Running";
+            }
+            else if (status == PushStatus.COMPLETED)
+            {
+                Status = "Completed";
+            }
+            else if (status == PushStatus.ERROR)
+            {
+                Status = "Error";
+            }
+
+            StringBuilder setNewStatus = new StringBuilder();
+            setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            {
+
+                context.Configuration.AutoDetectChangesEnabled = false;
+                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                if (Log != null)
+                    context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+            }
+            setNewStatus = null;
+        }
+
         #region ZoneMaster
         public void LoadZoneMaster(Guid LogId)
         {
@@ -2097,7 +2150,7 @@ namespace DAL
                 throw ex;
             }
         }
-        
+
         private List<DataContracts.Masters.DC_Zone_Master> GetZoneMasterdataToLoad(int batchSize, int batchNo)
         {
             List<DataContracts.Masters.DC_Zone_Master> _ZoneListResultMain = new List<DataContracts.Masters.DC_Zone_Master>();
@@ -2206,7 +2259,7 @@ namespace DAL
                     Latitude = item.Latitude,
                     Longitude = item.Longitude,
                     Zone_Radius = item.Zone_Radius,
-                    TLGXCountryCode= item.TLGXCountryCode,
+                    TLGXCountryCode = item.TLGXCountryCode,
                     Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
                     {
                         TLGXCityCode = xcity.TLGXCityCode
@@ -2223,7 +2276,7 @@ namespace DAL
 
                 });
             }
-            catch (Exception ex ) { throw; }
+            catch (Exception ex) { throw; }
             return _ResultList;
         }
         #endregion
