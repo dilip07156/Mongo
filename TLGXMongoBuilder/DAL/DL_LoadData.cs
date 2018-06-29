@@ -308,43 +308,43 @@ namespace DAL
                     //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                     foreach (var SupplierCode in SupplierCodes)
                     {
-                       var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                        var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
 
-                                          join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
+                                              join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
 
-                                          join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
-                                          from citymaster in LJCityMaster.DefaultIfEmpty()
+                                              join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
+                                              from citymaster in LJCityMaster.DefaultIfEmpty()
 
-                                          join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
-                                          from countrymaster in LJCountryMaster.DefaultIfEmpty()
+                                              join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                              from countrymaster in LJCountryMaster.DefaultIfEmpty()
 
-                                          join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
-                                          from acco in LJAcco.DefaultIfEmpty()
+                                              join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                              from acco in LJAcco.DefaultIfEmpty()
 
-                                          where s.Code == SupplierCode
+                                              where s.Code == SupplierCode
+                                              
+                                              select new DataContracts.Mapping.DC_ProductMapping
+                                              {
+                                                  SupplierCode = s.Code.Trim().ToUpper(),
+                                                  SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                  SupplierCountryCode = apm.CountryCode.ToUpper(),
+                                                  SupplierCountryName = apm.CountryName.ToUpper(),
+                                                  SupplierCityCode = apm.CityCode.ToUpper(),
+                                                  SupplierCityName = apm.CityName.ToUpper(),
+                                                  SupplierProductName = apm.ProductName.ToUpper(),
+                                                  MappingStatus = apm.Status.ToUpper(),
+                                                  MapId = apm.MapId ?? 0,
 
-                                          select new DataContracts.Mapping.DC_ProductMapping
-                                          {
-                                              SupplierCode = s.Code.Trim().ToUpper(),
-                                              SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                              SupplierCountryCode = apm.CountryCode.ToUpper(),
-                                              SupplierCountryName = apm.CountryName.ToUpper(),
-                                              SupplierCityCode = apm.CityCode.ToUpper(),
-                                              SupplierCityName = apm.CityName.ToUpper(),
-                                              SupplierProductName = apm.ProductName.ToUpper(),
-                                              MappingStatus = apm.Status.ToUpper(),
-                                              MapId = apm.MapId ?? 0,
+                                                  SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
+                                                  SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
+                                                  SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
 
-                                              SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
-                                              SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
-                                              SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+                                                  SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
+                                                  SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
 
-                                              SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
-                                              SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
-                                              SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
-                                              SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
-
-                                          }).ToList();
+                                              }).ToList();
 
                         if (productMapList.Count() > 0)
                         {
@@ -2044,55 +2044,29 @@ namespace DAL
                 {
                     context.Database.CommandTimeout = 0;
                     List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
+                    int total = 0;
+                    int BatchSize = 1000;
+                    string strTotalCount = @"SELECT COUNT(1) FROM m_ZoneMaster with(nolock)";
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try { total = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault(); } catch (Exception ex) { }
+                    int NoOfBatch = total / BatchSize;
+                    int mod = total % BatchSize;
+                    if (mod > 0)
+                        NoOfBatch = NoOfBatch + 1;
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("ZoneMaster");
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
 
-                    _ZoneList = (from ma in context.m_ZoneMaster
-                                 where ma.IsActive == true
-                                 select new DataContracts.Masters.DC_Zone_Master
-                                 {
-                                     Zone_Name = ma.Zone_Name.Trim(),
-                                     Zone_Type = ma.Zone_Type.ToUpper(),
-                                     Zone_SubType = ma.Zone_SubType.ToUpper(),
-                                     Zone_Radius = ma.Zone_Radius,
-                                     Latitude = ma.Latitude,
-                                     Longitude = ma.Longitude,
-                                     TLGXCountryCode = (from a in context.m_CountryMaster where a.Country_Id == ma.Country_Id select a.Code).FirstOrDefault().ToUpper(),
-
-                                     Zone_CityMapping=( from zc in context.ZoneCity_Mapping
-                                                       join cm in context.m_CityMaster on  zc.City_Id equals cm.City_Id
-                                                       where zc.Zone_Id == ma.Zone_id
-                                                       select new DataContracts.Masters.DC_Zone_CityMapping
-                                                       {
-                                                           TLGXCityCode= cm.Code.ToUpper()
-                                                       }).ToList(),
-
-                                     Zone_ProductMapping = (from zp in context.ZoneProduct_Mapping
-                                                            join ac in context.Accommodations on zp.Product_Id equals ac.Accommodation_Id
-                                                            where zp.Zone_Id == ma.Zone_id
-                                                            select new DataContracts.Masters.DC_Zone_ProductMapping
-                                                            {
-                                                                //Accommodation_Id= zp.Product_Id,
-                                                                TLGXCompanyHotelID=ac.CompanyHotelID,
-                                                                Distance= zp.Distance,
-                                                                TLGXHotelName=ac.HotelName,
-                                                                IsIncluded = zp.Included,
-                                                                TLGXProductType= zp.ProductType,
-                                                                Unit=zp.Unit
-                                                            } ).ToList()
-                                }).ToList();
-
-
-                    if (_ZoneList.Count > 0)
+                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
                     {
-                        _database = MongoDBHandler.mDatabase();
-                        _database.DropCollection("ZoneMaster");
-                        var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
-                        collection.InsertManyAsync(_ZoneList);
-                        collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
-
-                        collection = null;
-                        _database = null;
+                        _ZoneList = GetZoneMasterdataToLoad(BatchSize, BatchNo);
+                        if (_ZoneList.Count > 0)
+                            collection.InsertManyAsync(_ZoneList);
                     }
 
+                    collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
+                    collection = null;
+                    _database = null;
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
                     {
@@ -2105,6 +2079,135 @@ namespace DAL
             {
                 throw ex;
             }
+        }
+        
+        private List<DataContracts.Masters.DC_Zone_Master> GetZoneMasterdataToLoad(int batchSize, int batchNo)
+        {
+            List<DataContracts.Masters.DC_Zone_Master> _ZoneListResultMain = new List<DataContracts.Masters.DC_Zone_Master>();
+            List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
+            try
+            {
+                #region ==== ZoneMasterQuery
+                StringBuilder sbSelectZoneMaster = new StringBuilder();
+                StringBuilder sbOrderbyZoneMaster = new StringBuilder();
+                sbSelectZoneMaster.Append(@" SELECT Zone_id, zm.Zone_Name, zm.Zone_Type, zm.Zone_SubType,zm.Zone_Radius,
+                                                zm.Latitude, zm.Longitude,co.Code as TLGXCountryCode
+                                                FROM  m_zoneMaster zm  with(Nolock)
+                                                LEFT JOIN m_CountryMaster co with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                                WHERE zm.isActive=1 ");
+                int skip = batchNo * batchSize;
+                sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
+
+                StringBuilder sbfinalZoneMaster = new StringBuilder();
+                sbfinalZoneMaster.Append(sbSelectZoneMaster + " ");
+                sbfinalZoneMaster.Append(" " + sbOrderbyZoneMaster + " ");
+                #endregion
+                #region ==== ZoneProductMapping SQL QUERY
+                StringBuilder sbSelectZoneProduct = new StringBuilder();
+                StringBuilder sbOrderByZoneProduct = new StringBuilder();
+                sbSelectZoneProduct.Append(@" SELECT zp.Zone_id, ac.CompanyHotelID as TLGXCompanyHotelID ,zp.Distance,
+                                                  ac.HotelName as TLGXHotelName,zp.Included as IsIncluded,
+                                                  zp.ProductType as TLGXProductType,zp.Unit
+                                                  FROM  ZoneProduct_Mapping zp with(NOLOCK) 
+                                                  JOIN Accommodation ac with(NOLOCK)  on zp.Product_Id = ac.Accommodation_Id ");
+                sbOrderByZoneProduct.Append(" ORDER BY Distance ");
+
+                StringBuilder sbfinalZoneProduct = new StringBuilder();
+                sbfinalZoneProduct.Append(sbSelectZoneProduct + " ");
+                sbfinalZoneProduct.Append(" WHERE zp.zone_id  in ( ");
+                #endregion
+                #region ==== ZoneCityMapping SQL QUERY
+                StringBuilder sbSelectZoneCity = new StringBuilder();
+                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, code as TLGXCityCode
+                                               FROM  ZoneCity_Mapping zc with(NOLOCK) 
+                                               JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id ");
+
+                StringBuilder sbfinalZoneCity = new StringBuilder();
+                sbfinalZoneCity.Append(sbSelectZoneCity + " ");
+                sbfinalZoneCity.Append(" WHERE zc.zone_id  in ( ");
+
+                #endregion
+
+                List<DataContracts.Masters.DC_Zone_ProductMappingRQ> _ZoneProdListResult = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
+
+                List<DataContracts.Masters.DC_Zone_CityMappingRQ> _ZoneCityListResult = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
+
+                StringBuilder sbZone_id = new StringBuilder();
+
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        _ZoneListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_MasterRQ>(sbfinalZoneMaster.ToString()).ToList();
+
+                        //Add  Zone_id for ZpList and Zc List
+                        foreach (var id in _ZoneListResult)
+                        {
+                            sbZone_id.Append("'" + id.Zone_id + "',");
+                        }
+                        //To Get Zone product by Zone id
+                        sbfinalZoneProduct.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        sbfinalZoneProduct.Append(sbOrderByZoneProduct);
+                        _ZoneProdListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_ProductMappingRQ>(sbfinalZoneProduct.ToString()).ToList();
+                        // End == To Get Zone product by Zone id
+
+
+                        //To Get Zone city by Zone id
+                        sbfinalZoneCity.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        _ZoneCityListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CityMappingRQ>(sbfinalZoneCity.ToString()).ToList();
+
+                        foreach (var item in _ZoneListResult)
+                        {
+                            item.Zone_ProductMapping = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
+                            item.Zone_ProductMapping = _ZoneProdListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                            item.Zone_CityMapping = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
+                            item.Zone_CityMapping = _ZoneCityListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                        }
+                        _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
+                    }
+                    catch (Exception ex) { }
+                }
+
+                return _ZoneListResultMain;
+            }
+            catch (Exception ex) { }
+            return _ZoneListResultMain;
+        }
+
+        // Remove Zone_Id from above List 
+        private List<DataContracts.Masters.DC_Zone_Master> ConvertListWithoutId(List<DataContracts.Masters.DC_Zone_MasterRQ> RQ)
+        {
+            List<DataContracts.Masters.DC_Zone_Master> _ResultList = new List<DataContracts.Masters.DC_Zone_Master>();
+            try
+            {
+                _ResultList = RQ.ConvertAll(item => new DataContracts.Masters.DC_Zone_Master
+                {
+                    Zone_Name = item.Zone_Name,
+                    Zone_Type = item.Zone_Type,
+                    Zone_SubType = item.Zone_SubType,
+                    Latitude = item.Latitude,
+                    Longitude = item.Longitude,
+                    Zone_Radius = item.Zone_Radius,
+                    TLGXCountryCode= item.TLGXCountryCode,
+                    Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
+                    {
+                        TLGXCityCode = xcity.TLGXCityCode
+                    }),
+                    Zone_ProductMapping = item.Zone_ProductMapping.ConvertAll(xProd => new DataContracts.Masters.DC_Zone_ProductMapping
+                    {
+                        TLGXCompanyHotelID = xProd.TLGXCompanyHotelID,
+                        TLGXHotelName = xProd.TLGXHotelName,
+                        TLGXProductType = xProd.TLGXProductType,
+                        Distance = xProd.Distance,
+                        Unit = xProd.Unit,
+                        IsIncluded = xProd.IsIncluded
+                    })
+
+                });
+            }
+            catch (Exception ex ) { throw; }
+            return _ResultList;
         }
         #endregion
     }
