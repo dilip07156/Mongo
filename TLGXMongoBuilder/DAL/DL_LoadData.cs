@@ -288,7 +288,7 @@ namespace DAL
             }
         }
 
-        public void LoadProductMapping()
+        public void LoadProductMapping(Guid LogId)
         {
             try
             {
@@ -352,6 +352,15 @@ namespace DAL
                             collection.InsertMany(productMapList);
                         }
                     }
+                    collection = null;
+                    _database = null;
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        Log.Create_Date = DateTime.Now;
+                        context.SaveChanges();
+                    }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -360,7 +369,7 @@ namespace DAL
             }
         }
 
-        public void LoadProductMappingLite()
+        public void LoadProductMappingLite(Guid LogId)
         {
             try
             {
@@ -400,6 +409,14 @@ namespace DAL
                     }
                     collection = null;
                     _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        Log.Create_Date = DateTime.Now;
+                        context.SaveChanges();
+                    }
 
                 }
             }

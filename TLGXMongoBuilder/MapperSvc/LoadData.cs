@@ -102,19 +102,19 @@ namespace MapperSvc
             }
         }
 
-        public void LoadProductMapping()
+        public void LoadProductMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadProductMapping();
+                objBL.LoadProductMapping(LogId);
             }
         }
 
-        public void LoadProductMappingLite()
+        public void LoadProductMappingLite(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadProductMappingLite();
+                objBL.LoadProductMappingLite(LogId);
             }
         }
 

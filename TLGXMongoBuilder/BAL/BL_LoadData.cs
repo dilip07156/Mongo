@@ -97,19 +97,27 @@ namespace BAL
         }
 
 
-        public void LoadProductMapping()
+        public void LoadProductMapping(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadProductMapping();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMapping(gLogId);
+                }
             }
         }
 
-        public void LoadProductMappingLite()
+        public void LoadProductMappingLite(string LogId)
         {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
             {
-                obj.LoadProductMappingLite();
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMappingLite(gLogId);
+                }
             }
         }
 
