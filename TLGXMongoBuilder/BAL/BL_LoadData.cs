@@ -97,26 +97,28 @@ namespace BAL
         }
 
         #region Product Mapping Push
-        public void LoadProductMapping(string LogId, string MapId)
+        public void LoadProductMapping(string LogId, string ProdMapId)
         {
             Guid gLogId;
-            if (Guid.TryParse(LogId, out gLogId))
+            Guid gProdMapId;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(ProdMapId, out gProdMapId))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.LoadProductMapping(gLogId, Convert.ToInt32(MapId));
+                    obj.LoadProductMapping(gLogId, gProdMapId);
                 }
             }
         }
 
-        public void LoadProductMappingLite(string LogId,string MapId)
+        public void LoadProductMappingLite(string LogId,string ProdMapId)
         {
             Guid gLogId;
-            if (Guid.TryParse(LogId, out gLogId))
+            Guid gProdMapId;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(ProdMapId, out gProdMapId))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.LoadProductMappingLite(gLogId, Convert.ToInt32(MapId));
+                    obj.LoadProductMappingLite(gLogId, gProdMapId);
                 }
             }
         }

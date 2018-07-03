@@ -297,7 +297,7 @@ namespace DAL
         }
 
         #region Product Mapping Push
-        public void LoadProductMapping(Guid LogId, int MapId)
+        public void LoadProductMapping(Guid LogId, Guid ProdMapId)
         {
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
@@ -305,7 +305,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
-                if (MapId == 0)
+                if (ProdMapId == Guid.Empty)
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
@@ -406,11 +406,11 @@ namespace DAL
                                         left Join m_CityMaster cm with(nolock) on apm.City_Id = cm.City_Id
                                         left join m_CountryMaster con with(nolock) on apm.country_id = con.country_id
                                         left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id
-                                        where  apm.MapId= '" + MapId + "'");
+                                        where  apm.Accommodation_ProductMapping_Id= '" + ProdMapId + "'");
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMapping>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == MapId);
+                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
@@ -426,7 +426,7 @@ namespace DAL
             }
         }
 
-        public void LoadProductMappingLite(Guid LogId,int MapId)
+        public void LoadProductMappingLite(Guid LogId,Guid ProdMapId)
         {
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
@@ -434,7 +434,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ProductMappingLite");
-                if (MapId == 0)
+                if (ProdMapId == Guid.Empty)
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
@@ -492,11 +492,11 @@ namespace DAL
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
                                         left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id
-                                        where  apm.MapId ='" + MapId + "' and apm.Status in ('MAPPED','AUTOMAPPED')");
+                                        where  apm.Accommodation_ProductMapping_Id ='" + ProdMapId + "' and apm.Status in ('MAPPED','AUTOMAPPED')");
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == MapId);
+                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
