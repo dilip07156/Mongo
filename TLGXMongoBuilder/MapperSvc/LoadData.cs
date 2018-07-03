@@ -102,21 +102,23 @@ namespace MapperSvc
             }
         }
 
-        public void LoadProductMapping(string LogId)
+        #region Product Mapping Push
+        public void LoadProductMapping(string LogId, string MapId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadProductMapping(LogId);
+                objBL.LoadProductMapping(LogId,MapId);
             }
         }
 
-        public void LoadProductMappingLite(string LogId)
+        public void LoadProductMappingLite(string LogId, string MapId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadProductMappingLite(LogId);
+                objBL.LoadProductMappingLite(LogId, MapId);
             }
         }
+        #endregion
 
         public void LoadActivityMapping(string LogId)
         {

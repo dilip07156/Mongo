@@ -60,15 +60,17 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Load/CityMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadCityMapping(string LogId);
 
+        #region Product Mapping Push
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/ProductMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadProductMapping(string LogId);
+        [WebGet(UriTemplate = "Load/ProductMapping/{LogId}/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadProductMapping(string LogId, string MapId);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/ProductMappingLite/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadProductMappingLite(string LogId);
+        [WebGet(UriTemplate = "Load/ProductMappingLite/{LogId}/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadProductMappingLite(string LogId ,string MapId);
+        #endregion
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
