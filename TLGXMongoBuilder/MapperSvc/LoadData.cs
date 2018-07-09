@@ -204,5 +204,15 @@ namespace MapperSvc
             }
         }
         #endregion
+
+
+        public void UpdateHotelRoomTypeMapping(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateHotelRoomTypeMapping(LogId);
+            }
+        }
+
     }
 }

@@ -20,13 +20,16 @@ namespace DataContracts.Mapping
         public string SupplierRoomTypeCode { get; set; }
         public string SupplierRoomTypeName { get; set; }
         public string SystemRoomTypeMapId { get; set; }
+
         public string SystemProductCode { get; set; }
         public string SystemRoomTypeCode { get; set; }
         public string SystemRoomTypeName { get; set; }
         public string SystemNormalizedRoomType { get; set; }
         public string SystemStrippedRoomType { get; set; }
+
         //public DC_RoomTypeMapping_AlternateRoomNames AlternateRoomNames { get; set; }
         public List<DC_RoomTypeMapping_Attributes> Attibutes { get; set; }
+
         public string Status { get; set; }
     }
 
