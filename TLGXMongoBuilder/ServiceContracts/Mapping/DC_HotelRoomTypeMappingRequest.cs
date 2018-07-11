@@ -75,6 +75,8 @@ namespace DataContracts.Mapping
         //[BsonIgnoreIfNull]
         public string BeddingConfig { get; set; }
         //[BsonIgnoreIfNull]
+        public string RoomDescription { get; set; }
+        //[BsonIgnoreIfNull]
         public int SystemRoomTypeMapId { get; set; }
         //[BsonIgnoreIfNull]
         public int? SystemProductCode { get; set; }
@@ -90,6 +92,8 @@ namespace DataContracts.Mapping
         public List<DC_RoomTypeMapping_Attributes_HRTM> Attibutes { get; set; }
         //[BsonIgnoreIfNull]
         public string Status { get; set; }
+        //[BsonIgnoreIfNull]
+        public double? MatchingScore { get; set; }
     }
     public class DC_RoomTypeMapping_Attributes_HRTM
     {

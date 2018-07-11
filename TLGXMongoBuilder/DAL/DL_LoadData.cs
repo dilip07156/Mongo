@@ -1240,7 +1240,7 @@ namespace DAL
                     }
 
                     collection = null;
-                   _database = null;
+                    _database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -2356,7 +2356,7 @@ namespace DAL
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
-                    // Guid? Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == Logid select s.Supplier_Id).FirstOrDefault();
+                    Guid? Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == Logid select s.Supplier_Id).FirstOrDefault();
 
                     string str = string.Empty;
                     context.Database.CommandTimeout = 0;
@@ -2380,21 +2380,24 @@ namespace DAL
                                             SRTM.Smoking,                SRTM.BedTypeCode AS BedType, 
                                             SRTM.MinGuestOccupancy,      SRTM.PromotionalVendorCode, 
                                             SRTM.BeddingConfig,          SRTM.MapId AS SystemRoomTypeMapId,
+                                            SRTM.RoomDescription,
                                             A.CompanyHotelID AS SystemProductCode,
                                             ARI.RoomId AS SystemRoomTypeCode, ARI.RoomName AS SystemRoomTypeName,
                                             UPPER(SRTM.TX_RoomName) AS SystemNormalizedRoomType,
                                             UPPER(SRTM.Tx_StrippedName) AS SystemStrippedRoomType,
-                                            SRTM.MappingStatus As Status
+                                            SRTM.MappingStatus As Status,
+	                                        SRTM.MatchingScore
                                             From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
                                             inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
                                             inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
                                             inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
-                                            Where SRTM.MappingStatus IN ('MAPPED','AUTOMAPPED') ");
+                                            Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') ");
 
                     StringBuilder sbWhere = new StringBuilder();
-                    //sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplierid) + "'");
+                    sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplierid) + "'");
 
-                    // sbWhere.AppendLine(" AND SRTM.Supplier_Id = '" + Convert.ToString("7A9C1351-8292-4C8C-B8B9-79F816040328") + "'");
+                    //sbWhere.AppendLine(" AND SRTM.Supplier_Id = '" + Convert.ToString("7A9C1351-8292-4C8C-B8B9-79F816040328") + "'");
+
 
                     StringBuilder sbfinal = new StringBuilder();
 
@@ -2407,7 +2410,7 @@ namespace DAL
                     StringBuilder sbAccommodation_SupplierRoomTypeMapping_Id = new StringBuilder();
                     StringBuilder sbRoomTypeAttributefinalQuery = new StringBuilder();
                     sbRoomTypeAttributefinalQuery.Append(@"  SELECT
-                                RoomTypeMap_Id, SupplierRoomTypeAttribute AS Value,SystemAttributeKeyword As Key
+                                RoomTypeMap_Id, SupplierRoomTypeAttribute AS [Value],SystemAttributeKeyword As [Key]
                                 from Accommodation_SupplierRoomTypeAttributes Where RoomTypeMap_Id IN ( ");
                     foreach (var item in _objHRTM)
                     {
@@ -2428,7 +2431,7 @@ namespace DAL
                     if (_objHRTM.Count > 0)
                     {
                         _database = MongoDBHandler.mDatabase();
-                        _database.DropCollection("RoomTypeMapping");
+                        //_database.DropCollection("RoomTypeMapping");
                         var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
                         collection.InsertManyAsync(_objHRTM);
 
@@ -2440,6 +2443,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Completed";
+                        Log.MongoPushCount = _objHRTM.Count();
                         context.SaveChanges();
                     }
                 }
