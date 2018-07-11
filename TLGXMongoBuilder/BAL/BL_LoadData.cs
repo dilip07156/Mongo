@@ -230,6 +230,19 @@ namespace BAL
         }
         #endregion
 
+
+        public void UpdateHotelRoomTypeMapping(string LogId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.UpdateHotelRoomTypeMapping(gLogId);
+                }
+            }
+        }
+
         #region ZoneType Master
         public void LoadZoneTypeMaster(string LogId)
         {
