@@ -59,7 +59,7 @@ namespace DataContracts.Masters
         public string TLGXCityCode { get; set; }
     }
 
-
+    [DataContract]
     public class DC_Zone_MasterRQ
     {
         [DataMember]
@@ -109,6 +109,16 @@ namespace DataContracts.Masters
         public string TLGXCityCode { get; set; }
         [DataMember]
         public Guid Zone_id { get; set; }
+    }
+
+    [DataContract]
+    public class DC_ZoneTypeMaster
+    {
+        [DataMember]
+        public string Zone_Type { get; set; }
+        [DataMember]
+        public List<string> Zone_SubType { get; set; }
+
     }
 
 }

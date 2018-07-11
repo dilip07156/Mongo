@@ -204,5 +204,15 @@ namespace MapperSvc
             }
         }
         #endregion
+
+        #region ZoneType Master
+        public void LoadZoneTypeMaster(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadZoneTypeMaster(LogId);
+            }
+        }
+        #endregion
     }
 }

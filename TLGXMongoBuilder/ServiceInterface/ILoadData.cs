@@ -118,5 +118,12 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Load/ZoneMasters/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadZoneMaster(string LogId);
         #endregion
+
+        #region ZoneTypeMaster
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/ZoneTypeMaster/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadZoneTypeMaster(string LogId);
+        #endregion
     }
 }
