@@ -2388,7 +2388,7 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
                     dataList = (from ma in context.m_masterattribute
                                 join mav in context.m_masterattributevalue on ma.MasterAttribute_Id equals mav.MasterAttribute_Id
-                                where ma.MasterFor == "Zone" && ma.Name == "ZoneType"
+                                where ma.MasterFor.ToUpper() == "ZONE" && ma.Name.ToUpper() == "ZONETYPE"
                                 select new DataContracts.Masters.DC_ZoneTypeMaster
                                 {
                                     Zone_Type = mav.AttributeValue.Trim().ToUpper(),
@@ -2403,6 +2403,7 @@ namespace DAL
                         #region To update CounterIn DistributionLog
                         if (LogId != Guid.Empty)
                         {
+                            TotalZoneTypeCount = dataList.Count();
                             MongoInsertedCount = MongoInsertedCount + dataList.Count();
                             UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
                         }
