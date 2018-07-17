@@ -2348,21 +2348,95 @@ namespace DAL
         {
             try
             {
-                List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
-                List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _objAttributes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
 
                 //Get Supplier ID from logid
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    context.Database.CommandTimeout = 0;
-                    Guid? Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == Logid select s.Supplier_Id).FirstOrDefault();
+                    //Get SupplierId and Log id 
+                    var listLog = GetScheduledRTM();
+                    if (listLog != null)
+                    {
+                        foreach (var LogidForSupplier in listLog)
+                        {
+                            int TotalCount = 0;
+                            int MLDataInsertedCount = 0;
+                            Guid _logId = Guid.Parse(LogidForSupplier);
+                            UpdateDistLogInfo(_logId, PushStatus.RUNNNING);
 
-                    string str = string.Empty;
+                            #region -- List
+                            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+                            #endregion
+
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+                            Guid Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == _logId select s.Supplier_Id).FirstOrDefault() ?? Guid.Empty;
+
+
+                            int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
+                            //Get Total Count
+                            StringBuilder sbTotalSelect = new StringBuilder();
+                            sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
+                                                    inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
+                                                    inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
+                                                    inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
+                                                    Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') AND SRTM.Supplier_Id ='");
+
+                            sbTotalSelect.Append(Convert.ToString(Supplierid) + "'");
+
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
+                            int NoOfBatch = TotalCount / BatchSize;
+                            int mod = TotalCount % BatchSize;
+                            if (mod > 0)
+                                NoOfBatch = NoOfBatch + 1;
+                            for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                            {
+                                _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, Supplierid);
+                                if (_objHRTM.Count > 0)
+                                {
+                                    _database = MongoDBHandler.mDatabase();
+                                    // _database.DropCollection("RoomTypeMapping");
+                                    var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
+                                    collection.InsertMany(_objHRTM);
+                                    #region To update CounterIn DistributionLog
+                                    MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
+                                    UpdateDistLogInfo(_logId, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
+                                    #endregion
+
+                                    collection = null;
+                                    _database = null;
+                                    _objHRTM = null;
+                                }
+                            }
+                            UpdateDistLogInfo(_logId, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
+
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        private List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> GetDataToPushMongo_RTM(int batchSize, int batchNo, Guid Supplier_id)
+        {
+            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+            List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _objAttributes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM> _objHRTM_IM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM>();
+            List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM> _objAttributes_IM = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>();
+
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
                     context.Database.CommandTimeout = 0;
                     context.Configuration.AutoDetectChangesEnabled = false;
+                    #region Select Query
                     StringBuilder sbSelect = new StringBuilder();
-                    sbSelect.Append(@" select 
+                    sbSelect.Append(@" select  
                                             SRTM.Accommodation_SupplierRoomTypeMapping_Id,
                                             A.TLGXAccoId ,               ARI.TLGXAccoRoomId,
                                             S.Code AS supplierCode,      SRTM.SupplierProductId,SRTM.SupplierRoomId,
@@ -2392,67 +2466,141 @@ namespace DAL
                                             inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
                                             inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
                                             Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') ");
-
+                    int skip = batchNo * batchSize;
                     StringBuilder sbWhere = new StringBuilder();
-                    sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplierid) + "'");
-
-                    //sbWhere.AppendLine(" AND SRTM.Supplier_Id = '" + Convert.ToString("7A9C1351-8292-4C8C-B8B9-79F816040328") + "'");
+                    sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplier_id) + "'");
+                    sbWhere.Append("  ORDER BY SRTM.Accommodation_SupplierRoomTypeMapping_Id OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
 
 
                     StringBuilder sbfinal = new StringBuilder();
 
                     sbfinal.Append(sbSelect);
                     sbfinal.Append(sbWhere);
-
+                    #endregion
                     context.Configuration.AutoDetectChangesEnabled = false;
-                    try { _objHRTM = context.Database.SqlQuery<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>(sbfinal.ToString()).ToList(); } catch (Exception ex) { }
+                    try { _objHRTM_IM = context.Database.SqlQuery<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM>(sbfinal.ToString()).ToList(); } catch (Exception ex) { }
 
                     StringBuilder sbAccommodation_SupplierRoomTypeMapping_Id = new StringBuilder();
                     StringBuilder sbRoomTypeAttributefinalQuery = new StringBuilder();
                     sbRoomTypeAttributefinalQuery.Append(@"  SELECT
                                 RoomTypeMap_Id, SupplierRoomTypeAttribute AS [Value],SystemAttributeKeyword As [Key]
                                 from Accommodation_SupplierRoomTypeAttributes Where RoomTypeMap_Id IN ( ");
-                    foreach (var item in _objHRTM)
+                    foreach (var item in _objHRTM_IM)
                     {
                         sbAccommodation_SupplierRoomTypeMapping_Id.Append("'" + item.Accommodation_SupplierRoomTypeMapping_Id + "',");
                     }
                     sbRoomTypeAttributefinalQuery.Append(sbAccommodation_SupplierRoomTypeMapping_Id.ToString().TrimEnd(',') + ")");
-                    try { _objAttributes = context.Database.SqlQuery<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>(sbRoomTypeAttributefinalQuery.ToString()).ToList(); } catch (Exception ex) { }
+                    try { _objAttributes_IM = context.Database.SqlQuery<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>(sbRoomTypeAttributefinalQuery.ToString()).ToList(); } catch (Exception ex) { }
 
-                    foreach (var itemAttribute in _objHRTM)
+                    foreach (var itemAttribute in _objHRTM_IM)
                     {
-                        var lstAttributes = _objAttributes.Where(w => w.RoomTypeMap_Id == itemAttribute.Accommodation_SupplierRoomTypeMapping_Id).ToList();
+                        var lstAttributes = _objAttributes_IM.Where(w => w.RoomTypeMap_Id == itemAttribute.Accommodation_SupplierRoomTypeMapping_Id).ToList();
                         if (lstAttributes.Count > 0)
                         {
-                            itemAttribute.Attibutes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                            itemAttribute.Attibutes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>();
                             itemAttribute.Attibutes = lstAttributes;
                         }
                     }
-                    if (_objHRTM.Count > 0)
+                    foreach (var item in _objHRTM_IM)
                     {
-                        _database = MongoDBHandler.mDatabase();
-                        //_database.DropCollection("RoomTypeMapping");
-                        var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
-                        collection.InsertManyAsync(_objHRTM);
+                        List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _AttributeList = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                        if (item.Attibutes != null && item.Attibutes.Count > 0)
+                        {
+                            _AttributeList = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                            foreach (var itemAttribute in item.Attibutes)
+                            {
+                                _AttributeList.Add(new DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM
+                                {
+                                    Key = itemAttribute.Key?.ToUpper(),
+                                    Value = itemAttribute.Value?.ToUpper(),
+                                    RoomTypeMap_Id = itemAttribute.RoomTypeMap_Id
+                                });
+                            }
+                        }
+                        _objHRTM.Add(new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
+                        {
+                            TLGXAccoId = item.TLGXAccoId?.ToUpper(),
+                            Accommodation_SupplierRoomTypeMapping_Id = item.Accommodation_SupplierRoomTypeMapping_Id,
+                            Amenities = item.Amenities?.ToUpper(),
+                            Attibutes = _AttributeList.Count > 0 ? _AttributeList : null,
+                            BathRoomType = item.BathRoomType?.ToUpper(),
+                            BeddingConfig = item.BeddingConfig?.ToUpper(),
+                            Bedrooms = item.Bedrooms?.ToUpper(),
+                            BedType = item.BedType?.ToUpper(),
+                            ChildAge = item.ChildAge,
+                            ExtraBed = item.ExtraBed?.ToUpper(),
+                            FloorName = item.FloorName?.ToUpper(),
+                            FloorNumber = item.FloorNumber,
+                            MatchingScore = item.MatchingScore,
+                            MaxAdults = item.MaxAdults,
+                            MaxChild = item.MaxChild,
+                            MaxGuestOccupancy = item.MaxGuestOccupancy,
+                            MaxInfants = item.MaxInfants,
+                            MinGuestOccupancy = item.MinGuestOccupancy,
+                            PromotionalVendorCode = item.PromotionalVendorCode?.ToUpper(),
+                            Quantity = item.Quantity,
+                            RatePlan = item.RatePlan?.ToUpper(),
+                            RatePlanCode = item.RatePlanCode?.ToUpper(),
+                            RoomDescription = item.RoomDescription?.ToUpper(),
+                            RoomLocationCode = item.RoomLocationCode?.ToUpper(),
+                            RoomSize = item.RoomSize?.ToUpper(),
+                            RoomView = item.RoomView?.ToUpper(),
+                            Smoking = item.Smoking?.ToUpper(),
+                            Status = item.Status?.ToUpper(),
+                            supplierCode = item.supplierCode?.ToUpper(),
+                            SupplierProductId = item.SupplierProductId?.ToUpper(),
+                            SupplierRoomCategory = item.SupplierRoomCategory?.ToUpper(),
+                            SupplierRoomCategoryId = item.SupplierRoomCategoryId?.ToUpper(),
+                            SupplierRoomId = item.SupplierRoomId?.ToUpper(),
+                            SupplierRoomName = item.SupplierRoomName?.ToUpper(),
+                            SupplierRoomTypeCode = item.SupplierRoomTypeCode?.ToUpper(),
+                            SystemNormalizedRoomType = item.SystemNormalizedRoomType?.ToUpper(),
+                            SystemProductCode = item.SystemProductCode,
+                            SystemRoomTypeCode = item.SystemRoomTypeCode?.ToUpper(),
+                            SystemRoomTypeMapId = item.SystemRoomTypeMapId,
+                            SystemRoomTypeName = item.SystemRoomTypeName?.ToUpper(),
+                            SystemStrippedRoomType = item.SystemStrippedRoomType?.ToUpper(),
+                            TLGXAccoRoomId = item.TLGXAccoRoomId?.ToUpper()
+                        });
 
-                        collection = null;
-                        _database = null;
-                    }
-
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.MongoPushCount = _objHRTM.Count();
-                        context.SaveChanges();
                     }
                 }
+
             }
             catch (Exception)
             {
 
                 throw;
             }
+
+
+            return _objHRTM;
+
         }
+        private List<string> GetScheduledRTM()
+        {
+
+            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            {
+                try
+                {
+                    Guid supplierid = Guid.Parse("026C1D5C-44CD-4A0E-989D-7BD135153555");
+                    var listLog = (from s in context.DistributionLayerRefresh_Log
+                                   where s.Element == "RoomType" && s.Type == "Mapping" && s.Status == "Scheduled"
+                                   //&& s.Supplier_Id == supplierid
+                                   select s.Id.ToString()).ToList();
+                    return listLog;
+                }
+                catch (Exception)
+                {
+                    return null;
+                    throw;
+                }
+
+            }
+
+        }
+
+
     }
 }
