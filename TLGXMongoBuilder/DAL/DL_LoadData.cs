@@ -2170,21 +2170,33 @@ namespace DAL
         #region ZoneMaster
         public void LoadZoneMaster(Guid LogId)
         {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
             try
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Database.CommandTimeout = 0;
+                    if(LogId!= Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                    }
                     List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
-                    int total = 0;
+                   // int total = 0;
                     int BatchSize = 1000;
                     string strTotalCount = @"SELECT COUNT(1) FROM m_ZoneMaster with(nolock)";
                     context.Configuration.AutoDetectChangesEnabled = false;
-                    try { total = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault(); } catch (Exception ex) { }
-                    int NoOfBatch = total / BatchSize;
-                    int mod = total % BatchSize;
+                    try
+                    {
+                        TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                    }
+                    catch (Exception ex){ }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
                     if (mod > 0)
+                    {
                         NoOfBatch = NoOfBatch + 1;
+                    }   
                     _database = MongoDBHandler.mDatabase();
                     _database.DropCollection("ZoneMaster");
                     var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
@@ -2193,22 +2205,30 @@ namespace DAL
                     {
                         _ZoneList = GetZoneMasterdataToLoad(BatchSize, BatchNo);
                         if (_ZoneList.Count > 0)
+                        {
                             collection.InsertManyAsync(_ZoneList);
+                            #region To update CounterIn DistributionLog
+                            if (LogId != Guid.Empty)
+                            {
+                                MongoInsertedCount = MongoInsertedCount + _ZoneList.Count();
+                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount); 
+                            }
+                            #endregion
+                        }
                     }
 
                     collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
                     collection = null;
                     _database = null;
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
+                    if (LogId != Guid.Empty)
                     {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
+                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED,TotalZoneCount,MongoInsertedCount);
                     }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalZoneCount, MongoInsertedCount);
                 throw ex;
             }
         }
@@ -2222,10 +2242,11 @@ namespace DAL
                 #region ==== ZoneMasterQuery
                 StringBuilder sbSelectZoneMaster = new StringBuilder();
                 StringBuilder sbOrderbyZoneMaster = new StringBuilder();
-                sbSelectZoneMaster.Append(@" SELECT Zone_id, zm.Zone_Name, zm.Zone_Type, zm.Zone_SubType,zm.Zone_Radius,
-                                                zm.Latitude, zm.Longitude,co.Code as TLGXCountryCode
+                sbSelectZoneMaster.Append(@" SELECT Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
+                                                upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
+                                                zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
                                                 FROM  m_zoneMaster zm  with(Nolock)
-                                                LEFT JOIN m_CountryMaster co with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                                LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
                                                 WHERE zm.isActive=1 ");
                 int skip = batchNo * batchSize;
                 sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
@@ -2238,8 +2259,8 @@ namespace DAL
                 StringBuilder sbSelectZoneProduct = new StringBuilder();
                 StringBuilder sbOrderByZoneProduct = new StringBuilder();
                 sbSelectZoneProduct.Append(@" SELECT zp.Zone_id, ac.CompanyHotelID as TLGXCompanyHotelID ,zp.Distance,
-                                                  ac.HotelName as TLGXHotelName,zp.Included as IsIncluded,
-                                                  zp.ProductType as TLGXProductType,zp.Unit
+                                                  upper(ltrim(rtrim(ac.HotelName))) as TLGXHotelName,zp.Included as IsIncluded,
+                                                  upper(ltrim(rtrim(zp.ProductType))) as TLGXProductType,upper(ltrim(rtrim(zp.Unit))) as Unit
                                                   FROM  ZoneProduct_Mapping zp with(NOLOCK) 
                                                   JOIN Accommodation ac with(NOLOCK)  on zp.Product_Id = ac.Accommodation_Id ");
                 sbOrderByZoneProduct.Append(" ORDER BY Distance ");
@@ -2250,7 +2271,7 @@ namespace DAL
                 #endregion
                 #region ==== ZoneCityMapping SQL QUERY
                 StringBuilder sbSelectZoneCity = new StringBuilder();
-                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, code as TLGXCityCode
+                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, upper(ltrim(rtrim(cm.code))) as TLGXCityCode
                                                FROM  ZoneCity_Mapping zc with(NOLOCK) 
                                                JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id ");
 
@@ -2340,6 +2361,65 @@ namespace DAL
             }
             catch (Exception ex) { throw; }
             return _ResultList;
+        }
+
+
+        #endregion
+
+        #region ZoneTypeMaster
+        public void LoadZoneTypeMaster(Guid LogId)
+        {
+            int TotalZoneTypeCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                if(LogId!= Guid.Empty)
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                }
+                _database = MongoDBHandler.mDatabase();
+                _database.DropCollection("ZoneTypeMaster");
+                var collection = _database.GetCollection<DataContracts.Masters.DC_ZoneTypeMaster>("ZoneTypeMaster");
+
+                List<DataContracts.Masters.DC_ZoneTypeMaster> dataList = new List<DataContracts.Masters.DC_ZoneTypeMaster>();
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    dataList = (from ma in context.m_masterattribute
+                                join mav in context.m_masterattributevalue on ma.MasterAttribute_Id equals mav.MasterAttribute_Id
+                                where ma.MasterFor.ToUpper() == "ZONE" && ma.Name.ToUpper() == "ZONETYPE"
+                                select new DataContracts.Masters.DC_ZoneTypeMaster
+                                {
+                                    Zone_Type = mav.AttributeValue.Trim().ToUpper(),
+                                    Zone_SubType = (from a in context.m_masterattributevalue
+                                                    where a.ParentAttributeValue_Id == mav.MasterAttributeValue_Id
+                                                    select a.AttributeValue.Trim().ToUpper()).ToList()
+
+                                }).ToList();
+                    if(dataList.Count> 0)
+                    {
+                        collection.InsertManyAsync(dataList);
+                        #region To update CounterIn DistributionLog
+                        if (LogId != Guid.Empty)
+                        {
+                            TotalZoneTypeCount = dataList.Count();
+                            MongoInsertedCount = MongoInsertedCount + dataList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                        }
+                        #endregion
+                    }
+                    
+                    collection = null;
+                    _database = null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                throw ex;
+            }
         }
         #endregion
 
