@@ -2314,12 +2314,13 @@ namespace DAL
                 #region ==== ZoneMasterQuery
                 StringBuilder sbSelectZoneMaster = new StringBuilder();
                 StringBuilder sbOrderbyZoneMaster = new StringBuilder();
-                sbSelectZoneMaster.Append(@" SELECT Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
-                                                upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
-                                                zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
-                                                FROM  m_zoneMaster zm  with(Nolock)
-                                                LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
-                                                WHERE zm.isActive=1 ");
+                sbSelectZoneMaster.Append(@" SELECT ('Zone'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
+                                            Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
+                                            upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
+                                            FROM  m_zoneMaster zm  with(Nolock)
+                                            LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                            WHERE zm.isActive=1 ");
                 int skip = batchNo * batchSize;
                 sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
 
@@ -2408,6 +2409,7 @@ namespace DAL
             {
                 _ResultList = RQ.ConvertAll(item => new DataContracts.Masters.DC_Zone_Master
                 {
+                    Id = item.Id,
                     Zone_Name = item.Zone_Name,
                     Zone_Type = item.Zone_Type,
                     Zone_SubType = item.Zone_SubType,
