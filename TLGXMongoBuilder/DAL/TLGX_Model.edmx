@@ -81,6 +81,7 @@
           <Property Name="gLocation" Type="nvarchar" MaxLength="255" />
           <Property Name="Area_Id" Type="uniqueidentifier" />
           <Property Name="Location_Id" Type="uniqueidentifier" />
+          <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -471,7 +472,7 @@
           <Property Name="SupplierProductId" Type="nvarchar" MaxLength="255" />
           <Property Name="Tx_StrippedName" Type="nvarchar" MaxLength="255" />
           <Property Name="Tx_ReorderedName" Type="nvarchar" MaxLength="255" />
-          <Property Name="MappingStatus" Type="nvarchar" MaxLength="10" />
+          <Property Name="MappingStatus" Type="nvarchar" MaxLength="100" />
           <Property Name="MapId" Type="int" />
           <Property Name="Accommodation_RoomInfo_Id" Type="uniqueidentifier" />
           <Property Name="stg_SupplierHotelRoomMapping_Id" Type="uniqueidentifier" />
@@ -810,6 +811,7 @@
           <Property Name="Activity_StatusNotes" Type="nvarchar(max)" />
           <Property Name="Activity_Status_Edit_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Activity_Status_Edit_Date" Type="datetime" />
+          <Property Name="TourType" Type="nvarchar" MaxLength="100" />
         </EntityType>
         <EntityType Name="Activity_FlavourOptions">
           <Key>
@@ -831,6 +833,56 @@
           <Property Name="Activity_LanguageCode" Type="nvarchar" MaxLength="255" />
           <Property Name="Activity_Language" Type="nvarchar" MaxLength="255" />
           <Property Name="Activity_OptionDescription" Type="nvarchar(max)" />
+        </EntityType>
+        <EntityType Name="Activity_FlavourServices">
+          <Key>
+            <PropertyRef Name="ActivityFlavourServices_Id" />
+          </Key>
+          <Property Name="ActivityFlavourServices_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="FlavourServiceType" Type="varchar" MaxLength="150" />
+          <Property Name="Market" Type="varchar" MaxLength="150" />
+          <Property Name="RateMarket" Type="varchar" MaxLength="150" />
+          <Property Name="ServiceType" Type="varchar" MaxLength="150" />
+          <Property Name="ServiceTypeId" Type="varchar" MaxLength="150" />
+          <Property Name="ServiceCategory" Type="varchar" MaxLength="150" />
+          <Property Name="Title" Type="varchar" MaxLength="150" />
+          <Property Name="Description" Type="varchar" MaxLength="150" />
+          <Property Name="FromDate" Type="datetime" />
+          <Property Name="ToDate" Type="datetime" />
+          <Property Name="FromPax" Type="varchar" MaxLength="150" />
+          <Property Name="ToPax" Type="varchar" MaxLength="150" />
+          <Property Name="RateDivision" Type="varchar" MaxLength="150" />
+          <Property Name="RateActive" Type="varchar" MaxLength="150" />
+          <Property Name="RateCurrency" Type="varchar" MaxLength="150" />
+          <Property Name="AdultRate" Type="varchar" MaxLength="150" />
+          <Property Name="ChildRate" Type="varchar" MaxLength="150" />
+          <Property Name="InfantRate" Type="varchar" MaxLength="150" />
+          <Property Name="SeniorCitizenRate" Type="varchar" MaxLength="150" />
+          <Property Name="IncludeType" Type="varchar" MaxLength="150" />
+          <Property Name="CostBasis" Type="varchar" MaxLength="150" />
+          <Property Name="Session" Type="varchar" MaxLength="150" />
+          <Property Name="JourneyType" Type="varchar" MaxLength="150" />
+          <Property Name="Language" Type="varchar" MaxLength="150" />
+          <Property Name="GeneralNotes" Type="varchar" MaxLength="150" />
+          <Property Name="SpecificNotes" Type="varchar" MaxLength="150" />
+          <Property Name="PickupPoint" Type="varchar" MaxLength="150" />
+          <Property Name="DropoffPoint" Type="varchar" MaxLength="150" />
+          <Property Name="PickupTime" Type="varchar" MaxLength="150" />
+          <Property Name="DropoffTime" Type="varchar" MaxLength="150" />
+          <Property Name="Duration" Type="varchar" MaxLength="150" />
+          <Property Name="ServiceSupplier" Type="varchar" MaxLength="150" />
+          <Property Name="VenueType" Type="varchar" MaxLength="150" />
+          <Property Name="VenueName" Type="varchar" MaxLength="150" />
+          <Property Name="Drink" Type="varchar" MaxLength="150" />
+          <Property Name="Attributes" Type="varchar" MaxLength="150" />
+          <Property Name="Menu" Type="varchar" MaxLength="150" />
+          <Property Name="AvailableAtDisposal" Type="varchar" MaxLength="150" />
+          <Property Name="VehicleCategory" Type="varchar" MaxLength="150" />
+          <Property Name="VehicleClass" Type="varchar" MaxLength="150" />
+          <Property Name="VehicleACNONAC" Type="varchar" MaxLength="150" />
+          <Property Name="VehicleName" Type="varchar" MaxLength="150" />
+          <Property Name="Distance" Type="varchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
@@ -1814,6 +1866,7 @@
           <Property Name="StatusCode" Type="nvarchar" MaxLength="20" />
           <Property Name="Priority" Type="int" />
           <Property Name="EZ1_SupplierName" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsFullPull" Type="bit" />
         </EntityType>
         <EntityType Name="Supplier_APILocation">
           <Key>
@@ -1974,6 +2027,7 @@
           <EntitySet Name="Activity_Facility" EntityType="Self.Activity_Facility" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Flavour" EntityType="Self.Activity_Flavour" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_FlavourOptions" EntityType="Self.Activity_FlavourOptions" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Activity_FlavourServices" EntityType="Self.Activity_FlavourServices" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_InclusionDetails" EntityType="Self.Activity_InclusionDetails" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Inclusions" EntityType="Self.Activity_Inclusions" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Itinerary" EntityType="Self.Activity_Itinerary" Schema="dbo" store:Type="Tables" />
@@ -2118,10 +2172,11 @@
           <EntitySet Name="SupplierEntityValues" EntityType="TLGX_DEV_Model.SupplierEntityValue" />
           <EntitySet Name="Activity_DeparturePoints" EntityType="TLGX_DEV_Model.Activity_DeparturePoints" />
           <EntitySet Name="Activity_SupplierCityDepartureCode" EntityType="TLGX_DEV_Model.Activity_SupplierCityDepartureCode" />
-          <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
           <EntitySet Name="m_ZoneMaster" EntityType="TLGX_DEV_Model.m_ZoneMaster" />
           <EntitySet Name="ZoneProduct_Mapping" EntityType="TLGX_DEV_Model.ZoneProduct_Mapping" />
           <EntitySet Name="ZoneCity_Mapping" EntityType="TLGX_DEV_Model.ZoneCity_Mapping" />
+          <EntitySet Name="Activity_FlavourServices" EntityType="TLGX_DEV_Model.Activity_FlavourServices" />
+          <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2391,6 +2446,7 @@
           <Property Name="StatusCode" Type="String" MaxLength="20" FixedLength="false" Unicode="true" />
           <Property Name="Priority" Type="Int32" />
           <Property Name="EZ1_SupplierName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsFullPull" Type="Boolean" />
         </EntityType>
         <EntityType Name="Supplier_APILocation">
           <Key>
@@ -2940,7 +2996,7 @@
           <Property Name="SupplierProductId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Tx_StrippedName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Tx_ReorderedName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="MappingStatus" Type="String" MaxLength="10" FixedLength="false" Unicode="true" />
+          <Property Name="MappingStatus" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="MapId" Type="Int32" />
           <Property Name="Accommodation_RoomInfo_Id" Type="Guid" />
           <Property Name="stg_SupplierHotelRoomMapping_Id" Type="Guid" />
@@ -3065,6 +3121,7 @@
           <Property Name="gLocation" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Area_Id" Type="Guid" />
           <Property Name="Location_Id" Type="Guid" />
+          <Property Name="TLGXAccoId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -3282,6 +3339,7 @@
           <Property Name="Activity_Status_Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="InterestType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
@@ -3990,22 +4048,6 @@
           <Property Name="DepartureCode" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="DepartureName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
-        <EntityType Name="DistributionLayerRefresh_Log">
-          <Key>
-            <PropertyRef Name="Id" />
-          </Key>
-          <Property Name="Id" Type="Guid" Nullable="false" />
-          <Property Name="Element" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Type" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="Supplier_Id" Type="Guid" />
-          <Property Name="Edit_date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="TotalCount" Type="Int32" />
-          <Property Name="MongoPushCount" Type="Int32" />
-        </EntityType>
         <EntityType Name="m_ZoneMaster">
           <Key>
             <PropertyRef Name="Zone_id" />
@@ -4058,6 +4100,72 @@
           <Property Name="Create_Date" Type="DateTime" Precision="3" />
           <Property Name="Edit_User" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+        </EntityType>
+        <EntityType Name="Activity_FlavourServices">
+          <Key>
+            <PropertyRef Name="ActivityFlavourServices_Id" />
+          </Key>
+          <Property Name="ActivityFlavourServices_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Flavour_Id" Type="Guid" Nullable="false" />
+          <Property Name="FlavourServiceType" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Market" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="RateMarket" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ServiceType" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ServiceTypeId" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ServiceCategory" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Title" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Description" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="FromDate" Type="DateTime" Precision="3" />
+          <Property Name="ToDate" Type="DateTime" Precision="3" />
+          <Property Name="FromPax" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ToPax" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="RateDivision" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="RateActive" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="RateCurrency" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="AdultRate" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ChildRate" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="InfantRate" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="SeniorCitizenRate" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="IncludeType" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="CostBasis" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Session" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="JourneyType" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Language" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="GeneralNotes" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="SpecificNotes" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="PickupPoint" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="DropoffPoint" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="PickupTime" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="DropoffTime" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Duration" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="ServiceSupplier" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VenueType" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VenueName" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Drink" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Attributes" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Menu" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="AvailableAtDisposal" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VehicleCategory" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VehicleClass" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VehicleACNONAC" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="VehicleName" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+          <Property Name="Distance" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="DistributionLayerRefresh_Log">
+          <Key>
+            <PropertyRef Name="Id" />
+          </Key>
+          <Property Name="Id" Type="Guid" Nullable="false" />
+          <Property Name="Element" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Type" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Supplier_Id" Type="Guid" />
+          <Property Name="Edit_date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TotalCount" Type="Int32" />
+          <Property Name="MongoPushCount" Type="Int32" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4335,6 +4443,7 @@
           <EntitySetMapping Name="Suppliers">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Supplier">
               <MappingFragment StoreEntitySet="Supplier">
+                <ScalarProperty Name="IsFullPull" ColumnName="IsFullPull" />
                 <ScalarProperty Name="EZ1_SupplierName" ColumnName="EZ1_SupplierName" />
                 <ScalarProperty Name="Priority" ColumnName="Priority" />
                 <ScalarProperty Name="StatusCode" ColumnName="StatusCode" />
@@ -4976,6 +5085,7 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="TLGXAccoId" ColumnName="TLGXAccoId" />
                 <ScalarProperty Name="Location_Id" ColumnName="Location_Id" />
                 <ScalarProperty Name="Area_Id" ColumnName="Area_Id" />
                 <ScalarProperty Name="gLocation" ColumnName="gLocation" />
@@ -5228,6 +5338,7 @@
           <EntitySetMapping Name="Activity_Flavour">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Flavour">
               <MappingFragment StoreEntitySet="Activity_Flavour">
+                <ScalarProperty Name="TourType" ColumnName="TourType" />
                 <ScalarProperty Name="InterestType" ColumnName="InterestType" />
                 <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
                 <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
@@ -6015,23 +6126,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="DistributionLayerRefresh_Log">
-            <EntityTypeMapping TypeName="TLGX_DEV_Model.DistributionLayerRefresh_Log">
-              <MappingFragment StoreEntitySet="DistributionLayerRefresh_Log">
-                <ScalarProperty Name="MongoPushCount" ColumnName="MongoPushCount" />
-                <ScalarProperty Name="TotalCount" ColumnName="TotalCount" />
-                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
-                <ScalarProperty Name="Edit_date" ColumnName="Edit_date" />
-                <ScalarProperty Name="Supplier_Id" ColumnName="Supplier_Id" />
-                <ScalarProperty Name="Status" ColumnName="Status" />
-                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
-                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
-                <ScalarProperty Name="Type" ColumnName="Type" />
-                <ScalarProperty Name="Element" ColumnName="Element" />
-                <ScalarProperty Name="Id" ColumnName="Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="m_ZoneMaster">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_ZoneMaster">
               <MappingFragment StoreEntitySet="m_ZoneMaster">
@@ -6085,6 +6179,74 @@
                 <ScalarProperty Name="City_Id" ColumnName="City_Id" />
                 <ScalarProperty Name="Zone_Id" ColumnName="Zone_Id" />
                 <ScalarProperty Name="ZoneCityMapping_Id" ColumnName="ZoneCityMapping_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_FlavourServices">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_FlavourServices">
+              <MappingFragment StoreEntitySet="Activity_FlavourServices">
+                <ScalarProperty Name="Distance" ColumnName="Distance" />
+                <ScalarProperty Name="VehicleName" ColumnName="VehicleName" />
+                <ScalarProperty Name="VehicleACNONAC" ColumnName="VehicleACNONAC" />
+                <ScalarProperty Name="VehicleClass" ColumnName="VehicleClass" />
+                <ScalarProperty Name="VehicleCategory" ColumnName="VehicleCategory" />
+                <ScalarProperty Name="AvailableAtDisposal" ColumnName="AvailableAtDisposal" />
+                <ScalarProperty Name="Menu" ColumnName="Menu" />
+                <ScalarProperty Name="Attributes" ColumnName="Attributes" />
+                <ScalarProperty Name="Drink" ColumnName="Drink" />
+                <ScalarProperty Name="VenueName" ColumnName="VenueName" />
+                <ScalarProperty Name="VenueType" ColumnName="VenueType" />
+                <ScalarProperty Name="ServiceSupplier" ColumnName="ServiceSupplier" />
+                <ScalarProperty Name="Duration" ColumnName="Duration" />
+                <ScalarProperty Name="DropoffTime" ColumnName="DropoffTime" />
+                <ScalarProperty Name="PickupTime" ColumnName="PickupTime" />
+                <ScalarProperty Name="DropoffPoint" ColumnName="DropoffPoint" />
+                <ScalarProperty Name="PickupPoint" ColumnName="PickupPoint" />
+                <ScalarProperty Name="SpecificNotes" ColumnName="SpecificNotes" />
+                <ScalarProperty Name="GeneralNotes" ColumnName="GeneralNotes" />
+                <ScalarProperty Name="Language" ColumnName="Language" />
+                <ScalarProperty Name="JourneyType" ColumnName="JourneyType" />
+                <ScalarProperty Name="Session" ColumnName="Session" />
+                <ScalarProperty Name="CostBasis" ColumnName="CostBasis" />
+                <ScalarProperty Name="IncludeType" ColumnName="IncludeType" />
+                <ScalarProperty Name="SeniorCitizenRate" ColumnName="SeniorCitizenRate" />
+                <ScalarProperty Name="InfantRate" ColumnName="InfantRate" />
+                <ScalarProperty Name="ChildRate" ColumnName="ChildRate" />
+                <ScalarProperty Name="AdultRate" ColumnName="AdultRate" />
+                <ScalarProperty Name="RateCurrency" ColumnName="RateCurrency" />
+                <ScalarProperty Name="RateActive" ColumnName="RateActive" />
+                <ScalarProperty Name="RateDivision" ColumnName="RateDivision" />
+                <ScalarProperty Name="ToPax" ColumnName="ToPax" />
+                <ScalarProperty Name="FromPax" ColumnName="FromPax" />
+                <ScalarProperty Name="ToDate" ColumnName="ToDate" />
+                <ScalarProperty Name="FromDate" ColumnName="FromDate" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="Title" ColumnName="Title" />
+                <ScalarProperty Name="ServiceCategory" ColumnName="ServiceCategory" />
+                <ScalarProperty Name="ServiceTypeId" ColumnName="ServiceTypeId" />
+                <ScalarProperty Name="ServiceType" ColumnName="ServiceType" />
+                <ScalarProperty Name="RateMarket" ColumnName="RateMarket" />
+                <ScalarProperty Name="Market" ColumnName="Market" />
+                <ScalarProperty Name="FlavourServiceType" ColumnName="FlavourServiceType" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+                <ScalarProperty Name="ActivityFlavourServices_Id" ColumnName="ActivityFlavourServices_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="DistributionLayerRefresh_Log">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.DistributionLayerRefresh_Log">
+              <MappingFragment StoreEntitySet="DistributionLayerRefresh_Log">
+                <ScalarProperty Name="MongoPushCount" ColumnName="MongoPushCount" />
+                <ScalarProperty Name="TotalCount" ColumnName="TotalCount" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Edit_date" ColumnName="Edit_date" />
+                <ScalarProperty Name="Supplier_Id" ColumnName="Supplier_Id" />
+                <ScalarProperty Name="Status" ColumnName="Status" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Type" ColumnName="Type" />
+                <ScalarProperty Name="Element" ColumnName="Element" />
+                <ScalarProperty Name="Id" ColumnName="Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

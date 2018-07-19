@@ -108,9 +108,10 @@ namespace DAL
         public virtual DbSet<SupplierEntityValue> SupplierEntityValues { get; set; }
         public virtual DbSet<Activity_DeparturePoints> Activity_DeparturePoints { get; set; }
         public virtual DbSet<Activity_SupplierCityDepartureCode> Activity_SupplierCityDepartureCode { get; set; }
-        public virtual DbSet<DistributionLayerRefresh_Log> DistributionLayerRefresh_Log { get; set; }
         public virtual DbSet<m_ZoneMaster> m_ZoneMaster { get; set; }
         public virtual DbSet<ZoneProduct_Mapping> ZoneProduct_Mapping { get; set; }
         public virtual DbSet<ZoneCity_Mapping> ZoneCity_Mapping { get; set; }
+        public virtual DbSet<Activity_FlavourServices> Activity_FlavourServices { get; set; }
+        public virtual DbSet<DistributionLayerRefresh_Log> DistributionLayerRefresh_Log { get; set; }
     }
 }
