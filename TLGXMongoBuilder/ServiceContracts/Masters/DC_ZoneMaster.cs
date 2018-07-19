@@ -17,6 +17,8 @@ namespace DataContracts.Masters
     public class DC_Zone_Master
     {
         [DataMember]
+        public string Id { get; set; }
+        [DataMember]
         public string Zone_Type { get; set; }
         [DataMember]
         public string Zone_SubType { get; set; }
@@ -62,6 +64,8 @@ namespace DataContracts.Masters
     [DataContract]
     public class DC_Zone_MasterRQ
     {
+        [DataMember]
+        public string Id { get; set; }
         [DataMember]
         public Guid Zone_id { get; set; }
         [DataMember]
