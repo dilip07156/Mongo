@@ -26,5 +26,6 @@ namespace DAL
         public string StatusCode { get; set; }
         public Nullable<int> Priority { get; set; }
         public string EZ1_SupplierName { get; set; }
+        public Nullable<bool> IsFullPull { get; set; }
     }
 }
