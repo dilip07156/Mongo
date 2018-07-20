@@ -894,6 +894,129 @@ namespace DAL
             }
         }
 
+        public void UpdateActivityInterestType()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
+                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
+                            var InterestType = string.Join(",", InterestTypeArray);
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        public void UpdateActivityDOW()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
+                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                           
+                            var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
+                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                               select a).ToList();
+
+                            var ActivityOD = (from a in context.Activity_DaysOfOperation.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              && (a.IsOperatingDays ?? true) == true
+                                              select a).ToList();
+
+                            var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                            var DaysOfTheWeek = (from DOW in ActivityDOW
+                                                 join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
+                                                 from ODljS in ODlj.DefaultIfEmpty()
+                                                 join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
+                                                 from DPljS in DPlj.DefaultIfEmpty()
+                                                 select new DataContracts.Activity.DaysOfWeek
+                                                 {
+                                                     OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
+                                                     OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
+
+                                                     SupplierDuration = DOW.SupplierDuration ?? string.Empty,
+                                                     SupplierEndTime = DOW.SupplierEndTime ?? string.Empty,
+                                                     SupplierFrequency = DOW.SupplierFrequency ?? string.Empty,
+                                                     SupplierSession = DOW.SupplierSession ?? string.Empty,
+                                                     SupplierStartTime = DOW.SupplierStartTime ?? string.Empty,
+
+                                                     Session = DOW.Session ?? string.Empty,
+                                                     StartTime = DOW.StartTime ?? string.Empty,
+                                                     EndTime = DOW.EndTime ?? string.Empty,
+                                                     Duration = DOW.Duration ?? string.Empty,
+                                                     DurationType = DOW.DurationType ?? string.Empty,
+
+
+                                                     Sunday = DOW.Sun ?? false,
+                                                     Monday = DOW.Mon ?? false,
+                                                     Tuesday = DOW.Tues ?? false,
+                                                     Wednesday = DOW.Wed ?? false,
+                                                     Thursday = DOW.Thur ?? false,
+                                                     Friday = DOW.Fri ?? false,
+                                                     Saturday = DOW.Sat ?? false,
+
+                                                     DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
+                                                     DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+
+                                                 }).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.DaysOfTheWeek, DaysOfTheWeek);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
@@ -929,16 +1052,16 @@ namespace DAL
                     {
                         try
                         {
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                //check if record is already exists
-                                //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                                var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                                if (searchResultCount > 0)
-                                {
-                                    continue;
-                                }
-                            }
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    //check if record is already exists
+                            //    //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                            //    var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                            //    if (searchResultCount > 0)
+                            //    {
+                            //        continue;
+                            //    }
+                            //}
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -1045,6 +1168,8 @@ namespace DAL
                                               select a).ToList();
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
+
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
                             newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
@@ -1234,8 +1359,8 @@ namespace DAL
                                                                   select new DataContracts.Activity.ActivtyFlavourServices
                                                                   {
                                                                       FlavourServiceType = fs.FlavourServiceType ?? string.Empty,
-                                                                      Market = fs.Market?? string.Empty,
-                                                                      RateMarket = fs.RateMarket?? string.Empty,
+                                                                      Market = fs.Market ?? string.Empty,
+                                                                      RateMarket = fs.RateMarket ?? string.Empty,
                                                                       ServiceType = fs.ServiceType ?? string.Empty,
                                                                       ServiceTypeId = fs.ServiceTypeId ?? string.Empty,
                                                                       ServiceCategory = fs.ServiceCategory ?? string.Empty,
@@ -1280,15 +1405,15 @@ namespace DAL
 
 
 
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                collection.InsertOneAsync(newActivity);
-                            }
-                            else
-                            {
-                                var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                                collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            }
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    collection.InsertOneAsync(newActivity);
+                            //}
+                            //else
+                            //{
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                            //}
 
                             newActivity = null;
                             ActivityClassAttr = null;

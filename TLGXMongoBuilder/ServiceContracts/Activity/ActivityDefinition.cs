@@ -15,6 +15,7 @@ namespace DataContracts.Activity
         public int SystemActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
         public string SupplierProductCode { get; set; }
+        public string InterestType { get; set; }
         public string Category { get; set; }
         public string Type { get; set; }
         public string SubType { get; set; }

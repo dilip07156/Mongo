@@ -28,6 +28,21 @@ namespace BAL
             }
         }
 
+        public void UpdateActivityInterestType()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityInterestType();
+            }
+        }
+        public void UpdateActivityDOW()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityDOW();
+            }
+        }
+
         public void LoadActivityMasters()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
