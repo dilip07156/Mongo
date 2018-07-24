@@ -947,7 +947,7 @@ namespace DAL
                     {
                         try
                         {
-                           
+
                             var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
                                                where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                                select a).ToList();
@@ -1124,6 +1124,11 @@ namespace DAL
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
+                            var ActivityFOAttribute = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                                       where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                       && a.AttributeType == "ProductOption"
+                                                       select a).ToList();
+
                             var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
                                                where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                                select a).ToList();
@@ -1163,9 +1168,9 @@ namespace DAL
                                 }).ToList();
                             }
 
-                            var ActivityFS = (from a in context.Activity_FlavourServices.AsNoTracking()
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                              select a).ToList();
+                            //var ActivityFS = (from a in context.Activity_FlavourServices.AsNoTracking()
+                            //                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                            //                  select a).ToList();
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
@@ -1289,7 +1294,22 @@ namespace DAL
 
                             newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
+                            {
+                                OptionCode = s.Price_OptionCode,
+                                PriceFor = s.Price_For,
+                                Price = Convert.ToDouble(s.Price),
+                                PriceType = s.Price_Type,
+                                PriceBasis = s.PriceBasis,
+                                PriceId = s.PriceCode,
+                                SupplierCurrency = s.PriceCurrency,
+                                FromPax = s.FromPax,
+                                ToPax = s.ToPax,
+                                Market = s.Market,
+                                PersonType = s.PersonType,
+                                ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
+                                ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString()
+                            }).ToList();
 
                             newActivity.ProductOptions = (from afo in ActivityFO
                                                           select new DataContracts.Activity.ProductOptions
@@ -1300,8 +1320,28 @@ namespace DAL
                                                               DealText = afo.Activity_DealText,
                                                               Options = afo.Activity_OptionName,
                                                               Language = afo.Activity_Language,
-                                                              LanguageCode = afo.Activity_LanguageCode
+                                                              LanguageCode = afo.Activity_LanguageCode,
+                                                              Activity_FlavourOptions_Id = afo.Activity_FlavourOptions_Id
                                                           }).ToList();
+
+                            foreach (var item in newActivity.ProductOptions)
+                            {
+                                var itemCA = (from a in ActivityFOAttribute where a.Activity_FlavourOptions_Id == item.Activity_FlavourOptions_Id select a).ToList();
+                                if (itemCA != null && itemCA.Count > 0)
+                                {
+                                    item.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
+                                    foreach (var itemCAI in itemCA)
+                                    {
+                                        item.ClassificationAttrributes.Add(new DataContracts.Activity.ClassificationAttrributes
+                                        {
+                                            Group = itemCAI.AttributeSubType,
+                                            Type = itemCAI.AttributeType,
+                                            Value = itemCAI.AttributeValue
+
+                                        });
+                                    }
+                                }
+                            }
 
                             newActivity.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
@@ -1355,65 +1395,15 @@ namespace DAL
 
                                                          }).ToList();
 
-                            newActivity.ActivtyFlavourServices = (from fs in ActivityFS
-                                                                  select new DataContracts.Activity.ActivtyFlavourServices
-                                                                  {
-                                                                      FlavourServiceType = fs.FlavourServiceType ?? string.Empty,
-                                                                      Market = fs.Market ?? string.Empty,
-                                                                      RateMarket = fs.RateMarket ?? string.Empty,
-                                                                      ServiceType = fs.ServiceType ?? string.Empty,
-                                                                      ServiceTypeId = fs.ServiceTypeId ?? string.Empty,
-                                                                      ServiceCategory = fs.ServiceCategory ?? string.Empty,
-                                                                      Title = fs.Title ?? string.Empty,
-                                                                      Description = fs.Description ?? string.Empty,
-                                                                      FromDate = fs.FromDate,
-                                                                      ToDate = fs.ToDate,
-                                                                      FromPax = fs.FromPax ?? string.Empty,
-                                                                      ToPax = fs.ToPax ?? string.Empty,
-                                                                      RateDivision = fs.RateDivision ?? string.Empty,
-                                                                      RateActive = fs.RateActive ?? string.Empty,
-                                                                      RateCurrency = fs.RateCurrency ?? string.Empty,
-                                                                      AdultRate = fs.AdultRate ?? string.Empty,
-                                                                      ChildRate = fs.ChildRate ?? string.Empty,
-                                                                      InfantRate = fs.InfantRate ?? string.Empty,
-                                                                      SeniorCitizenRate = fs.SeniorCitizenRate ?? string.Empty,
-                                                                      IncludeType = fs.IncludeType ?? string.Empty,
-                                                                      CostBasis = fs.CostBasis ?? string.Empty,
-                                                                      Session = fs.Session ?? string.Empty,
-                                                                      JourneyType = fs.JourneyType ?? string.Empty,
-                                                                      Language = fs.Language ?? string.Empty,
-                                                                      GeneralNotes = fs.GeneralNotes ?? string.Empty,
-                                                                      SpecificNotes = fs.SpecificNotes ?? string.Empty,
-                                                                      PickupPoint = fs.PickupPoint ?? string.Empty,
-                                                                      DropoffPoint = fs.DropoffPoint ?? string.Empty,
-                                                                      PickupTime = fs.PickupTime ?? string.Empty,
-                                                                      DropoffTime = fs.DropoffTime ?? string.Empty,
-                                                                      Duration = fs.Duration ?? string.Empty,
-                                                                      ServiceSupplier = fs.ServiceSupplier ?? string.Empty,
-                                                                      VenueType = fs.VenueType ?? string.Empty,
-                                                                      VenueName = fs.VenueName ?? string.Empty,
-                                                                      Drink = fs.Drink ?? string.Empty,
-                                                                      Attributes = fs.Attributes ?? string.Empty,
-                                                                      Menu = fs.Menu ?? string.Empty,
-                                                                      AvailableAtDisposal = fs.AvailableAtDisposal ?? string.Empty,
-                                                                      VehicleCategory = fs.VehicleCategory ?? string.Empty,
-                                                                      VehicleClass = fs.VehicleClass ?? string.Empty,
-                                                                      VehicleACNONAC = fs.VehicleACNONAC ?? string.Empty,
-                                                                      VehicleName = fs.VehicleName ?? string.Empty,
-                                                                      Distance = fs.Distance ?? string.Empty,
-                                                                  }).ToList();
-
-
-
-                            //if (Activity_Flavour_Id == Guid.Empty)
-                            //{
-                            //    collection.InsertOneAsync(newActivity);
-                            //}
-                            //else
-                            //{
-                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            //}
+                            if (Activity_Flavour_Id == Guid.Empty)
+                            {
+                                collection.InsertOneAsync(newActivity);
+                            }
+                            else
+                            {
+                                var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                                collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                            }
 
                             newActivity = null;
                             ActivityClassAttr = null;
@@ -1426,6 +1416,7 @@ namespace DAL
                             ActivitySPM = null;
                             ActivityDeals = null;
                             ActivityPrices = null;
+                            ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
 
@@ -1963,7 +1954,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Running";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -2191,7 +2182,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Completed";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -2210,7 +2201,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Error";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -2230,7 +2221,7 @@ namespace DAL
                 {
                     Log.MongoPushCount = MongoPushCount;
                     Log.TotalCount = totalcount;
-                    Log.Edit_date = DateTime.Now;
+                    Log.Edit_Date = DateTime.Now;
                     Log.Edit_User = "MongoPush";
                     context.SaveChanges();
                 }

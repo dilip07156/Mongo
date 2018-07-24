@@ -56,7 +56,6 @@ namespace DataContracts.Activity
         public List<DaysOfWeek> DaysOfTheWeek { get; set; }
         public List<string> Specials { get; set; }
         public List<SupplierCityDepartureCode> SupplierCityDepartureCodes { get; set; }
-        public List<ActivtyFlavourServices> ActivtyFlavourServices { get; set; }
 
 
 
@@ -181,6 +180,9 @@ namespace DataContracts.Activity
         public string ActivityType { get; set; }
         public string LanguageCode { get; set; }
         public string Language { get; set; }
+        [BsonIgnore]
+        public Guid Activity_FlavourOptions_Id { get; set; }
+        public List<ClassificationAttrributes> ClassificationAttrributes { get; set; }
     }
 
     public class ClassificationAttrributes
@@ -208,6 +210,12 @@ namespace DataContracts.Activity
         public string PriceId { get; set; }
         public string OptionCode { get; set; }
         public string PriceFor { get; set; }
+        public string Market { get; set; }
+        public string FromPax { get; set; }
+        public string ToPax { get; set; }
+        public string PersonType { get; set; }
+        public string ValidFrom { get; set; }
+        public string ValidTo { get; set; }
     }
 
     public class SystemMapping
@@ -240,53 +248,4 @@ namespace DataContracts.Activity
         public string DepartureCode { get; set; }
         public string DeparturePoint { get; set; }
     }
-
-    public class ActivtyFlavourServices
-    {
-        public string FlavourServiceType { get; set; }
-        public string Market { get; set; }
-        public string RateMarket { get; set; }
-        public string ServiceType { get; set; }
-        public string ServiceTypeId { get; set; }
-        public string ServiceCategory { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public DateTime? FromDate { get; set; }
-        public DateTime? ToDate { get; set; }
-        public string FromPax { get; set; }
-        public string ToPax { get; set; }
-        public string RateDivision { get; set; }
-        public string RateActive { get; set; }
-        public string RateCurrency { get; set; }
-        public string AdultRate { get; set; }
-        public string ChildRate { get; set; }
-        public string InfantRate { get; set; }
-        public string SeniorCitizenRate { get; set; }
-        public string IncludeType { get; set; }
-        public string CostBasis { get; set; }
-        public string Session { get; set; }
-        public string JourneyType { get; set; }
-        public string Language { get; set; }
-        public string GeneralNotes { get; set; }
-        public string SpecificNotes { get; set; }
-        public string PickupPoint { get; set; }
-        public string DropoffPoint { get; set; }
-        public string PickupTime { get; set; }
-        public string DropoffTime { get; set; }
-        public string Duration { get; set; }
-        public string ServiceSupplier { get; set; }
-        public string VenueType { get; set; }
-        public string VenueName { get; set; }
-        public string Drink { get; set; }
-        public string Attributes { get; set; }
-        public string Menu { get; set; }
-        public string AvailableAtDisposal { get; set; }
-        public string VehicleCategory { get; set; }
-        public string VehicleClass { get; set; }
-        public string VehicleACNONAC { get; set; }
-        public string VehicleName { get; set; }
-        public string Distance { get; set; }
-
-    }
-
 }

@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="8973d5c8492e42ba9882f5f1ac9684ca" Name="Accomodation" ZoomLevel="72">
+      <Diagram DiagramId="8973d5c8492e42ba9882f5f1ac9684ca" Name="Accomodation" ZoomLevel="47">
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ClassificationAttributes" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Contact" Width="1.5" PointX="4.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Descriptions" Width="1.5" PointX="2.75" PointY="5.75" />
