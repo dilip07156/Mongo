@@ -220,11 +220,11 @@ namespace MapperSvc
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(string LogId)
+        public void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.UpdateHotelRoomTypeMapping(LogId);
+                objBL.UpdateHotelRoomTypeMapping(LogId, Supplier_Id);
             }
         }
 

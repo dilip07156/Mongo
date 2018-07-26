@@ -14,6 +14,7 @@ namespace DAL
 {
     public enum PushStatus
     {
+        INSERT,
         SCHEDULED,
         RUNNNING,
         COMPLETED,
@@ -1052,16 +1053,16 @@ namespace DAL
                     {
                         try
                         {
-                            //if (Activity_Flavour_Id == Guid.Empty)
-                            //{
-                            //    //check if record is already exists
-                            //    //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                            //    var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                            //    if (searchResultCount > 0)
-                            //    {
-                            //        continue;
-                            //    }
-                            //}
+                            if (Activity_Flavour_Id == Guid.Empty)
+                            {
+                                //check if record is already exists
+                                //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                                var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                                if (searchResultCount > 0)
+                                {
+                                    continue;
+                                }
+                            }
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -1167,10 +1168,6 @@ namespace DAL
                                     HotelName = s.Hotel
                                 }).ToList();
                             }
-
-                            //var ActivityFS = (from a in context.Activity_FlavourServices.AsNoTracking()
-                            //                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                            //                  select a).ToList();
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
@@ -2324,12 +2321,17 @@ namespace DAL
             }
         }
 
-        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0)
+        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0, string Supplier_Id = "", string Element = "", string Type = "")
         {
             string Status = string.Empty;
             string EditUser = "MPUSH";
+            StringBuilder setNewStatus = new StringBuilder();
 
-            if (status == PushStatus.RUNNNING)
+            if (status == PushStatus.INSERT)
+            {
+                Status = "Scheduled";
+            }
+            else if (status == PushStatus.RUNNNING)
             {
                 Status = "Running";
             }
@@ -2342,15 +2344,21 @@ namespace DAL
                 Status = "Error";
             }
 
-            StringBuilder setNewStatus = new StringBuilder();
-            setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            if (status == PushStatus.INSERT)
+            {
+                setNewStatus.Append("INSERT INTO DistributionLayerRefresh_Log(Id,Element,Type,Create_Date,Create_User,Status,Supplier_Id) VALUES(");
+                setNewStatus.Append("'" + LogId + "','" + Element + "','" + Type + "', GETDATE() " + ", '" + "MONGOPUSH" + "', '" + Status + "', '" + Supplier_Id + "');");
+            }
+            else
+            {
+                setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            }
+
+
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
-
                 context.Configuration.AutoDetectChangesEnabled = false;
-                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                if (Log != null)
-                    context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+                context.Database.ExecuteSqlCommand(setNewStatus.ToString());
             }
             setNewStatus = null;
         }
@@ -2614,7 +2622,7 @@ namespace DAL
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(Guid Logid)
+        public void UpdateHotelRoomTypeMapping(Guid Logid, Guid Supplier_Id)
         {
             try
             {
@@ -2622,67 +2630,87 @@ namespace DAL
                 //Get Supplier ID from logid
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    //Get SupplierId and Log id 
-                    var listLog = GetScheduledRTM();
-                    if (listLog != null)
+                    List<Guid> SupplierIds = new List<Guid>();
+                    if (Supplier_Id != Guid.Empty)
                     {
-                        foreach (var LogidForSupplier in listLog)
+                        SupplierIds.Add(Supplier_Id);
+                    }
+                    else
+                    {
+                        SupplierIds = context.Accommodation_SupplierRoomTypeMapping.Select(s => s.Supplier_Id ?? Guid.Empty).Distinct().ToList();
+                    }
+
+                    foreach (var SupplierId in SupplierIds)
+                    {
+                        int TotalCount = 0;
+                        int MLDataInsertedCount = 0;
+
+                        Guid NewLogid = Logid;
+                        if (Logid == Guid.Empty)
                         {
-                            int TotalCount = 0;
-                            int MLDataInsertedCount = 0;
-                            Guid _logId = Guid.Parse(LogidForSupplier);
-                            UpdateDistLogInfo(_logId, PushStatus.RUNNNING);
+                            NewLogid = Guid.NewGuid();
+                            UpdateDistLogInfo(NewLogid, PushStatus.INSERT, 0, 0, SupplierId.ToString(), "RoomType", "Mapping");
+                        }
+                        else
+                        {
+                            NewLogid = Logid;
+                        }
 
-                            #region -- List
-                            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
-                            #endregion
+                        UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING);
 
-                            context.Configuration.AutoDetectChangesEnabled = false;
-                            context.Database.CommandTimeout = 0;
+                        #region -- List
+                        List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+                        #endregion
 
-                            Guid Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == _logId select s.Supplier_Id).FirstOrDefault() ?? Guid.Empty;
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        context.Database.CommandTimeout = 0;
 
-
-                            int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
-                            //Get Total Count
-                            StringBuilder sbTotalSelect = new StringBuilder();
-                            sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
+                        int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
+                        //Get Total Count
+                        StringBuilder sbTotalSelect = new StringBuilder();
+                        sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
                                                     inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
                                                     inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
                                                     inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
                                                     Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') AND SRTM.Supplier_Id ='");
 
-                            sbTotalSelect.Append(Convert.ToString(Supplierid) + "'");
+                        sbTotalSelect.Append(Convert.ToString(SupplierId) + "'");
 
-                            context.Configuration.AutoDetectChangesEnabled = false;
-                            try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
-                            int NoOfBatch = TotalCount / BatchSize;
-                            int mod = TotalCount % BatchSize;
-                            if (mod > 0)
-                                NoOfBatch = NoOfBatch + 1;
-                            for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
+                        int NoOfBatch = TotalCount / BatchSize;
+                        int mod = TotalCount % BatchSize;
+                        if (mod > 0)
+                            NoOfBatch = NoOfBatch + 1;
+                        for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                        {
+                            _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, SupplierId);
+                            if (_objHRTM.Count > 0)
                             {
-                                _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, Supplierid);
-                                if (_objHRTM.Count > 0)
+                                _database = MongoDBHandler.mDatabase();
+                                var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
+                                //For Upset 
+                                foreach (var item in _objHRTM)
                                 {
-                                    _database = MongoDBHandler.mDatabase();
-                                    // _database.DropCollection("RoomTypeMapping");
-                                    var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
-                                    collection.InsertMany(_objHRTM);
-                                    #region To update CounterIn DistributionLog
-                                    MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
-                                    UpdateDistLogInfo(_logId, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
-                                    #endregion
-
-                                    collection = null;
-                                    _database = null;
-                                    _objHRTM = null;
+                                    var filter = Builders<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, item.SystemRoomTypeMapId);
+                                    collection.ReplaceOneAsync(filter, item, new UpdateOptions { IsUpsert = true });
                                 }
-                            }
-                            UpdateDistLogInfo(_logId, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
 
+                                //collection.InsertMany(_objHRTM);
+                                #region To update CounterIn DistributionLog
+                                MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
+                                UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
+                                #endregion
+
+                                collection = null;
+                                _database = null;
+                                _objHRTM = null;
+                            }
                         }
+                        UpdateDistLogInfo(NewLogid, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
+
                     }
+
                 }
             }
             catch (Exception ex)
@@ -2847,30 +2875,6 @@ namespace DAL
             return _objHRTM;
 
         }
-        private List<string> GetScheduledRTM()
-        {
-
-            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-            {
-                try
-                {
-                    Guid supplierid = Guid.Parse("026C1D5C-44CD-4A0E-989D-7BD135153555");
-                    var listLog = (from s in context.DistributionLayerRefresh_Log
-                                   where s.Element == "RoomType" && s.Type == "Mapping" && s.Status == "Scheduled"
-                                   //&& s.Supplier_Id == supplierid
-                                   select s.Id.ToString()).ToList();
-                    return listLog;
-                }
-                catch (Exception)
-                {
-                    return null;
-                    throw;
-                }
-
-            }
-
-        }
-
 
     }
 }

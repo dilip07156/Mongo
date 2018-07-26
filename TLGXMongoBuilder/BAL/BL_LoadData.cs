@@ -246,14 +246,15 @@ namespace BAL
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(string LogId)
+        public void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id)
         {
             Guid gLogId;
-            if (Guid.TryParse(LogId, out gLogId))
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.UpdateHotelRoomTypeMapping(gLogId);
+                    obj.UpdateHotelRoomTypeMapping(gLogId, gSupplier_Id);
                 }
             }
         }
