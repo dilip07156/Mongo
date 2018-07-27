@@ -31,6 +31,9 @@ namespace DataContracts.StaticData
         public List<SafetyRegulations> SafetyRegulations { get; set; }
         public List<Ancillary> Ancillary { get; set; }
         public ProductStatus ProductStatus { get; set; }
+        //New field Added
+        public List<Rooms> Rooms { get; set; }
+        public List<Policies> Policies { get; set; }
         //public SupplierDetails SupplierDetails { get; set; }
 
         //public string CreatedBy { get; set; }
@@ -85,6 +88,42 @@ namespace DataContracts.StaticData
         public string DisplayName { get; set; }
         public bool IsTwentyFourHourCheckout { get; set; }
 
+        //New field Added
+        public bool IsBookWithoutCC { get; set; }
+        public bool IsRecommended { get; set; }
+
+        public string CheckinCloseTime { get; set; }
+        public string CheckoutCloseTime { get; set; }
+        public bool IsRatingEstimatedAutomatically { get; set; }
+        public bool IsCreditcardRequired { get; set; }
+        public string currency { get; set; }
+
+        public string DefaultLanguage { get; set; }
+        public string ExactRating { get; set; }
+        public string ProductCategorySubTypeId { get; set; }
+        public string HotelMessage { get; set; }
+        public string MaxPersonReservation { get; set; }
+        public string MaxRoomReservation { get; set; }
+        public string noOfReviews { get; set; }
+        public string HotelRanking { get; set; }
+        public string ReviewScore { get; set; }
+        public string SpokenLanguages { get; set; }
+        public string Facilities { get; set; }
+
+        //public string ChildrenPolicy { get; set; }
+        //public string InternetPolicy { get; set; }
+        //public string ParkingPolicy { get; set; }
+        //public string PetsPolicy { get; set; }
+        //public string GroupsPolicy { get; set; }
+        //public string Policies { get; set; }
+        //public string RecreationPolicy { get; set; }
+        //public string TermsAndConditions { get; set; }
+        public string Stars { get; set; }
+
+
+        //New field Added
+
+
         [JsonProperty(Required = Required.Always)]
         public string CheckInTime { get; set; }
 
@@ -96,6 +135,7 @@ namespace DataContracts.StaticData
         public Address Address { get; set; }
         public List<ContactDetails> ContactDetails { get; set; }
         public General General { get; set; }
+
 
         //public string ShortDescription { get; set; }
         //public string LongDescription { get; set; }
@@ -129,6 +169,16 @@ namespace DataContracts.StaticData
         public string Street4 { get; set; }
         public string Street5 { get; set; }
         public string Zone { get; set; }
+
+
+        //New field Added
+        public string CityCode { get; set; }
+        public string CountryCode { get; set; }
+        public string StateCode { get; set; }
+        public string DistrictId { get; set; }
+        public string DistrictName { get; set; }
+        public string Region { get; set; }
+        //New field Added
 
         [JsonProperty(Required = Required.Always)]
         public string PostalCode { get; set; }
@@ -164,7 +214,10 @@ namespace DataContracts.StaticData
         public TelephoneFormat Phone { get; set; }
         public TelephoneFormat Fax { get; set; }
         public string Website { get; set; }
+        //New field Added
+        public string MobileAppUrl { get; set; }
         public string EmailAddress { get; set; }
+
     }
 
     public class TelephoneFormat
@@ -272,6 +325,7 @@ namespace DataContracts.StaticData
 
     public class Facility
     {
+
         public string Category { get; set; }
         public string Type { get; set; }
         public string Desc { get; set; }
@@ -279,6 +333,12 @@ namespace DataContracts.StaticData
         public string OperationalTimeTo { get; set; }
         public string Duration { get; set; }
         public bool IsChargeable { get; set; }
+        //New field Added
+        public string Facility_Id { get; set; }
+        public string FacilityCategoryID { get; set; }
+        public string ExtraCharge { get; set; }
+
+        //New field Added
     }
 
     public class PassengerOccupancy
@@ -385,6 +445,18 @@ namespace DataContracts.StaticData
         public string MediaPosition { get; set; }
         public Date From { get; set; }
         public Date To { get; set; }
+
+        //New field Added
+        public string MediaWidth { get; set; }
+        public string MediaHeight { get; set; }
+        public string ThumbnailUrl { get; set; }
+        public string LargeImageURL { get; set; }
+        public string MediaFileMaster { get; set; }
+        public string SmallImageURL { get; set; }
+        public string MediaFileFormat { get; set; }
+        //New field Added
+
+
     }
 
     public class Updates
@@ -455,6 +527,61 @@ namespace DataContracts.StaticData
         public Date From { get; set; }
         public Date To { get; set; }
         public string Reason { get; set; }
+    }
+
+    //New field Added
+
+    public class Policies
+    {
+        public string Type { get; set; }
+        public string Description { get; set; }
+    }
+
+    public class Rooms
+    {
+        public string RoomTypeId { get; set; }
+        public string RoomTypeName { get; set; }
+        public string RoomCategoryCode { get; set; }
+        public string RoomCategoryName { get; set; }
+        public string RoomCode { get; set; }
+        public string CompanyRoomCategory { get; set; }
+        public string RoomDescription { get; set; }
+        public int BathRoomCount { get; set; }
+        public string BathRoomType { get; set; }
+        public string Size { get; set; }
+        public string View { get; set; }
+        public string RoomRanking { get; set; }
+        public bool IsRoomBookable { get; set; }
+        public string MaxPrice { get; set; }
+        public string MinPrice { get; set; }
+        public PassengerOccupancy PassengerOccupancy { get; set; }
+        public List<RoomAmenities> RoomAmenities { get; set; }
+        public List<BedRooms> BedRooms { get; set; }
+        public List<Media> RoomMedia { get; set; }
+
+
+    }
+
+
+    public class BedRooms
+    {
+        public string BedTypeID { get; set; }
+        public string BedType { get; set; }
+        public string BeddingConfiguration { get; set; }
+        public string AmenitiesType { get; set; }
+        public string BedRoomCount { get; set; }
+        public string MaxAdultWithExtraBed { get; set; }
+        public string MaxChildWithExtraBed { get; set; }
+        public string NoOfExreaBeds { get; set; }
+
+    }
+
+    public class RoomAmenities
+    {
+        public string AmenityId { get; set; }
+        public string RoomAmenityType { get; set; }
+        public string AmenityCategoryID { get; set; }
+        public string AmenityCategory { get; set; }
     }
 
 }
