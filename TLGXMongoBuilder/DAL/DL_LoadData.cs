@@ -2339,6 +2339,7 @@ namespace DAL
                                     Size = RoomInfoDetails.Where(w => w.SystemAttribute == "SIZE").Select(s => s.Value).FirstOrDefault(),
                                     View = RoomInfoDetails.Where(w => w.SystemAttribute == "VIEW").Select(s => s.Value).FirstOrDefault(),
                                     RoomRanking = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMRANKING").Select(s => s.Value).FirstOrDefault(),
+                                    AmenitiesType = RoomInfoDetails.Where(w => w.SystemAttribute == "AMENITIESTYPE").Select(s => s.Value).FirstOrDefault(),
                                     IsRoomBookable = false,
 
 
@@ -2351,6 +2352,20 @@ namespace DAL
                                     //        Category = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYCATEGORY").Select(s => s.Value).FirstOrDefault(),
                                     //        ExtraCharge = FacilityInfoDetails.Where(w => w.SystemAttribute == "EXTRACHARGE").Select(s => s.Value).FirstOrDefault(),
                                 };
+
+
+                                var isRoomBookable = RoomInfoDetails.Where(w => w.SystemAttribute == "ISROOMBOOKABLE").Select(s => s.Value).FirstOrDefault();
+                                if (isRoomBookable != null)
+                                {
+                                    bool isRoomBookablevalue;
+                                    var IsRoomBookable = CustomConvert(isRoomBookable, typeof(bool));
+                                    if (Boolean.TryParse(Convert.ToString(IsRoomBookable), out isRoomBookablevalue))
+                                    {
+                                        room.IsRoomBookable = isRoomBookablevalue;
+                                    }
+                                }
+
+
 
 
                                 int BathRoomCount;
@@ -2421,7 +2436,7 @@ namespace DAL
                                             BedTypeID = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPEID").Select(s => s.Value).FirstOrDefault(),
                                             BedType = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault(),
                                             BeddingConfiguration = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDDINGCONFIGURATION").Select(s => s.Value).FirstOrDefault(),
-                                            AmenitiesType = BedRoomInfoDetails.Where(w => w.SystemAttribute == "AMENITIESTYPE").Select(s => s.Value).FirstOrDefault(),
+                                            
                                             BedRoomCount = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDROOMCOUNT").Select(s => s.Value).FirstOrDefault(),
                                             MaxAdultWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXADULTWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
                                             MaxChildWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXCHILDWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
@@ -2436,7 +2451,6 @@ namespace DAL
                                         BedTypeID = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPEID").Select(s => s.Value).FirstOrDefault(),
                                         BedType = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault(),
                                         BeddingConfiguration = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDDINGCONFIGURATION").Select(s => s.Value).FirstOrDefault(),
-                                        AmenitiesType = RoomInfoDetails.Where(w => w.SystemAttribute == "AMENITIESTYPE").Select(s => s.Value).FirstOrDefault(),
                                         BedRoomCount = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDROOMCOUNT").Select(s => s.Value).FirstOrDefault(),
                                         MaxAdultWithExtraBed = RoomInfoDetails.Where(w => w.SystemAttribute == "MAXADULTWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
                                         MaxChildWithExtraBed = RoomInfoDetails.Where(w => w.SystemAttribute == "MAXCHILDWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),

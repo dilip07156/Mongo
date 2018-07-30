@@ -554,6 +554,7 @@ namespace DataContracts.StaticData
         public bool IsRoomBookable { get; set; }
         public string MaxPrice { get; set; }
         public string MinPrice { get; set; }
+        public string AmenitiesType { get; set; }
         public PassengerOccupancy PassengerOccupancy { get; set; }
         public List<RoomAmenities> RoomAmenities { get; set; }
         public List<BedRooms> BedRooms { get; set; }
@@ -568,7 +569,7 @@ namespace DataContracts.StaticData
         public string BedTypeID { get; set; }
         public string BedType { get; set; }
         public string BeddingConfiguration { get; set; }
-        public string AmenitiesType { get; set; }
+        
         public string BedRoomCount { get; set; }
         public string MaxAdultWithExtraBed { get; set; }
         public string MaxChildWithExtraBed { get; set; }
