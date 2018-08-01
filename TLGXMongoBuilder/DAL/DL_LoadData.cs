@@ -903,8 +903,12 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
-                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "ckis"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
                     foreach (var Activity in ActivityList)
