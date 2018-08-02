@@ -902,12 +902,14 @@ namespace DAL
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     _database = MongoDBHandler.mDatabase();
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
                     //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "ckis"
+                                        && spm.SupplierName == "viator"
                                         select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
@@ -944,8 +946,12 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
-                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
                     foreach (var Activity in ActivityList)
@@ -1043,7 +1049,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "xoxoday"
+                                        && spm.SupplierName == "viator"
                                         select a).ToList();
                     }
                     else
@@ -1057,16 +1063,16 @@ namespace DAL
                     {
                         try
                         {
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                //check if record is already exists
-                                //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                                var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                                if (searchResultCount > 0)
-                                {
-                                    continue;
-                                }
-                            }
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    //check if record is already exists
+                            //    //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                            //    var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                            //    if (searchResultCount > 0)
+                            //    {
+                            //        continue;
+                            //    }
+                            //}
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -1400,15 +1406,15 @@ namespace DAL
 
                                                          }).ToList();
 
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                collection.InsertOneAsync(newActivity);
-                            }
-                            else
-                            {
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    collection.InsertOneAsync(newActivity);
+                            //}
+                            //else
+                            //{
                                 var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
                                 collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            }
+                            //}
 
                             newActivity = null;
                             ActivityClassAttr = null;
