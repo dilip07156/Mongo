@@ -16,7 +16,7 @@ namespace DAL
     {
         public System.Guid Accommodation_Id { get; set; }
         public string CompanyName { get; set; }
-        public Nullable<int> CompanyHotelID { get; set; }
+        public int CompanyHotelID { get; set; }
         public Nullable<int> FinanceControlID { get; set; }
         public Nullable<System.DateTime> OnlineDate { get; set; }
         public Nullable<System.DateTime> OfflineDate { get; set; }
@@ -87,5 +87,6 @@ namespace DAL
         public Nullable<System.Guid> Area_Id { get; set; }
         public Nullable<System.Guid> Location_Id { get; set; }
         public string TLGXAccoId { get; set; }
+        public Nullable<int> Priority { get; set; }
     }
 }

@@ -247,5 +247,6 @@ namespace DataContracts.Activity
         public string OperatingToDate { get; set; }
         public string DepartureCode { get; set; }
         public string DeparturePoint { get; set; }
+        public string DepartureDescription { get; set; }
     }
 }

@@ -938,6 +938,9 @@ namespace DAL
                 throw ex;
             }
         }
+        /// <summary>
+        /// To update DaysOfWeek for activity by Supplier
+        /// </summary>
         public void UpdateActivityDOW()
         {
             try
@@ -1049,7 +1052,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "viator"
+                                        && spm.SupplierName == "gta"
                                         select a).ToList();
                     }
                     else
@@ -1058,7 +1061,7 @@ namespace DAL
                                         where a.Activity_Flavour_Id == Activity_Flavour_Id && a.CityCode != null
                                         select a).ToList();
                     }
-
+                    int iCounter = 0;
                     foreach (var Activity in ActivityList)
                     {
                         try
@@ -1151,6 +1154,7 @@ namespace DAL
 
                             var ActivityCT = (from a in context.Activity_CategoriesType.AsNoTracking()
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
+                                              && (a.IsActive ?? false) == true
                                               select a).ToList();
 
                             var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
@@ -1402,7 +1406,8 @@ namespace DAL
                                                              Saturday = DOW.Sat ?? false,
 
                                                              DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
-                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint,
+                                                             DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
 
                                                          }).ToList();
 
@@ -1430,6 +1435,7 @@ namespace DAL
                             ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
+                            iCounter++;
 
                         }
                         catch (Exception ex)

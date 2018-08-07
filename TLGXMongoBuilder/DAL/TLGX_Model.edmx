@@ -11,7 +11,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="uniqueidentifier" Nullable="false" />
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
-          <Property Name="CompanyHotelID" Type="int" />
+          <Property Name="CompanyHotelID" Type="int" Nullable="false" />
           <Property Name="FinanceControlID" Type="int" />
           <Property Name="OnlineDate" Type="datetime" />
           <Property Name="OfflineDate" Type="datetime" />
@@ -82,6 +82,7 @@
           <Property Name="Area_Id" Type="uniqueidentifier" />
           <Property Name="Location_Id" Type="uniqueidentifier" />
           <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="100" />
+          <Property Name="Priority" Type="int" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -718,6 +719,7 @@
           <Property Name="CreateDate" Type="datetime" Nullable="false" />
           <Property Name="EditUser" Type="nvarchar" MaxLength="150" />
           <Property Name="EditDate" Type="datetime" />
+          <Property Name="Description" Type="varchar(max)" />
         </EntityType>
         <EntityType Name="Activity_Descriptions">
           <Key>
@@ -3055,7 +3057,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="Guid" Nullable="false" />
           <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyHotelID" Type="Int32" />
+          <Property Name="CompanyHotelID" Type="Int32" Nullable="false" />
           <Property Name="FinanceControlID" Type="Int32" />
           <Property Name="OnlineDate" Type="DateTime" Precision="3" />
           <Property Name="OfflineDate" Type="DateTime" Precision="3" />
@@ -3126,6 +3128,7 @@
           <Property Name="Area_Id" Type="Guid" />
           <Property Name="Location_Id" Type="Guid" />
           <Property Name="TLGXAccoId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Priority" Type="Int32" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -4043,6 +4046,7 @@
           <Property Name="CreateDate" Type="DateTime" Nullable="false" Precision="3" />
           <Property Name="EditUser" Type="String" MaxLength="150" FixedLength="false" Unicode="true" />
           <Property Name="EditDate" Type="DateTime" Precision="3" />
+          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Activity_SupplierCityDepartureCode">
           <Key>
@@ -5093,6 +5097,7 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
                 <ScalarProperty Name="TLGXAccoId" ColumnName="TLGXAccoId" />
                 <ScalarProperty Name="Location_Id" ColumnName="Location_Id" />
                 <ScalarProperty Name="Area_Id" ColumnName="Area_Id" />
@@ -6109,6 +6114,7 @@
           <EntitySetMapping Name="Activity_DeparturePoints">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_DeparturePoints">
               <MappingFragment StoreEntitySet="Activity_DeparturePoints">
+                <ScalarProperty Name="Description" ColumnName="Description" />
                 <ScalarProperty Name="EditDate" ColumnName="EditDate" />
                 <ScalarProperty Name="EditUser" ColumnName="EditUser" />
                 <ScalarProperty Name="CreateDate" ColumnName="CreateDate" />
