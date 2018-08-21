@@ -15,6 +15,7 @@ namespace DataContracts.Activity
         public int SystemActivityCode { get; set; }
         public string SupplierCompanyCode { get; set; }
         public string SupplierProductCode { get; set; }
+        public string InterestType { get; set; }
         public string Category { get; set; }
         public string Type { get; set; }
         public string SubType { get; set; }
@@ -55,6 +56,8 @@ namespace DataContracts.Activity
         public List<DaysOfWeek> DaysOfTheWeek { get; set; }
         public List<string> Specials { get; set; }
         public List<SupplierCityDepartureCode> SupplierCityDepartureCodes { get; set; }
+
+
 
         /// <summary>
         /// Internal Use
@@ -163,6 +166,8 @@ namespace DataContracts.Activity
         public int? Age { get; set; }
         public string QualifierInfo { get; set; }
         public string TimeSlotCode { get; set; }
+        public string TourType { get; set; }
+        public string AreaAddress { get; set; }
 
     }
 
@@ -175,6 +180,9 @@ namespace DataContracts.Activity
         public string ActivityType { get; set; }
         public string LanguageCode { get; set; }
         public string Language { get; set; }
+        [BsonIgnore]
+        public Guid Activity_FlavourOptions_Id { get; set; }
+        public List<ClassificationAttrributes> ClassificationAttrributes { get; set; }
     }
 
     public class ClassificationAttrributes
@@ -202,6 +210,12 @@ namespace DataContracts.Activity
         public string PriceId { get; set; }
         public string OptionCode { get; set; }
         public string PriceFor { get; set; }
+        public string Market { get; set; }
+        public string FromPax { get; set; }
+        public string ToPax { get; set; }
+        public string PersonType { get; set; }
+        public string ValidFrom { get; set; }
+        public string ValidTo { get; set; }
     }
 
     public class SystemMapping
@@ -226,12 +240,13 @@ namespace DataContracts.Activity
         public string EndTime { get; set; }
         public string SupplierDuration { get; set; }
         public string Duration { get; set; }
+        public string DurationType { get; set; }
         public string SupplierSession { get; set; }
         public string Session { get; set; }
         public string OperatingFromDate { get; set; }
         public string OperatingToDate { get; set; }
         public string DepartureCode { get; set; }
         public string DeparturePoint { get; set; }
+        public string DepartureDescription { get; set; }
     }
-
 }

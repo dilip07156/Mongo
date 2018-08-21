@@ -32,5 +32,9 @@ namespace DAL
         public Nullable<System.Guid> Activity_FlavourOptions_Id { get; set; }
         public Nullable<System.DateTime> Price_ValidFrom { get; set; }
         public Nullable<System.DateTime> Price_ValidTo { get; set; }
+        public string Market { get; set; }
+        public string FromPax { get; set; }
+        public string ToPax { get; set; }
+        public string PersonType { get; set; }
     }
 }

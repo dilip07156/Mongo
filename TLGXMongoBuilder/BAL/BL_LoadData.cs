@@ -28,6 +28,21 @@ namespace BAL
             }
         }
 
+        public void UpdateActivityInterestType()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityInterestType();
+            }
+        }
+        public void UpdateActivityDOW()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityDOW();
+            }
+        }
+
         public void LoadActivityMasters()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
@@ -231,17 +246,32 @@ namespace BAL
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(string LogId)
+        public void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id)
+        {
+            Guid gLogId;
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.UpdateHotelRoomTypeMapping(gLogId, gSupplier_Id);
+                }
+            }
+        }
+
+        #region ZoneType Master
+        public void LoadZoneTypeMaster(string LogId)
         {
             Guid gLogId;
             if (Guid.TryParse(LogId, out gLogId))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.UpdateHotelRoomTypeMapping(gLogId);
+                    obj.LoadZoneTypeMaster(gLogId);
                 }
             }
         }
+        #endregion
 
     }
 }

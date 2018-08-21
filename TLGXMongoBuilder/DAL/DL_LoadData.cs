@@ -14,6 +14,7 @@ namespace DAL
 {
     public enum PushStatus
     {
+        INSERT,
         SCHEDULED,
         RUNNNING,
         COMPLETED,
@@ -894,6 +895,142 @@ namespace DAL
             }
         }
 
+        public void UpdateActivityInterestType()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
+                            var InterestType = string.Join(",", InterestTypeArray);
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        /// <summary>
+        /// To update DaysOfWeek for activity by Supplier
+        /// </summary>
+        public void UpdateActivityDOW()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+                            var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
+                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                               select a).ToList();
+
+                            var ActivityOD = (from a in context.Activity_DaysOfOperation.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              && (a.IsOperatingDays ?? true) == true
+                                              select a).ToList();
+
+                            var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                            var DaysOfTheWeek = (from DOW in ActivityDOW
+                                                 join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
+                                                 from ODljS in ODlj.DefaultIfEmpty()
+                                                 join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
+                                                 from DPljS in DPlj.DefaultIfEmpty()
+                                                 select new DataContracts.Activity.DaysOfWeek
+                                                 {
+                                                     OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
+                                                     OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
+
+                                                     SupplierDuration = DOW.SupplierDuration ?? string.Empty,
+                                                     SupplierEndTime = DOW.SupplierEndTime ?? string.Empty,
+                                                     SupplierFrequency = DOW.SupplierFrequency ?? string.Empty,
+                                                     SupplierSession = DOW.SupplierSession ?? string.Empty,
+                                                     SupplierStartTime = DOW.SupplierStartTime ?? string.Empty,
+
+                                                     Session = DOW.Session ?? string.Empty,
+                                                     StartTime = DOW.StartTime ?? string.Empty,
+                                                     EndTime = DOW.EndTime ?? string.Empty,
+                                                     Duration = DOW.Duration ?? string.Empty,
+                                                     DurationType = DOW.DurationType ?? string.Empty,
+
+
+                                                     Sunday = DOW.Sun ?? false,
+                                                     Monday = DOW.Mon ?? false,
+                                                     Tuesday = DOW.Tues ?? false,
+                                                     Wednesday = DOW.Wed ?? false,
+                                                     Thursday = DOW.Thur ?? false,
+                                                     Friday = DOW.Fri ?? false,
+                                                     Saturday = DOW.Sat ?? false,
+
+                                                     DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
+                                                     DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+
+                                                 }).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.DaysOfTheWeek, DaysOfTheWeek);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
@@ -915,7 +1052,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "CKIS" && (spm.SupplierCityCode == "22" || spm.SupplierCityCode == "81" || spm.SupplierCityCode == "22135")
+                                        && spm.SupplierName == "gta"
                                         select a).ToList();
                     }
                     else
@@ -924,21 +1061,21 @@ namespace DAL
                                         where a.Activity_Flavour_Id == Activity_Flavour_Id && a.CityCode != null
                                         select a).ToList();
                     }
-
+                    int iCounter = 0;
                     foreach (var Activity in ActivityList)
                     {
                         try
                         {
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                //check if record is already exists
-                                //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
-                                var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
-                                if (searchResultCount > 0)
-                                {
-                                    continue;
-                                }
-                            }
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    //check if record is already exists
+                            //    //var SupplierProductCode = context.Activity_SupplierProductMapping.Where(w => w.Activity_ID == Activity.Activity_Flavour_Id).Select(s => s.SuplierProductCode).FirstOrDefault();
+                            //    var searchResultCount = collection.Find(f => f.SystemActivityCode == Convert.ToInt32(Activity.CommonProductNameSubType_Id)).Count();
+                            //    if (searchResultCount > 0)
+                            //    {
+                            //        continue;
+                            //    }
+                            //}
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -980,7 +1117,9 @@ namespace DAL
                                                    SupplierCountryName = a.SupplierCountryName,
                                                    SupplierCityCode = a.SupplierCityCode,
                                                    SupplierCityName = a.SupplierCityName,
-                                                   Currency = a.Currency
+                                                   Currency = a.Currency,
+                                                   TourType = a.SupplierTourType,
+                                                   AreaAddress = a.Location
                                                }).FirstOrDefault();
 
                             var ActivityDeals = (from a in context.Activity_Deals.AsNoTracking()
@@ -999,6 +1138,11 @@ namespace DAL
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
+                            var ActivityFOAttribute = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                                       where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                       && a.AttributeType == "ProductOption"
+                                                       select a).ToList();
+
                             var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
                                                where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                                select a).ToList();
@@ -1010,6 +1154,7 @@ namespace DAL
 
                             var ActivityCT = (from a in context.Activity_CategoriesType.AsNoTracking()
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
+                                              && (a.IsActive ?? false) == true
                                               select a).ToList();
 
                             var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
@@ -1039,6 +1184,8 @@ namespace DAL
                             }
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
+
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
                             newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
@@ -1149,14 +1296,31 @@ namespace DAL
                                     CountryName = ActivitySPM.SupplierCountryName,
                                     CityCode = ActivitySPM.SupplierCityCode,
                                     CityName = ActivitySPM.SupplierCityName,
-                                    PricingCurrency = ActivitySPM.Currency
+                                    PricingCurrency = ActivitySPM.Currency,
+                                    AreaAddress = ActivitySPM.AreaAddress,
+                                    TourType = ActivitySPM.TourType
                                 };
                             }
 
 
                             newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
 
-                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices { OptionCode = s.Price_OptionCode, PriceFor = s.Price_For, Price = Convert.ToDouble(s.Price), PriceType = s.Price_Type, PriceBasis = s.PriceBasis, PriceId = s.PriceCode, SupplierCurrency = s.PriceCurrency }).ToList();
+                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
+                            {
+                                OptionCode = s.Price_OptionCode,
+                                PriceFor = s.Price_For,
+                                Price = Convert.ToDouble(s.Price),
+                                PriceType = s.Price_Type,
+                                PriceBasis = s.PriceBasis,
+                                PriceId = s.PriceCode,
+                                SupplierCurrency = s.PriceCurrency,
+                                FromPax = s.FromPax,
+                                ToPax = s.ToPax,
+                                Market = s.Market,
+                                PersonType = s.PersonType,
+                                ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
+                                ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString()
+                            }).ToList();
 
                             newActivity.ProductOptions = (from afo in ActivityFO
                                                           select new DataContracts.Activity.ProductOptions
@@ -1167,10 +1331,46 @@ namespace DAL
                                                               DealText = afo.Activity_DealText,
                                                               Options = afo.Activity_OptionName,
                                                               Language = afo.Activity_Language,
-                                                              LanguageCode = afo.Activity_LanguageCode
+                                                              LanguageCode = afo.Activity_LanguageCode,
+                                                              Activity_FlavourOptions_Id = afo.Activity_FlavourOptions_Id
                                                           }).ToList();
 
-                            newActivity.ClassificationAttrributes = ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList();
+                            foreach (var item in newActivity.ProductOptions)
+                            {
+                                var itemCA = (from a in ActivityFOAttribute where a.Activity_FlavourOptions_Id == item.Activity_FlavourOptions_Id select a).ToList();
+                                if (itemCA != null && itemCA.Count > 0)
+                                {
+                                    item.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
+                                    foreach (var itemCAI in itemCA)
+                                    {
+                                        item.ClassificationAttrributes.Add(new DataContracts.Activity.ClassificationAttrributes
+                                        {
+                                            Group = itemCAI.AttributeSubType,
+                                            Type = itemCAI.AttributeType,
+                                            Value = itemCAI.AttributeValue
+
+                                        });
+                                    }
+                                }
+                            }
+
+                            newActivity.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ThingsToCarry").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "RecommendedDuration").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Market").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "AdditionalInfo").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Notes").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Physicalntensity").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Advisory").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PackagePeriod").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "BestFor").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Itinerary").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "TagWith").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+
+
+
+
 
                             newActivity.SystemMapping = new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty };//ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
 
@@ -1194,6 +1394,8 @@ namespace DAL
                                                              StartTime = DOW.StartTime ?? string.Empty,
                                                              EndTime = DOW.EndTime ?? string.Empty,
                                                              Duration = DOW.Duration ?? string.Empty,
+                                                             DurationType = DOW.DurationType ?? string.Empty,
+
 
                                                              Sunday = DOW.Sun ?? false,
                                                              Monday = DOW.Mon ?? false,
@@ -1204,19 +1406,20 @@ namespace DAL
                                                              Saturday = DOW.Sat ?? false,
 
                                                              DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
-                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint,
+                                                             DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
 
                                                          }).ToList();
 
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                collection.InsertOneAsync(newActivity);
-                            }
-                            else
-                            {
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    collection.InsertOneAsync(newActivity);
+                            //}
+                            //else
+                            //{
                                 var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
                                 collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            }
+                            //}
 
                             newActivity = null;
                             ActivityClassAttr = null;
@@ -1229,8 +1432,10 @@ namespace DAL
                             ActivitySPM = null;
                             ActivityDeals = null;
                             ActivityPrices = null;
+                            ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
+                            iCounter++;
 
                         }
                         catch (Exception ex)
@@ -1240,7 +1445,7 @@ namespace DAL
                     }
 
                     collection = null;
-                   _database = null;
+                    _database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1766,7 +1971,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Running";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -1994,7 +2199,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Completed";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -2013,7 +2218,7 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Error";
-                        Log.Edit_date = DateTime.Now;
+                        Log.Edit_Date = DateTime.Now;
                         Log.Edit_User = "MongoPush";
                         context.SaveChanges();
                     }
@@ -2033,7 +2238,7 @@ namespace DAL
                 {
                     Log.MongoPushCount = MongoPushCount;
                     Log.TotalCount = totalcount;
-                    Log.Edit_date = DateTime.Now;
+                    Log.Edit_Date = DateTime.Now;
                     Log.Edit_User = "MongoPush";
                     context.SaveChanges();
                 }
@@ -2136,12 +2341,17 @@ namespace DAL
             }
         }
 
-        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0)
+        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0, string Supplier_Id = "", string Element = "", string Type = "")
         {
             string Status = string.Empty;
             string EditUser = "MPUSH";
+            StringBuilder setNewStatus = new StringBuilder();
 
-            if (status == PushStatus.RUNNNING)
+            if (status == PushStatus.INSERT)
+            {
+                Status = "Scheduled";
+            }
+            else if (status == PushStatus.RUNNNING)
             {
                 Status = "Running";
             }
@@ -2154,15 +2364,21 @@ namespace DAL
                 Status = "Error";
             }
 
-            StringBuilder setNewStatus = new StringBuilder();
-            setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            if (status == PushStatus.INSERT)
+            {
+                setNewStatus.Append("INSERT INTO DistributionLayerRefresh_Log(Id,Element,Type,Create_Date,Create_User,Status,Supplier_Id) VALUES(");
+                setNewStatus.Append("'" + LogId + "','" + Element + "','" + Type + "', GETDATE() " + ", '" + "MONGOPUSH" + "', '" + Status + "', '" + Supplier_Id + "');");
+            }
+            else
+            {
+                setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            }
+
+
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
-
                 context.Configuration.AutoDetectChangesEnabled = false;
-                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                if (Log != null)
-                    context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+                context.Database.ExecuteSqlCommand(setNewStatus.ToString());
             }
             setNewStatus = null;
         }
@@ -2170,21 +2386,33 @@ namespace DAL
         #region ZoneMaster
         public void LoadZoneMaster(Guid LogId)
         {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
             try
             {
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Database.CommandTimeout = 0;
+                    if (LogId != Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                    }
                     List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
-                    int total = 0;
+                    // int total = 0;
                     int BatchSize = 1000;
                     string strTotalCount = @"SELECT COUNT(1) FROM m_ZoneMaster with(nolock)";
                     context.Configuration.AutoDetectChangesEnabled = false;
-                    try { total = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault(); } catch (Exception ex) { }
-                    int NoOfBatch = total / BatchSize;
-                    int mod = total % BatchSize;
+                    try
+                    {
+                        TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                    }
+                    catch (Exception ex) { }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
                     if (mod > 0)
+                    {
                         NoOfBatch = NoOfBatch + 1;
+                    }
                     _database = MongoDBHandler.mDatabase();
                     _database.DropCollection("ZoneMaster");
                     var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
@@ -2193,22 +2421,30 @@ namespace DAL
                     {
                         _ZoneList = GetZoneMasterdataToLoad(BatchSize, BatchNo);
                         if (_ZoneList.Count > 0)
+                        {
                             collection.InsertManyAsync(_ZoneList);
+                            #region To update CounterIn DistributionLog
+                            if (LogId != Guid.Empty)
+                            {
+                                MongoInsertedCount = MongoInsertedCount + _ZoneList.Count();
+                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
+                            }
+                            #endregion
+                        }
                     }
 
                     collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
                     collection = null;
                     _database = null;
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
+                    if (LogId != Guid.Empty)
                     {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
+                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneCount, MongoInsertedCount);
                     }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalZoneCount, MongoInsertedCount);
                 throw ex;
             }
         }
@@ -2222,11 +2458,13 @@ namespace DAL
                 #region ==== ZoneMasterQuery
                 StringBuilder sbSelectZoneMaster = new StringBuilder();
                 StringBuilder sbOrderbyZoneMaster = new StringBuilder();
-                sbSelectZoneMaster.Append(@" SELECT Zone_id, zm.Zone_Name, zm.Zone_Type, zm.Zone_SubType,zm.Zone_Radius,
-                                                zm.Latitude, zm.Longitude,co.Code as TLGXCountryCode
-                                                FROM  m_zoneMaster zm  with(Nolock)
-                                                LEFT JOIN m_CountryMaster co with(Nolock) ON co.Country_Id= zm.Country_Id 
-                                                WHERE zm.isActive=1 ");
+                sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
+                                            Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
+                                            upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
+                                            FROM  m_zoneMaster zm  with(Nolock)
+                                            LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                            WHERE zm.isActive=1 ");
                 int skip = batchNo * batchSize;
                 sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
 
@@ -2238,8 +2476,8 @@ namespace DAL
                 StringBuilder sbSelectZoneProduct = new StringBuilder();
                 StringBuilder sbOrderByZoneProduct = new StringBuilder();
                 sbSelectZoneProduct.Append(@" SELECT zp.Zone_id, ac.CompanyHotelID as TLGXCompanyHotelID ,zp.Distance,
-                                                  ac.HotelName as TLGXHotelName,zp.Included as IsIncluded,
-                                                  zp.ProductType as TLGXProductType,zp.Unit
+                                                  upper(ltrim(rtrim(ac.HotelName))) as TLGXHotelName,zp.Included as IsIncluded,
+                                                  upper(ltrim(rtrim(zp.ProductType))) as TLGXProductType,upper(ltrim(rtrim(zp.Unit))) as Unit
                                                   FROM  ZoneProduct_Mapping zp with(NOLOCK) 
                                                   JOIN Accommodation ac with(NOLOCK)  on zp.Product_Id = ac.Accommodation_Id ");
                 sbOrderByZoneProduct.Append(" ORDER BY Distance ");
@@ -2250,7 +2488,7 @@ namespace DAL
                 #endregion
                 #region ==== ZoneCityMapping SQL QUERY
                 StringBuilder sbSelectZoneCity = new StringBuilder();
-                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, code as TLGXCityCode
+                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, upper(ltrim(rtrim(cm.code))) as TLGXCityCode
                                                FROM  ZoneCity_Mapping zc with(NOLOCK) 
                                                JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id ");
 
@@ -2315,6 +2553,7 @@ namespace DAL
             {
                 _ResultList = RQ.ConvertAll(item => new DataContracts.Masters.DC_Zone_Master
                 {
+                    Id = item.Id,
                     Zone_Name = item.Zone_Name,
                     Zone_Type = item.Zone_Type,
                     Zone_SubType = item.Zone_SubType,
@@ -2341,28 +2580,181 @@ namespace DAL
             catch (Exception ex) { throw; }
             return _ResultList;
         }
+
+
+        #endregion
+
+        #region ZoneTypeMaster
+        public void LoadZoneTypeMaster(Guid LogId)
+        {
+            int TotalZoneTypeCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                if (LogId != Guid.Empty)
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                }
+                _database = MongoDBHandler.mDatabase();
+                _database.DropCollection("ZoneTypeMaster");
+                var collection = _database.GetCollection<DataContracts.Masters.DC_ZoneTypeMaster>("ZoneTypeMaster");
+
+                List<DataContracts.Masters.DC_ZoneTypeMaster> dataList = new List<DataContracts.Masters.DC_ZoneTypeMaster>();
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    dataList = (from ma in context.m_masterattribute
+                                join mav in context.m_masterattributevalue on ma.MasterAttribute_Id equals mav.MasterAttribute_Id
+                                where ma.MasterFor.ToUpper() == "ZONE" && ma.Name.ToUpper() == "ZONETYPE"
+                                select new DataContracts.Masters.DC_ZoneTypeMaster
+                                {
+                                    Zone_Type = mav.AttributeValue.Trim().ToUpper(),
+                                    Zone_SubType = (from a in context.m_masterattributevalue
+                                                    where a.ParentAttributeValue_Id == mav.MasterAttributeValue_Id
+                                                    select a.AttributeValue.Trim().ToUpper()).ToList()
+
+                                }).ToList();
+                    if (dataList.Count > 0)
+                    {
+                        collection.InsertManyAsync(dataList);
+                        #region To update CounterIn DistributionLog
+                        if (LogId != Guid.Empty)
+                        {
+                            TotalZoneTypeCount = dataList.Count();
+                            MongoInsertedCount = MongoInsertedCount + dataList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                        }
+                        #endregion
+                    }
+
+                    collection = null;
+                    _database = null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                throw ex;
+            }
+        }
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(Guid Logid)
+        public void UpdateHotelRoomTypeMapping(Guid Logid, Guid Supplier_Id)
         {
             try
             {
-                List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
-                List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _objAttributes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
 
                 //Get Supplier ID from logid
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    context.Database.CommandTimeout = 0;
-                    // Guid? Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == Logid select s.Supplier_Id).FirstOrDefault();
+                    List<Guid> SupplierIds = new List<Guid>();
+                    if (Supplier_Id != Guid.Empty)
+                    {
+                        SupplierIds.Add(Supplier_Id);
+                    }
+                    else
+                    {
+                        SupplierIds = context.Accommodation_SupplierRoomTypeMapping.Select(s => s.Supplier_Id ?? Guid.Empty).Distinct().ToList();
+                    }
 
-                    string str = string.Empty;
+                    foreach (var SupplierId in SupplierIds)
+                    {
+                        int TotalCount = 0;
+                        int MLDataInsertedCount = 0;
+
+                        Guid NewLogid = Logid;
+                        if (Logid == Guid.Empty)
+                        {
+                            NewLogid = Guid.NewGuid();
+                            UpdateDistLogInfo(NewLogid, PushStatus.INSERT, 0, 0, SupplierId.ToString(), "RoomType", "Mapping");
+                        }
+                        else
+                        {
+                            NewLogid = Logid;
+                        }
+
+                        UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING);
+
+                        #region -- List
+                        List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+                        #endregion
+
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        context.Database.CommandTimeout = 0;
+
+                        int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
+                        //Get Total Count
+                        StringBuilder sbTotalSelect = new StringBuilder();
+                        sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
+                                                    inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
+                                                    inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
+                                                    inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
+                                                    Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') AND SRTM.Supplier_Id ='");
+
+                        sbTotalSelect.Append(Convert.ToString(SupplierId) + "'");
+
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
+                        int NoOfBatch = TotalCount / BatchSize;
+                        int mod = TotalCount % BatchSize;
+                        if (mod > 0)
+                            NoOfBatch = NoOfBatch + 1;
+                        for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                        {
+                            _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, SupplierId);
+                            if (_objHRTM.Count > 0)
+                            {
+                                _database = MongoDBHandler.mDatabase();
+                                var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
+                                //For Upset 
+                                foreach (var item in _objHRTM)
+                                {
+                                    var filter = Builders<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, item.SystemRoomTypeMapId);
+                                    collection.ReplaceOneAsync(filter, item, new UpdateOptions { IsUpsert = true });
+                                }
+
+                                //collection.InsertMany(_objHRTM);
+                                #region To update CounterIn DistributionLog
+                                MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
+                                UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
+                                #endregion
+
+                                collection = null;
+                                _database = null;
+                                _objHRTM = null;
+                            }
+                        }
+                        UpdateDistLogInfo(NewLogid, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
+
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+        }
+        private List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> GetDataToPushMongo_RTM(int batchSize, int batchNo, Guid Supplier_id)
+        {
+            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+            List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _objAttributes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM> _objHRTM_IM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM>();
+            List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM> _objAttributes_IM = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>();
+
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
                     context.Database.CommandTimeout = 0;
                     context.Configuration.AutoDetectChangesEnabled = false;
+                    #region Select Query
                     StringBuilder sbSelect = new StringBuilder();
-                    sbSelect.Append(@" select 
+                    sbSelect.Append(@" select  
                                             SRTM.Accommodation_SupplierRoomTypeMapping_Id,
                                             A.TLGXAccoId ,               ARI.TLGXAccoRoomId,
                                             S.Code AS supplierCode,      SRTM.SupplierProductId,SRTM.SupplierRoomId,
@@ -2380,75 +2772,129 @@ namespace DAL
                                             SRTM.Smoking,                SRTM.BedTypeCode AS BedType, 
                                             SRTM.MinGuestOccupancy,      SRTM.PromotionalVendorCode, 
                                             SRTM.BeddingConfig,          SRTM.MapId AS SystemRoomTypeMapId,
+                                            SRTM.RoomDescription,
                                             A.CompanyHotelID AS SystemProductCode,
                                             ARI.RoomId AS SystemRoomTypeCode, ARI.RoomName AS SystemRoomTypeName,
                                             UPPER(SRTM.TX_RoomName) AS SystemNormalizedRoomType,
                                             UPPER(SRTM.Tx_StrippedName) AS SystemStrippedRoomType,
-                                            SRTM.MappingStatus As Status
+                                            SRTM.MappingStatus As Status,
+	                                        SRTM.MatchingScore
                                             From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
                                             inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
                                             inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
                                             inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
-                                            Where SRTM.MappingStatus IN ('MAPPED','AUTOMAPPED') ");
-
+                                            Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') ");
+                    int skip = batchNo * batchSize;
                     StringBuilder sbWhere = new StringBuilder();
-                    //sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplierid) + "'");
+                    sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplier_id) + "'");
+                    sbWhere.Append("  ORDER BY SRTM.Accommodation_SupplierRoomTypeMapping_Id OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
 
-                    // sbWhere.AppendLine(" AND SRTM.Supplier_Id = '" + Convert.ToString("7A9C1351-8292-4C8C-B8B9-79F816040328") + "'");
 
                     StringBuilder sbfinal = new StringBuilder();
 
                     sbfinal.Append(sbSelect);
                     sbfinal.Append(sbWhere);
-
+                    #endregion
                     context.Configuration.AutoDetectChangesEnabled = false;
-                    try { _objHRTM = context.Database.SqlQuery<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>(sbfinal.ToString()).ToList(); } catch (Exception ex) { }
+                    try { _objHRTM_IM = context.Database.SqlQuery<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM>(sbfinal.ToString()).ToList(); } catch (Exception ex) { }
 
                     StringBuilder sbAccommodation_SupplierRoomTypeMapping_Id = new StringBuilder();
                     StringBuilder sbRoomTypeAttributefinalQuery = new StringBuilder();
                     sbRoomTypeAttributefinalQuery.Append(@"  SELECT
-                                RoomTypeMap_Id, SupplierRoomTypeAttribute AS Value,SystemAttributeKeyword As Key
+                                RoomTypeMap_Id, SupplierRoomTypeAttribute AS [Value],SystemAttributeKeyword As [Key]
                                 from Accommodation_SupplierRoomTypeAttributes Where RoomTypeMap_Id IN ( ");
-                    foreach (var item in _objHRTM)
+                    foreach (var item in _objHRTM_IM)
                     {
                         sbAccommodation_SupplierRoomTypeMapping_Id.Append("'" + item.Accommodation_SupplierRoomTypeMapping_Id + "',");
                     }
                     sbRoomTypeAttributefinalQuery.Append(sbAccommodation_SupplierRoomTypeMapping_Id.ToString().TrimEnd(',') + ")");
-                    try { _objAttributes = context.Database.SqlQuery<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>(sbRoomTypeAttributefinalQuery.ToString()).ToList(); } catch (Exception ex) { }
+                    try { _objAttributes_IM = context.Database.SqlQuery<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>(sbRoomTypeAttributefinalQuery.ToString()).ToList(); } catch (Exception ex) { }
 
-                    foreach (var itemAttribute in _objHRTM)
+                    foreach (var itemAttribute in _objHRTM_IM)
                     {
-                        var lstAttributes = _objAttributes.Where(w => w.RoomTypeMap_Id == itemAttribute.Accommodation_SupplierRoomTypeMapping_Id).ToList();
+                        var lstAttributes = _objAttributes_IM.Where(w => w.RoomTypeMap_Id == itemAttribute.Accommodation_SupplierRoomTypeMapping_Id).ToList();
                         if (lstAttributes.Count > 0)
                         {
-                            itemAttribute.Attibutes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                            itemAttribute.Attibutes = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM_IM>();
                             itemAttribute.Attibutes = lstAttributes;
                         }
                     }
-                    if (_objHRTM.Count > 0)
+                    foreach (var item in _objHRTM_IM)
                     {
-                        _database = MongoDBHandler.mDatabase();
-                        _database.DropCollection("RoomTypeMapping");
-                        var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
-                        collection.InsertManyAsync(_objHRTM);
+                        List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM> _AttributeList = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                        if (item.Attibutes != null && item.Attibutes.Count > 0)
+                        {
+                            _AttributeList = new List<DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM>();
+                            foreach (var itemAttribute in item.Attibutes)
+                            {
+                                _AttributeList.Add(new DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM
+                                {
+                                    Key = itemAttribute.Key?.ToUpper(),
+                                    Value = itemAttribute.Value?.ToUpper(),
+                                    RoomTypeMap_Id = itemAttribute.RoomTypeMap_Id
+                                });
+                            }
+                        }
+                        _objHRTM.Add(new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
+                        {
+                            TLGXAccoId = item.TLGXAccoId?.ToUpper(),
+                            Accommodation_SupplierRoomTypeMapping_Id = item.Accommodation_SupplierRoomTypeMapping_Id,
+                            Amenities = item.Amenities?.ToUpper(),
+                            Attibutes = _AttributeList.Count > 0 ? _AttributeList : null,
+                            BathRoomType = item.BathRoomType?.ToUpper(),
+                            BeddingConfig = item.BeddingConfig?.ToUpper(),
+                            Bedrooms = item.Bedrooms?.ToUpper(),
+                            BedType = item.BedType?.ToUpper(),
+                            ChildAge = item.ChildAge,
+                            ExtraBed = item.ExtraBed?.ToUpper(),
+                            FloorName = item.FloorName?.ToUpper(),
+                            FloorNumber = item.FloorNumber,
+                            MatchingScore = item.MatchingScore,
+                            MaxAdults = item.MaxAdults,
+                            MaxChild = item.MaxChild,
+                            MaxGuestOccupancy = item.MaxGuestOccupancy,
+                            MaxInfants = item.MaxInfants,
+                            MinGuestOccupancy = item.MinGuestOccupancy,
+                            PromotionalVendorCode = item.PromotionalVendorCode?.ToUpper(),
+                            Quantity = item.Quantity,
+                            RatePlan = item.RatePlan?.ToUpper(),
+                            RatePlanCode = item.RatePlanCode?.ToUpper(),
+                            RoomDescription = item.RoomDescription?.ToUpper(),
+                            RoomLocationCode = item.RoomLocationCode?.ToUpper(),
+                            RoomSize = item.RoomSize?.ToUpper(),
+                            RoomView = item.RoomView?.ToUpper(),
+                            Smoking = item.Smoking?.ToUpper(),
+                            Status = item.Status?.ToUpper(),
+                            supplierCode = item.supplierCode?.ToUpper(),
+                            SupplierProductId = item.SupplierProductId?.ToUpper(),
+                            SupplierRoomCategory = item.SupplierRoomCategory?.ToUpper(),
+                            SupplierRoomCategoryId = item.SupplierRoomCategoryId?.ToUpper(),
+                            SupplierRoomId = item.SupplierRoomId?.ToUpper(),
+                            SupplierRoomName = item.SupplierRoomName?.ToUpper(),
+                            SupplierRoomTypeCode = item.SupplierRoomTypeCode?.ToUpper(),
+                            SystemNormalizedRoomType = item.SystemNormalizedRoomType?.ToUpper(),
+                            SystemProductCode = item.SystemProductCode,
+                            SystemRoomTypeCode = item.SystemRoomTypeCode?.ToUpper(),
+                            SystemRoomTypeMapId = item.SystemRoomTypeMapId,
+                            SystemRoomTypeName = item.SystemRoomTypeName?.ToUpper(),
+                            SystemStrippedRoomType = item.SystemStrippedRoomType?.ToUpper(),
+                            TLGXAccoRoomId = item.TLGXAccoRoomId?.ToUpper()
+                        });
 
-                        collection = null;
-                        _database = null;
-                    }
-
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
                     }
                 }
+
             }
             catch (Exception)
             {
 
                 throw;
             }
+
+
+            return _objHRTM;
+
         }
+
     }
 }
