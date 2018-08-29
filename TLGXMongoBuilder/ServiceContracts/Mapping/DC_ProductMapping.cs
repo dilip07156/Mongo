@@ -46,5 +46,7 @@ namespace DataContracts.Mapping
         public string SystemCityCode { get; set; }
         [DataMember]
         public string SystemProductType { get; set; }
+        [DataMember]
+        public string TlgxMdmHotelId  { get; set; }
     }
 }

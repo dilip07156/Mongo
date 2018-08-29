@@ -306,9 +306,11 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
+
                 if (ProdMapId == Guid.Empty)
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                    
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
@@ -354,6 +356,7 @@ namespace DAL
                                                       SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
                                                       SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
                                                       SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+                                                      TlgxMdmHotelId = (acco == null ? string.Empty : acco.TLGXAccoId.ToUpper()),
 
                                                       SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
                                                       SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
@@ -401,7 +404,8 @@ namespace DAL
                                         UPPER(con.Code) as SystemCountryCode,
                                         UPPER(con.Name) as SystemCountryName,
                                         UPPER(cm.Code) as SystemCityCode,
-                                        UPPER(cm.Name) as SystemCityName
+                                        UPPER(cm.Name) as SystemCityName,
+                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
                                         left Join m_CityMaster cm with(nolock) on apm.City_Id = cm.City_Id
@@ -460,12 +464,13 @@ namespace DAL
                                                       SupplierProductCode = apm.SupplierProductReference.ToUpper(),
                                                       MapId = apm.MapId ?? 0,
                                                       SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                      TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                                   }).ToList();
 
                             if (productMapList.Count() > 0)
                             {
                                 var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                                collection.InsertManyAsync(productMapList);
+                                collection.InsertMany(productMapList);
 
                                 #region To update CounterIn DistributionLog
                                 MongoInsertedCount = MongoInsertedCount + productMapList.Count();
@@ -489,7 +494,8 @@ namespace DAL
                         sbSelect.Append(@"select  UPPER(s.Code) as SupplierCode,
                                         UPPER(apm.SupplierProductReference) as SupplierProductCode,
                                         apm.MapId,
-                                        UPPER(a.CompanyHotelID) as SystemProductCode
+                                        UPPER(a.CompanyHotelID) as SystemProductCode,
+                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
                                         left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id
@@ -511,6 +517,7 @@ namespace DAL
             }
         }
         #endregion
+
         public void LoadActivityMapping(Guid LogId)
         {
             try
@@ -938,6 +945,7 @@ namespace DAL
                 throw ex;
             }
         }
+
         /// <summary>
         /// To update DaysOfWeek for activity by Supplier
         /// </summary>
@@ -1271,9 +1279,9 @@ namespace DAL
                             {
                                 Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
                                 Area = Activity.Area,
-                                Latitude = Activity.Latitude,
+                                Latitude = Convert.ToDecimal(Activity.Latitude),
                                 Location = Activity.Location,
-                                Longitude = Activity.Longitude
+                                Longitude = Convert.ToDecimal(Activity.Longitude)
                             };
 
                             newActivity.TourGuideLanguages = (from a in ActivityInc
@@ -2641,7 +2649,6 @@ namespace DAL
         }
         #endregion
 
-
         public void UpdateHotelRoomTypeMapping(Guid Logid, Guid Supplier_Id)
         {
             try
@@ -2739,6 +2746,7 @@ namespace DAL
                 throw;
             }
         }
+
         private List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> GetDataToPushMongo_RTM(int batchSize, int batchNo, Guid Supplier_id)
         {
             List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();

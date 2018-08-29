@@ -27,6 +27,7 @@ namespace DAL
         public string CompanyProductNameSubType_Id { get; set; }
         public string FinanceControlId { get; set; }
         public string ProductNameSubType { get; set; }
+        public string InterestType { get; set; }
         public string PlaceOfEvent { get; set; }
         public string StartingPoint { get; set; }
         public string EndingPoint { get; set; }
@@ -37,8 +38,8 @@ namespace DAL
         public string Duration { get; set; }
         public string CountryCode { get; set; }
         public string CityCode { get; set; }
-        public Nullable<decimal> Latitude { get; set; }
-        public Nullable<decimal> Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
         public string Street { get; set; }
         public string Street2 { get; set; }
         public string Street3 { get; set; }
@@ -59,7 +60,6 @@ namespace DAL
         public string Activity_StatusNotes { get; set; }
         public string Activity_Status_Edit_User { get; set; }
         public Nullable<System.DateTime> Activity_Status_Edit_Date { get; set; }
-        public string InterestType { get; set; }
         public string TourType { get; set; }
     }
 }

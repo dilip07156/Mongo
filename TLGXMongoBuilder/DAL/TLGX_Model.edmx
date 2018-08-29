@@ -11,7 +11,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="uniqueidentifier" Nullable="false" />
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
-          <Property Name="CompanyHotelID" Type="int" Nullable="false" />
+          <Property Name="CompanyHotelID" Type="int" />
           <Property Name="FinanceControlID" Type="int" />
           <Property Name="OnlineDate" Type="datetime" />
           <Property Name="OfflineDate" Type="datetime" />
@@ -52,7 +52,7 @@
           <Property Name="PostalCode" Type="nvarchar" MaxLength="255" />
           <Property Name="Town" Type="nvarchar" MaxLength="255" />
           <Property Name="Location" Type="nvarchar" MaxLength="255" />
-          <Property Name="Area" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Area" Type="nvarchar" MaxLength="255" />
           <Property Name="city" Type="nvarchar" MaxLength="255" />
           <Property Name="country" Type="nvarchar" MaxLength="255" />
           <Property Name="SuburbDowntown" Type="nvarchar" MaxLength="255" />
@@ -81,7 +81,7 @@
           <Property Name="gLocation" Type="nvarchar" MaxLength="255" />
           <Property Name="Area_Id" Type="uniqueidentifier" />
           <Property Name="Location_Id" Type="uniqueidentifier" />
-          <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="100" />
+          <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="50" />
           <Property Name="Priority" Type="int" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
@@ -273,57 +273,58 @@
           <Property Name="Accommodation_ProductMapping_Id" Type="uniqueidentifier" Nullable="false" />
           <Property Name="Accommodation_Id" Type="uniqueidentifier" />
           <Property Name="Supplier_Id" Type="uniqueidentifier" />
-          <Property Name="SupplierId" Type="nvarchar" MaxLength="4000" />
-          <Property Name="SupplierName" Type="nvarchar" MaxLength="4000" />
-          <Property Name="SupplierProductReference" Type="nvarchar" MaxLength="4000" />
-          <Property Name="ProductName" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Street" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Street2" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Street3" Type="nvarchar" MaxLength="4000" />
-          <Property Name="CountryName" Type="nvarchar" MaxLength="4000" />
-          <Property Name="CountryCode" Type="nvarchar" MaxLength="4000" />
-          <Property Name="CityName" Type="nvarchar" MaxLength="4000" />
-          <Property Name="CityCode" Type="nvarchar" MaxLength="4000" />
-          <Property Name="PostCode" Type="nvarchar" MaxLength="4000" />
-          <Property Name="TelephoneNumber" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Status" Type="nvarchar" MaxLength="4000" />
+          <Property Name="SupplierId" Type="varchar" MaxLength="50" />
+          <Property Name="SupplierName" Type="varchar" MaxLength="50" />
+          <Property Name="SupplierProductReference" Type="nvarchar" MaxLength="255" />
+          <Property Name="ProductName" Type="nvarchar" MaxLength="500" />
+          <Property Name="Street" Type="nvarchar" MaxLength="500" />
+          <Property Name="Street2" Type="nvarchar" MaxLength="500" />
+          <Property Name="Street3" Type="nvarchar" MaxLength="500" />
+          <Property Name="CountryName" Type="nvarchar" MaxLength="255" />
+          <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="CityName" Type="nvarchar" MaxLength="255" />
+          <Property Name="CityCode" Type="nvarchar" MaxLength="100" />
+          <Property Name="PostCode" Type="varchar" MaxLength="100" />
+          <Property Name="TelephoneNumber" Type="varchar" MaxLength="500" />
+          <Property Name="Status" Type="varchar" MaxLength="50" />
           <Property Name="Create_Date" Type="datetime" />
-          <Property Name="Create_User" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Create_User" Type="varchar" MaxLength="50" />
           <Property Name="Edit_Date" Type="datetime" />
-          <Property Name="Edit_User" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="50" />
           <Property Name="IsActive" Type="bit" />
-          <Property Name="Street4" Type="nvarchar" MaxLength="4000" />
-          <Property Name="StateName" Type="nvarchar" MaxLength="4000" />
-          <Property Name="StateCode" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Latitude" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Longitude" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Email" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Fax" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Website" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Street4" Type="nvarchar" MaxLength="500" />
+          <Property Name="StateName" Type="nvarchar" MaxLength="100" />
+          <Property Name="StateCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="Latitude" Type="varchar" MaxLength="50" />
+          <Property Name="Longitude" Type="varchar" MaxLength="50" />
+          <Property Name="Email" Type="varchar" MaxLength="500" />
+          <Property Name="Fax" Type="varchar" MaxLength="500" />
+          <Property Name="Website" Type="varchar" MaxLength="500" />
           <Property Name="MapId" Type="int" />
-          <Property Name="Remarks" Type="nvarchar(max)" />
+          <Property Name="Remarks" Type="varchar" MaxLength="255" />
           <Property Name="Legacy_Htl_ID" Type="int" />
-          <Property Name="address" Type="nvarchar" MaxLength="4000" />
-          <Property Name="address_tx" Type="nvarchar" MaxLength="4000" />
-          <Property Name="TelephoneNumber_tx" Type="nvarchar" MaxLength="4000" />
-          <Property Name="StarRating" Type="nvarchar" MaxLength="4000" />
-          <Property Name="Google_Place_Id" Type="nvarchar" MaxLength="255" />
+          <Property Name="address" Type="nvarchar" MaxLength="500" />
+          <Property Name="address_tx" Type="nvarchar" MaxLength="500" />
+          <Property Name="TelephoneNumber_tx" Type="varchar" MaxLength="500" />
+          <Property Name="StarRating" Type="varchar" MaxLength="50" />
+          <Property Name="Google_Place_Id" Type="varchar" MaxLength="100" />
           <Property Name="Country_Id" Type="uniqueidentifier" />
           <Property Name="City_Id" Type="uniqueidentifier" />
           <Property Name="stg_AccoMapping_Id" Type="uniqueidentifier" />
-          <Property Name="TLGXProductCode" Type="nvarchar" MaxLength="4000" />
+          <Property Name="TLGXProductCode" Type="varchar" MaxLength="50" />
           <Property Name="IsPentaho" Type="bit" />
           <Property Name="MatchedBy" Type="int" />
-          <Property Name="HotelName_Tx" Type="nvarchar" MaxLength="510" />
-          <Property Name="Latitude_Tx" Type="nvarchar" MaxLength="510" />
-          <Property Name="Longitude_Tx" Type="nvarchar" MaxLength="510" />
-          <Property Name="MatchedByString" Type="nvarchar" MaxLength="1020" />
-          <Property Name="GeoLocation" Type="geography" />
+          <Property Name="HotelName_Tx" Type="nvarchar" MaxLength="500" />
+          <Property Name="Latitude_Tx" Type="varchar" MaxLength="50" />
+          <Property Name="Longitude_Tx" Type="varchar" MaxLength="50" />
+          <Property Name="MatchedByString" Type="varchar" MaxLength="255" />
           <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
-          <Property Name="ProductType" Type="nvarchar" MaxLength="1000" />
+          <Property Name="ProductType" Type="varchar" MaxLength="50" />
+          <Property Name="GeoLocation" Type="geography" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -505,6 +506,7 @@
           <Property Name="CountryName" Type="nvarchar" MaxLength="255" />
           <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
           <Property Name="MatchingScore" Type="float" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -791,8 +793,8 @@
           <Property Name="Duration" Type="nvarchar" MaxLength="50" />
           <Property Name="CountryCode" Type="nvarchar" MaxLength="255" />
           <Property Name="CityCode" Type="nvarchar" MaxLength="255" />
-          <Property Name="Latitude" Type="decimal" Precision="18" Scale="0" />
-          <Property Name="Longitude" Type="decimal" Precision="18" Scale="0" />
+          <Property Name="Latitude" Type="varchar" MaxLength="100" />
+          <Property Name="Longitude" Type="varchar" MaxLength="100" />
           <Property Name="Street" Type="nvarchar" MaxLength="255" />
           <Property Name="Street2" Type="nvarchar" MaxLength="255" />
           <Property Name="Street3" Type="nvarchar" MaxLength="255" />
@@ -1105,6 +1107,8 @@
           <Property Name="FromPax" Type="varchar" MaxLength="40" />
           <Property Name="ToPax" Type="varchar" MaxLength="40" />
           <Property Name="PersonType" Type="varchar" MaxLength="40" />
+          <Property Name="AgeFrom" Type="varchar" MaxLength="40" />
+          <Property Name="AgeTo" Type="varchar" MaxLength="40" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -1534,6 +1538,7 @@
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="m_CityMaster">
           <Key>
@@ -1585,6 +1590,7 @@
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -1816,8 +1822,8 @@
           <Property Name="Priority" Type="int" />
           <Property Name="Description" Type="nvarchar" MaxLength="255" />
           <Property Name="AttributeValue_ID" Type="uniqueidentifier" />
-          <Property Name="AttributeValueType" Type="nvarchar" MaxLength="200" />
-          <Property Name="Comparison" Type="nvarchar" MaxLength="100" />
+          <Property Name="AttributeValueType" Type="nvarchar" MaxLength="100" />
+          <Property Name="Comparison" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="m_ZoneMaster">
           <Key>
@@ -2146,7 +2152,6 @@
           <EntitySet Name="Activity_Deals" EntityType="TLGX_DEV_Model.Activity_Deals" />
           <EntitySet Name="Activity_Descriptions" EntityType="TLGX_DEV_Model.Activity_Descriptions" />
           <EntitySet Name="Activity_Facility" EntityType="TLGX_DEV_Model.Activity_Facility" />
-          <EntitySet Name="Activity_Flavour" EntityType="TLGX_DEV_Model.Activity_Flavour" />
           <EntitySet Name="Activity_InclusionDetails" EntityType="TLGX_DEV_Model.Activity_InclusionDetails" />
           <EntitySet Name="Activity_Inclusions" EntityType="TLGX_DEV_Model.Activity_Inclusions" />
           <EntitySet Name="Activity_Itinerary" EntityType="TLGX_DEV_Model.Activity_Itinerary" />
@@ -2183,6 +2188,7 @@
           <EntitySet Name="ZoneCity_Mapping" EntityType="TLGX_DEV_Model.ZoneCity_Mapping" />
           <EntitySet Name="Activity_FlavourServices" EntityType="TLGX_DEV_Model.Activity_FlavourServices" />
           <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
+          <EntitySet Name="Activity_Flavour" EntityType="TLGX_DEV_Model.Activity_Flavour" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2433,8 +2439,8 @@
           <Property Name="Priority" Type="Int32" />
           <Property Name="Description" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="AttributeValue_ID" Type="Guid" />
-          <Property Name="AttributeValueType" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
-          <Property Name="Comparison" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="AttributeValueType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Comparison" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Supplier">
           <Key>
@@ -2553,6 +2559,7 @@
           <Property Name="Batch" Type="Int32" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
           <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -2582,6 +2589,7 @@
           <Property Name="Batch" Type="Int32" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
           <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="m_MasterAttributeMapping">
           <Key>
@@ -2802,57 +2810,58 @@
           <Property Name="Accommodation_ProductMapping_Id" Type="Guid" Nullable="false" />
           <Property Name="Accommodation_Id" Type="Guid" />
           <Property Name="Supplier_Id" Type="Guid" />
-          <Property Name="SupplierId" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="SupplierName" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="SupplierProductReference" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="ProductName" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Street" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Street2" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Street3" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="CountryName" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="CountryCode" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="CityName" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="CityCode" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="PostCode" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="TelephoneNumber" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Status" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="SupplierId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SupplierName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SupplierProductReference" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductName" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Street" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Street2" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Street3" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="CountryName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CityName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CityCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="PostCode" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="TelephoneNumber" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Status" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Create_User" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_User" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="IsActive" Type="Boolean" />
-          <Property Name="Street4" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="StateName" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="StateCode" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Latitude" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Longitude" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Email" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Fax" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Website" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Street4" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="StateName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="StateCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Longitude" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Email" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Fax" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="Website" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="MapId" Type="Int32" />
-          <Property Name="Remarks" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Remarks" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Name="Legacy_Htl_ID" Type="Int32" />
-          <Property Name="address" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="address_tx" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="TelephoneNumber_tx" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="StarRating" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
-          <Property Name="Google_Place_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="address" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="address_tx" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="TelephoneNumber_tx" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="StarRating" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Google_Place_Id" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="Country_Id" Type="Guid" />
           <Property Name="City_Id" Type="Guid" />
           <Property Name="stg_AccoMapping_Id" Type="Guid" />
-          <Property Name="TLGXProductCode" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="TLGXProductCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="IsPentaho" Type="Boolean" />
           <Property Name="MatchedBy" Type="Int32" />
-          <Property Name="HotelName_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
-          <Property Name="Latitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
-          <Property Name="Longitude_Tx" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
-          <Property Name="MatchedByString" Type="String" MaxLength="1020" FixedLength="false" Unicode="true" />
+          <Property Name="HotelName_Tx" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude_Tx" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Longitude_Tx" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="MatchedByString" Type="String" MaxLength="255" FixedLength="false" Unicode="false" />
           <Property Name="SupplierImportFile_Id" Type="Guid" />
           <Property Name="Batch" Type="Int32" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
           <Property Name="ReRun_Batch" Type="Int32" />
-          <Property Name="ProductType" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="ProductType" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="GeoLocation" Type="Geography" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -3034,6 +3043,7 @@
           <Property Name="CountryName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MatchingScore" Type="Double" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -3057,7 +3067,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="Guid" Nullable="false" />
           <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyHotelID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyHotelID" Type="Int32" />
           <Property Name="FinanceControlID" Type="Int32" />
           <Property Name="OnlineDate" Type="DateTime" Precision="3" />
           <Property Name="OfflineDate" Type="DateTime" Precision="3" />
@@ -3098,7 +3108,7 @@
           <Property Name="PostalCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Town" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Area" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Area" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="city" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="SuburbDowntown" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
@@ -3127,7 +3137,7 @@
           <Property Name="gLocation" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Area_Id" Type="Guid" />
           <Property Name="Location_Id" Type="Guid" />
-          <Property Name="TLGXAccoId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="TLGXAccoId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Priority" Type="Int32" />
         </EntityType>
         <EntityType Name="Activity">
@@ -3295,58 +3305,6 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="IsActive" Type="Boolean" />
-        </EntityType>
-        <EntityType Name="Activity_Flavour">
-          <Key>
-            <PropertyRef Name="Activity_Flavour_Id" />
-          </Key>
-          <Property Name="Activity_Flavour_Id" Type="Guid" Nullable="false" />
-          <Property Name="Activity_Id" Type="Guid" />
-          <Property Name="ProductName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
-          <Property Name="Country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="City" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductCategorySubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Legacy_Product_ID" Type="Int32" />
-          <Property Name="CommonProductNameSubType_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyProductNameSubType_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="FinanceControlId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="ProductNameSubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PlaceOfEvent" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="StartingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="EndingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="USP" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="IsPickUpDropDefined" Type="Boolean" />
-          <Property Name="MustSeeInCountry" Type="Boolean" />
-          <Property Name="CompanyReccom" Type="Boolean" />
-          <Property Name="Duration" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="CountryCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="CityCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Latitude" Type="Decimal" Precision="18" Scale="0" />
-          <Property Name="Longitude" Type="Decimal" Precision="18" Scale="0" />
-          <Property Name="Street" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Street2" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Street3" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Street4" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Street5" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="PostalCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="City_Id" Type="Guid" />
-          <Property Name="Country_Id" Type="Guid" />
-          <Property Name="Area" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_Language" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_LanguageCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_Status" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_StatusNotes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_Status_Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="InterestType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Activity_InclusionDetails">
           <Key>
@@ -3908,6 +3866,8 @@
           <Property Name="FromPax" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="ToPax" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="PersonType" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="AgeFrom" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="AgeTo" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Activity_FlavourOptions">
           <Key>
@@ -4178,6 +4138,58 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="TotalCount" Type="Int32" />
           <Property Name="MongoPushCount" Type="Int32" />
+        </EntityType>
+        <EntityType Name="Activity_Flavour">
+          <Key>
+            <PropertyRef Name="Activity_Flavour_Id" />
+          </Key>
+          <Property Name="Activity_Flavour_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Id" Type="Guid" />
+          <Property Name="ProductName" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="City" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductCategorySubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Legacy_Product_ID" Type="Int32" />
+          <Property Name="CommonProductNameSubType_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyProductNameSubType_Id" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="FinanceControlId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ProductNameSubType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="InterestType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PlaceOfEvent" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="StartingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="EndingPoint" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="USP" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsPickUpDropDefined" Type="Boolean" />
+          <Property Name="MustSeeInCountry" Type="Boolean" />
+          <Property Name="CompanyReccom" Type="Boolean" />
+          <Property Name="Duration" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CityCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Latitude" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Longitude" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Street" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Street2" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Street3" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Street4" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Street5" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="City_Id" Type="Guid" />
+          <Property Name="Country_Id" Type="Guid" />
+          <Property Name="Area" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Language" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_LanguageCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Status" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_StatusNotes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Status_Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4545,6 +4557,7 @@
           <EntitySetMapping Name="m_CityMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMapping">
               <MappingFragment StoreEntitySet="m_CityMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
                 <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
                 <ScalarProperty Name="Batch" ColumnName="Batch" />
@@ -4579,6 +4592,7 @@
           <EntitySetMapping Name="m_CountryMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMapping">
               <MappingFragment StoreEntitySet="m_CountryMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
                 <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
                 <ScalarProperty Name="Batch" ColumnName="Batch" />
@@ -4832,6 +4846,7 @@
           <EntitySetMapping Name="Accommodation_ProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_ProductMapping">
               <MappingFragment StoreEntitySet="Accommodation_ProductMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="GeoLocation" ColumnName="GeoLocation" />
                 <ScalarProperty Name="ProductType" ColumnName="ProductType" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
@@ -5017,6 +5032,7 @@
           <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping">
               <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="MatchingScore" ColumnName="MatchingScore" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
                 <ScalarProperty Name="CountryName" ColumnName="CountryName" />
@@ -5345,59 +5361,6 @@
                 <ScalarProperty Name="Legacy_Product_ID" ColumnName="Legacy_Product_ID" />
                 <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
                 <ScalarProperty Name="Activity_Facility_Id" ColumnName="Activity_Facility_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
-          <EntitySetMapping Name="Activity_Flavour">
-            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Flavour">
-              <MappingFragment StoreEntitySet="Activity_Flavour">
-                <ScalarProperty Name="TourType" ColumnName="TourType" />
-                <ScalarProperty Name="InterestType" ColumnName="InterestType" />
-                <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
-                <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
-                <ScalarProperty Name="Activity_StatusNotes" ColumnName="Activity_StatusNotes" />
-                <ScalarProperty Name="Activity_Status" ColumnName="Activity_Status" />
-                <ScalarProperty Name="Activity_LanguageCode" ColumnName="Activity_LanguageCode" />
-                <ScalarProperty Name="Activity_Language" ColumnName="Activity_Language" />
-                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
-                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
-                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
-                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
-                <ScalarProperty Name="Location" ColumnName="Location" />
-                <ScalarProperty Name="Area" ColumnName="Area" />
-                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
-                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
-                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
-                <ScalarProperty Name="Street5" ColumnName="Street5" />
-                <ScalarProperty Name="Street4" ColumnName="Street4" />
-                <ScalarProperty Name="Street3" ColumnName="Street3" />
-                <ScalarProperty Name="Street2" ColumnName="Street2" />
-                <ScalarProperty Name="Street" ColumnName="Street" />
-                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
-                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
-                <ScalarProperty Name="CityCode" ColumnName="CityCode" />
-                <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
-                <ScalarProperty Name="Duration" ColumnName="Duration" />
-                <ScalarProperty Name="CompanyReccom" ColumnName="CompanyReccom" />
-                <ScalarProperty Name="MustSeeInCountry" ColumnName="MustSeeInCountry" />
-                <ScalarProperty Name="IsPickUpDropDefined" ColumnName="IsPickUpDropDefined" />
-                <ScalarProperty Name="USP" ColumnName="USP" />
-                <ScalarProperty Name="EndingPoint" ColumnName="EndingPoint" />
-                <ScalarProperty Name="StartingPoint" ColumnName="StartingPoint" />
-                <ScalarProperty Name="PlaceOfEvent" ColumnName="PlaceOfEvent" />
-                <ScalarProperty Name="ProductNameSubType" ColumnName="ProductNameSubType" />
-                <ScalarProperty Name="FinanceControlId" ColumnName="FinanceControlId" />
-                <ScalarProperty Name="CompanyProductNameSubType_Id" ColumnName="CompanyProductNameSubType_Id" />
-                <ScalarProperty Name="CommonProductNameSubType_Id" ColumnName="CommonProductNameSubType_Id" />
-                <ScalarProperty Name="Legacy_Product_ID" ColumnName="Legacy_Product_ID" />
-                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
-                <ScalarProperty Name="ProductCategorySubType" ColumnName="ProductCategorySubType" />
-                <ScalarProperty Name="ProductCategory" ColumnName="ProductCategory" />
-                <ScalarProperty Name="City" ColumnName="City" />
-                <ScalarProperty Name="Country" ColumnName="Country" />
-                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
-                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
-                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
@@ -5960,6 +5923,8 @@
           <EntitySetMapping Name="Activity_Prices">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Prices">
               <MappingFragment StoreEntitySet="Activity_Prices">
+                <ScalarProperty Name="AgeTo" ColumnName="AgeTo" />
+                <ScalarProperty Name="AgeFrom" ColumnName="AgeFrom" />
                 <ScalarProperty Name="PersonType" ColumnName="PersonType" />
                 <ScalarProperty Name="ToPax" ColumnName="ToPax" />
                 <ScalarProperty Name="FromPax" ColumnName="FromPax" />
@@ -6265,6 +6230,59 @@
                 <ScalarProperty Name="Type" ColumnName="Type" />
                 <ScalarProperty Name="Element" ColumnName="Element" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_Flavour">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Flavour">
+              <MappingFragment StoreEntitySet="Activity_Flavour">
+                <ScalarProperty Name="TourType" ColumnName="TourType" />
+                <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
+                <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
+                <ScalarProperty Name="Activity_StatusNotes" ColumnName="Activity_StatusNotes" />
+                <ScalarProperty Name="Activity_Status" ColumnName="Activity_Status" />
+                <ScalarProperty Name="Activity_LanguageCode" ColumnName="Activity_LanguageCode" />
+                <ScalarProperty Name="Activity_Language" ColumnName="Activity_Language" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Location" ColumnName="Location" />
+                <ScalarProperty Name="Area" ColumnName="Area" />
+                <ScalarProperty Name="Country_Id" ColumnName="Country_Id" />
+                <ScalarProperty Name="City_Id" ColumnName="City_Id" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="Street5" ColumnName="Street5" />
+                <ScalarProperty Name="Street4" ColumnName="Street4" />
+                <ScalarProperty Name="Street3" ColumnName="Street3" />
+                <ScalarProperty Name="Street2" ColumnName="Street2" />
+                <ScalarProperty Name="Street" ColumnName="Street" />
+                <ScalarProperty Name="Longitude" ColumnName="Longitude" />
+                <ScalarProperty Name="Latitude" ColumnName="Latitude" />
+                <ScalarProperty Name="CityCode" ColumnName="CityCode" />
+                <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
+                <ScalarProperty Name="Duration" ColumnName="Duration" />
+                <ScalarProperty Name="CompanyReccom" ColumnName="CompanyReccom" />
+                <ScalarProperty Name="MustSeeInCountry" ColumnName="MustSeeInCountry" />
+                <ScalarProperty Name="IsPickUpDropDefined" ColumnName="IsPickUpDropDefined" />
+                <ScalarProperty Name="USP" ColumnName="USP" />
+                <ScalarProperty Name="EndingPoint" ColumnName="EndingPoint" />
+                <ScalarProperty Name="StartingPoint" ColumnName="StartingPoint" />
+                <ScalarProperty Name="PlaceOfEvent" ColumnName="PlaceOfEvent" />
+                <ScalarProperty Name="InterestType" ColumnName="InterestType" />
+                <ScalarProperty Name="ProductNameSubType" ColumnName="ProductNameSubType" />
+                <ScalarProperty Name="FinanceControlId" ColumnName="FinanceControlId" />
+                <ScalarProperty Name="CompanyProductNameSubType_Id" ColumnName="CompanyProductNameSubType_Id" />
+                <ScalarProperty Name="CommonProductNameSubType_Id" ColumnName="CommonProductNameSubType_Id" />
+                <ScalarProperty Name="Legacy_Product_ID" ColumnName="Legacy_Product_ID" />
+                <ScalarProperty Name="ProductType" ColumnName="ProductType" />
+                <ScalarProperty Name="ProductCategorySubType" ColumnName="ProductCategorySubType" />
+                <ScalarProperty Name="ProductCategory" ColumnName="ProductCategory" />
+                <ScalarProperty Name="City" ColumnName="City" />
+                <ScalarProperty Name="Country" ColumnName="Country" />
+                <ScalarProperty Name="ProductName" ColumnName="ProductName" />
+                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

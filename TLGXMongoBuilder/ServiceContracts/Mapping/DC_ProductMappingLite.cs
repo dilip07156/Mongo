@@ -22,5 +22,7 @@ namespace DataContracts.Mapping
         public int MapId { get; set; }
         [DataMember]
         public string SystemProductCode { get; set; }
+        [DataMember]
+        public string TlgxMdmHotelId { get; set; }
     }
 }
