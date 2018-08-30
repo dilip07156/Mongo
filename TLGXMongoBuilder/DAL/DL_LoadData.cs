@@ -368,7 +368,11 @@ namespace DAL
                             if (productMapList.Count() > 0)
                             {
                                 var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                                collection.InsertManyAsync(productMapList);
+
+                                foreach(var prodMap in productMapList)
+                                {
+                                    collection.InsertOne(prodMap);
+                                }
 
                                 #region To update CounterIn DistributionLog
                                 MongoInsertedCount = MongoInsertedCount + productMapList.Count();
