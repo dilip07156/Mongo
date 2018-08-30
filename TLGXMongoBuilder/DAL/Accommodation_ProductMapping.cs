@@ -68,5 +68,6 @@ namespace DAL
         public Nullable<int> ReRun_Batch { get; set; }
         public string ProductType { get; set; }
         public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
+        public Nullable<int> RowCounter { get; set; }
     }
 }

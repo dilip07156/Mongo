@@ -63,7 +63,7 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_CA" Width="1.5" PointX="0.75" PointY="11.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_SupplierProductMapping_Deals" Width="1.5" PointX="2.75" PointY="11.75" />
       </Diagram>
-      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="Activity" ZoomLevel="55" >
+      <Diagram DiagramId="afb9cebb944e4510ad3eedaf517767e2" Name="Activity" ZoomLevel="70" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity" Width="1.5" PointX="0.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_Ancillary" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Activity_ClassificationAttributes" Width="1.5" PointX="4.75" PointY="0.75" />

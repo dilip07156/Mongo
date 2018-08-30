@@ -11,7 +11,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="uniqueidentifier" Nullable="false" />
           <Property Name="CompanyName" Type="nvarchar" MaxLength="100" />
-          <Property Name="CompanyHotelID" Type="int" Nullable="false" />
+          <Property Name="CompanyHotelID" Type="int" />
           <Property Name="FinanceControlID" Type="int" />
           <Property Name="OnlineDate" Type="datetime" />
           <Property Name="OfflineDate" Type="datetime" />
@@ -52,7 +52,7 @@
           <Property Name="PostalCode" Type="nvarchar" MaxLength="255" />
           <Property Name="Town" Type="nvarchar" MaxLength="255" />
           <Property Name="Location" Type="nvarchar" MaxLength="255" />
-          <Property Name="Area" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Area" Type="nvarchar" MaxLength="255" />
           <Property Name="city" Type="nvarchar" MaxLength="255" />
           <Property Name="country" Type="nvarchar" MaxLength="255" />
           <Property Name="SuburbDowntown" Type="nvarchar" MaxLength="255" />
@@ -81,7 +81,7 @@
           <Property Name="gLocation" Type="nvarchar" MaxLength="255" />
           <Property Name="Area_Id" Type="uniqueidentifier" />
           <Property Name="Location_Id" Type="uniqueidentifier" />
-          <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="100" />
+          <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="50" />
           <Property Name="Priority" Type="int" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
@@ -318,12 +318,13 @@
           <Property Name="Latitude_Tx" Type="varchar" MaxLength="50" />
           <Property Name="Longitude_Tx" Type="varchar" MaxLength="50" />
           <Property Name="MatchedByString" Type="varchar" MaxLength="255" />
-          <Property Name="GeoLocation" Type="geography" />
           <Property Name="SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
           <Property Name="ProductType" Type="varchar" MaxLength="50" />
+          <Property Name="GeoLocation" Type="geography" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -505,6 +506,7 @@
           <Property Name="CountryName" Type="nvarchar" MaxLength="255" />
           <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
           <Property Name="MatchingScore" Type="float" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -791,8 +793,8 @@
           <Property Name="Duration" Type="nvarchar" MaxLength="50" />
           <Property Name="CountryCode" Type="nvarchar" MaxLength="255" />
           <Property Name="CityCode" Type="nvarchar" MaxLength="255" />
-          <Property Name="Latitude" Type="decimal" Precision="18" Scale="9" />
-          <Property Name="Longitude" Type="decimal" Precision="18" Scale="9" />
+          <Property Name="Latitude" Type="varchar" MaxLength="100" />
+          <Property Name="Longitude" Type="varchar" MaxLength="100" />
           <Property Name="Street" Type="nvarchar" MaxLength="255" />
           <Property Name="Street2" Type="nvarchar" MaxLength="255" />
           <Property Name="Street3" Type="nvarchar" MaxLength="255" />
@@ -1105,6 +1107,8 @@
           <Property Name="FromPax" Type="varchar" MaxLength="40" />
           <Property Name="ToPax" Type="varchar" MaxLength="40" />
           <Property Name="PersonType" Type="varchar" MaxLength="40" />
+          <Property Name="AgeFrom" Type="varchar" MaxLength="40" />
+          <Property Name="AgeTo" Type="varchar" MaxLength="40" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -1534,6 +1538,7 @@
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="m_CityMaster">
           <Key>
@@ -1585,6 +1590,7 @@
           <Property Name="Batch" Type="int" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="uniqueidentifier" />
           <Property Name="ReRun_Batch" Type="int" />
+          <Property Name="RowCounter" Type="int" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -1816,8 +1822,8 @@
           <Property Name="Priority" Type="int" />
           <Property Name="Description" Type="nvarchar" MaxLength="255" />
           <Property Name="AttributeValue_ID" Type="uniqueidentifier" />
-          <Property Name="AttributeValueType" Type="nvarchar" MaxLength="200" />
-          <Property Name="Comparison" Type="nvarchar" MaxLength="100" />
+          <Property Name="AttributeValueType" Type="nvarchar" MaxLength="100" />
+          <Property Name="Comparison" Type="nvarchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="m_ZoneMaster">
           <Key>
@@ -2433,8 +2439,8 @@
           <Property Name="Priority" Type="Int32" />
           <Property Name="Description" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="AttributeValue_ID" Type="Guid" />
-          <Property Name="AttributeValueType" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
-          <Property Name="Comparison" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="AttributeValueType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="Comparison" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Supplier">
           <Key>
@@ -2553,6 +2559,7 @@
           <Property Name="Batch" Type="Int32" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
           <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -2582,6 +2589,7 @@
           <Property Name="Batch" Type="Int32" />
           <Property Name="ReRun_SupplierImportFile_Id" Type="Guid" />
           <Property Name="ReRun_Batch" Type="Int32" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="m_MasterAttributeMapping">
           <Key>
@@ -2853,6 +2861,7 @@
           <Property Name="ReRun_Batch" Type="Int32" />
           <Property Name="ProductType" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="GeoLocation" Type="Geography" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="Accommodation_RoomFacility">
           <Key>
@@ -3034,6 +3043,7 @@
           <Property Name="CountryName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MatchingScore" Type="Double" />
+          <Property Name="RowCounter" Type="Int32" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -3057,7 +3067,7 @@
           </Key>
           <Property Name="Accommodation_Id" Type="Guid" Nullable="false" />
           <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyHotelID" Type="Int32" Nullable="false" />
+          <Property Name="CompanyHotelID" Type="Int32" />
           <Property Name="FinanceControlID" Type="Int32" />
           <Property Name="OnlineDate" Type="DateTime" Precision="3" />
           <Property Name="OfflineDate" Type="DateTime" Precision="3" />
@@ -3098,7 +3108,7 @@
           <Property Name="PostalCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Town" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Location" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Area" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Area" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="city" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="country" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="SuburbDowntown" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
@@ -3127,7 +3137,7 @@
           <Property Name="gLocation" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Area_Id" Type="Guid" />
           <Property Name="Location_Id" Type="Guid" />
-          <Property Name="TLGXAccoId" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="TLGXAccoId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Priority" Type="Int32" />
         </EntityType>
         <EntityType Name="Activity">
@@ -3856,6 +3866,8 @@
           <Property Name="FromPax" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="ToPax" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="PersonType" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="AgeFrom" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="AgeTo" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Activity_FlavourOptions">
           <Key>
@@ -4155,8 +4167,8 @@
           <Property Name="Duration" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="CountryCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="CityCode" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Latitude" Type="Decimal" Precision="18" Scale="9" />
-          <Property Name="Longitude" Type="Decimal" Precision="18" Scale="9" />
+          <Property Name="Latitude" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Longitude" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
           <Property Name="Street" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Street2" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Street3" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
@@ -4545,6 +4557,7 @@
           <EntitySetMapping Name="m_CityMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMapping">
               <MappingFragment StoreEntitySet="m_CityMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
                 <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
                 <ScalarProperty Name="Batch" ColumnName="Batch" />
@@ -4579,6 +4592,7 @@
           <EntitySetMapping Name="m_CountryMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMapping">
               <MappingFragment StoreEntitySet="m_CountryMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
                 <ScalarProperty Name="ReRun_SupplierImportFile_Id" ColumnName="ReRun_SupplierImportFile_Id" />
                 <ScalarProperty Name="Batch" ColumnName="Batch" />
@@ -4832,6 +4846,7 @@
           <EntitySetMapping Name="Accommodation_ProductMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_ProductMapping">
               <MappingFragment StoreEntitySet="Accommodation_ProductMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="GeoLocation" ColumnName="GeoLocation" />
                 <ScalarProperty Name="ProductType" ColumnName="ProductType" />
                 <ScalarProperty Name="ReRun_Batch" ColumnName="ReRun_Batch" />
@@ -5017,6 +5032,7 @@
           <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping">
               <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping">
+                <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="MatchingScore" ColumnName="MatchingScore" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
                 <ScalarProperty Name="CountryName" ColumnName="CountryName" />
@@ -5907,6 +5923,8 @@
           <EntitySetMapping Name="Activity_Prices">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Prices">
               <MappingFragment StoreEntitySet="Activity_Prices">
+                <ScalarProperty Name="AgeTo" ColumnName="AgeTo" />
+                <ScalarProperty Name="AgeFrom" ColumnName="AgeFrom" />
                 <ScalarProperty Name="PersonType" ColumnName="PersonType" />
                 <ScalarProperty Name="ToPax" ColumnName="ToPax" />
                 <ScalarProperty Name="FromPax" ColumnName="FromPax" />

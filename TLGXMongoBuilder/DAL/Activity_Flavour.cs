@@ -38,8 +38,8 @@ namespace DAL
         public string Duration { get; set; }
         public string CountryCode { get; set; }
         public string CityCode { get; set; }
-        public Nullable<decimal> Latitude { get; set; }
-        public Nullable<decimal> Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
         public string Street { get; set; }
         public string Street2 { get; set; }
         public string Street3 { get; set; }

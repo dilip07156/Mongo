@@ -36,5 +36,7 @@ namespace DAL
         public string FromPax { get; set; }
         public string ToPax { get; set; }
         public string PersonType { get; set; }
+        public string AgeFrom { get; set; }
+        public string AgeTo { get; set; }
     }
 }
