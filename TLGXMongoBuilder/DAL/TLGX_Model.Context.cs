@@ -76,7 +76,6 @@ namespace DAL
         public virtual DbSet<Activity_Deals> Activity_Deals { get; set; }
         public virtual DbSet<Activity_Descriptions> Activity_Descriptions { get; set; }
         public virtual DbSet<Activity_Facility> Activity_Facility { get; set; }
-        public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
         public virtual DbSet<Activity_InclusionDetails> Activity_InclusionDetails { get; set; }
         public virtual DbSet<Activity_Inclusions> Activity_Inclusions { get; set; }
         public virtual DbSet<Activity_Itinerary> Activity_Itinerary { get; set; }
@@ -113,5 +112,6 @@ namespace DAL
         public virtual DbSet<ZoneCity_Mapping> ZoneCity_Mapping { get; set; }
         public virtual DbSet<Activity_FlavourServices> Activity_FlavourServices { get; set; }
         public virtual DbSet<DistributionLayerRefresh_Log> DistributionLayerRefresh_Log { get; set; }
+        public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
     }
 }
