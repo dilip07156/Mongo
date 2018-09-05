@@ -964,7 +964,7 @@ namespace DAL
                     var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "viator"
+                                        && spm.SupplierName == "ckis"
                                         select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
@@ -1042,6 +1042,168 @@ namespace DAL
             }
         }
 
+
+        public void UpdateActivityPrices()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+                            var ActivityPrices = (from a in context.Activity_Prices.AsNoTracking()
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
+
+                            var Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
+                            {
+                                OptionCode = s.Price_OptionCode,
+                                PriceFor = s.Price_For,
+                                Price = Convert.ToDouble(s.Price),
+                                PriceType = s.Price_Type,
+                                PriceBasis = s.PriceBasis,
+                                PriceId = s.PriceCode,
+                                SupplierCurrency = s.PriceCurrency,
+                                FromPax = s.FromPax,
+                                ToPax = s.ToPax,
+                                Market = s.Market,
+                                PersonType = s.PersonType,
+                                ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
+                                ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString()
+                            }).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Prices, Prices);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public void UpdateActivityDescription()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "xoxoday"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+                            var ActivityDesc = (from a in context.Activity_Descriptions.AsNoTracking()
+                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                select a).ToList();
+
+                            var Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+
+                            var Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+
+
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Description, Description);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            var UpdateDataOverview = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Overview, Overview);
+                            var updateResultOverview = collection.FindOneAndUpdate(filter, UpdateDataOverview);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public void UpdateActivitySpecial()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "xoxoday"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                            var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                                     where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                                                     && a.AttributeSubType == "Specials"
+                                                     select a.AttributeValue).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
@@ -1053,7 +1215,7 @@ namespace DAL
                     _database = MongoDBHandler.mDatabase();
 
                     //_database.DropCollection("ActivityDefinitions");
-
+                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-1));
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
 
                     List<Activity_Flavour> ActivityList;
@@ -1063,7 +1225,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "gta"
+                                        && spm.SupplierName == "tourico"
                                         select a).ToList();
                     }
                     else
@@ -1077,6 +1239,7 @@ namespace DAL
                     {
                         try
                         {
+                            iCounter++;
                             //if (Activity_Flavour_Id == Guid.Empty)
                             //{
                             //    //check if record is already exists
@@ -1428,9 +1591,9 @@ namespace DAL
                             //}
                             //else
                             //{
-                                var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                                collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            //}
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                            // }
 
                             newActivity = null;
                             ActivityClassAttr = null;
@@ -1446,7 +1609,7 @@ namespace DAL
                             ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
-                            iCounter++;
+
 
                         }
                         catch (Exception ex)
