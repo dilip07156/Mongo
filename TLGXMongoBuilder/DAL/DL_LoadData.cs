@@ -419,7 +419,7 @@ namespace DAL
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMapping>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
+                            var res = collection.DeleteMany(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
@@ -430,7 +430,6 @@ namespace DAL
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
-                throw ex;
                 throw ex;
             }
         }
@@ -507,7 +506,7 @@ namespace DAL
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
+                            var res = collection.DeleteMany(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
