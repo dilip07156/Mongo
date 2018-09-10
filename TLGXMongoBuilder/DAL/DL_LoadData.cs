@@ -310,7 +310,7 @@ namespace DAL
                 if (ProdMapId == Guid.Empty)
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
-                    
+
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
@@ -369,7 +369,7 @@ namespace DAL
                             {
                                 var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
 
-                                foreach(var prodMap in productMapList)
+                                foreach (var prodMap in productMapList)
                                 {
                                     collection.InsertOne(prodMap);
                                 }
@@ -1171,7 +1171,7 @@ namespace DAL
                     var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "xoxoday"
+                                        && spm.SupplierName == "viator"
                                         select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
@@ -1179,14 +1179,21 @@ namespace DAL
                     {
                         try
                         {
-                            var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
-                                                     where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
-                                                     && a.AttributeSubType == "Specials"
-                                                     select a.AttributeValue).ToList();
+                            //var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                            //                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                            //                && a.AttributeSubType == "Specials"
+                            //                select a.AttributeValue).ToList();
+
+                            var Highlights = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                                            && a.AttributeSubType == "Highlights"
+                                            select a.AttributeValue).ToArray();
 
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+
+                            //var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Highlights, Highlights);
+
                             var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
 
                             iCounter++;
@@ -1226,7 +1233,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "tourico"
+                                        && spm.SupplierName == "bemyguest"
                                         select a).ToList();
                     }
                     else
@@ -1372,7 +1379,7 @@ namespace DAL
 
                             newActivity.Name = Activity.ProductName;
 
-                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -1380,7 +1387,7 @@ namespace DAL
 
                             newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
-                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
 
@@ -1446,9 +1453,9 @@ namespace DAL
                             {
                                 Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
                                 Area = Activity.Area,
-                                Latitude = Convert.ToDecimal(Activity.Latitude),
+                                Latitude = Activity.Latitude,
                                 Location = Activity.Location,
-                                Longitude = Convert.ToDecimal(Activity.Longitude)
+                                Longitude = Activity.Longitude
                             };
 
                             newActivity.TourGuideLanguages = (from a in ActivityInc

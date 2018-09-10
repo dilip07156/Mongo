@@ -74,7 +74,7 @@ namespace MapperSvc
                 objBL.UpdateActivitySpecial();
             }
         }
-        
+
         public void UpdateActivityPrices()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -89,7 +89,7 @@ namespace MapperSvc
                 objBL.UpdateActivityDescription();
             }
         }
-        
+
         public void LoadActivityMasters()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
