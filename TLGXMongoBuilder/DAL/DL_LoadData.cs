@@ -1170,7 +1170,7 @@ namespace DAL
                     var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "xoxoday"
+                                        && spm.SupplierName == "viator"
                                         select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
@@ -1178,14 +1178,21 @@ namespace DAL
                     {
                         try
                         {
-                            var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                            //var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                            //                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                            //                && a.AttributeSubType == "Specials"
+                            //                select a.AttributeValue).ToList();
+
+                            var Highlights = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
-                                            && a.AttributeSubType == "Specials"
-                                            select a.AttributeValue).ToList();
+                                            && a.AttributeSubType == "Highlights"
+                                            select a.AttributeValue).ToArray();
 
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
 
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+                            //var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Highlights, Highlights);
+
                             var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
 
                             iCounter++;
@@ -1225,7 +1232,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "tourico"
+                                        && spm.SupplierName == "bemyguest"
                                         select a).ToList();
                     }
                     else
@@ -1371,7 +1378,7 @@ namespace DAL
 
                             newActivity.Name = Activity.ProductName;
 
-                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -1379,7 +1386,7 @@ namespace DAL
 
                             newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
-                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
 
@@ -1445,9 +1452,9 @@ namespace DAL
                             {
                                 Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
                                 Area = Activity.Area,
-                                Latitude = Convert.ToDecimal(Activity.Latitude),
+                                Latitude = Activity.Latitude,
                                 Location = Activity.Location,
-                                Longitude = Convert.ToDecimal(Activity.Longitude)
+                                Longitude = Activity.Longitude
                             };
 
                             newActivity.TourGuideLanguages = (from a in ActivityInc
@@ -2819,6 +2826,7 @@ namespace DAL
         {
             try
             {
+
                 //Get Supplier ID from logid
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
@@ -2868,14 +2876,12 @@ namespace DAL
 
                         sbTotalSelect.Append(Convert.ToString(SupplierId) + "'");
 
+                        context.Configuration.AutoDetectChangesEnabled = false;
                         try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
                         int NoOfBatch = TotalCount / BatchSize;
                         int mod = TotalCount % BatchSize;
                         if (mod > 0)
-                        {
                             NoOfBatch = NoOfBatch + 1;
-                        }
-
                         for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
                         {
                             _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, SupplierId);
@@ -2927,39 +2933,38 @@ namespace DAL
                 {
                     context.Database.CommandTimeout = 0;
                     context.Configuration.AutoDetectChangesEnabled = false;
-
                     #region Select Query
                     StringBuilder sbSelect = new StringBuilder();
                     sbSelect.Append(@" select  
-                                    SRTM.Accommodation_SupplierRoomTypeMapping_Id,
-                                    A.TLGXAccoId ,               ARI.TLGXAccoRoomId,
-                                    S.Code AS supplierCode,      SRTM.SupplierProductId,SRTM.SupplierRoomId,
-                                    SRTM.SupplierRoomTypeCode,   SRTM.SupplierRoomName, 
-                                    SRTM.SupplierRoomCategory,   SRTM.SupplierRoomCategoryId, 
-                                    SRTM.MaxAdults,              SRTM.MaxInfants, 
-                                    SRTM.MaxGuestOccupancy,      SRTM.Quantity, 
-                                    SRTM.RatePlan,               SRTM.RatePlanCode, 
-                                    SRTM.RoomSize,               SRTM.BathRoomType, 
-                                    SRTM.roomviewcode AS RoomView,    
-                                    SRTM.FloorName, 
-                                    SRTM.FloorNumber,            SRTM.Amenities, 
-                                    SRTM.RoomLocationCode,       SRTM.ChildAge, 
-                                    SRTM.ExtraBed,               SRTM.Bedrooms, 
-                                    SRTM.Smoking,                SRTM.BedTypeCode AS BedType, 
-                                    SRTM.MinGuestOccupancy,      SRTM.PromotionalVendorCode, 
-                                    SRTM.BeddingConfig,          SRTM.MapId AS SystemRoomTypeMapId,
-                                    SRTM.RoomDescription,
-                                    A.CompanyHotelID AS SystemProductCode,
-                                    ARI.RoomId AS SystemRoomTypeCode, ARI.RoomName AS SystemRoomTypeName,
-                                    UPPER(SRTM.TX_RoomName) AS SystemNormalizedRoomType,
-                                    UPPER(SRTM.Tx_StrippedName) AS SystemStrippedRoomType,
-                                    SRTM.MappingStatus As Status,
-	                                SRTM.MatchingScore
-                                    From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
-                                    inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
-                                    inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
-                                    inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
-                                    Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') ");
+                                            SRTM.Accommodation_SupplierRoomTypeMapping_Id,
+                                            A.TLGXAccoId ,               ARI.TLGXAccoRoomId,
+                                            S.Code AS supplierCode,      SRTM.SupplierProductId,SRTM.SupplierRoomId,
+                                            SRTM.SupplierRoomTypeCode,   SRTM.SupplierRoomName, 
+                                            SRTM.SupplierRoomCategory,   SRTM.SupplierRoomCategoryId, 
+                                            SRTM.MaxAdults,              SRTM.MaxInfants, 
+                                            SRTM.MaxGuestOccupancy,      SRTM.Quantity, 
+                                            SRTM.RatePlan,               SRTM.RatePlanCode, 
+                                            SRTM.RoomSize,               SRTM.BathRoomType, 
+                                            SRTM.roomviewcode AS RoomView,    
+                                            SRTM.FloorName, 
+                                            SRTM.FloorNumber,            SRTM.Amenities, 
+                                            SRTM.RoomLocationCode,       SRTM.ChildAge, 
+                                            SRTM.ExtraBed,               SRTM.Bedrooms, 
+                                            SRTM.Smoking,                SRTM.BedTypeCode AS BedType, 
+                                            SRTM.MinGuestOccupancy,      SRTM.PromotionalVendorCode, 
+                                            SRTM.BeddingConfig,          SRTM.MapId AS SystemRoomTypeMapId,
+                                            SRTM.RoomDescription,
+                                            A.CompanyHotelID AS SystemProductCode,
+                                            ARI.RoomId AS SystemRoomTypeCode, ARI.RoomName AS SystemRoomTypeName,
+                                            UPPER(SRTM.TX_RoomName) AS SystemNormalizedRoomType,
+                                            UPPER(SRTM.Tx_StrippedName) AS SystemStrippedRoomType,
+                                            SRTM.MappingStatus As Status,
+	                                        SRTM.MatchingScore
+                                            From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
+                                            inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
+                                            inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
+                                            inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
+                                            Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') ");
                     int skip = batchNo * batchSize;
                     StringBuilder sbWhere = new StringBuilder();
                     sbWhere.Append(" AND SRTM.Supplier_Id = '" + Convert.ToString(Supplier_id) + "'");
@@ -2971,7 +2976,7 @@ namespace DAL
                     sbfinal.Append(sbSelect);
                     sbfinal.Append(sbWhere);
                     #endregion
-
+                    context.Configuration.AutoDetectChangesEnabled = false;
                     try { _objHRTM_IM = context.Database.SqlQuery<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest_IM>(sbfinal.ToString()).ToList(); } catch (Exception ex) { }
 
                     StringBuilder sbAccommodation_SupplierRoomTypeMapping_Id = new StringBuilder();
