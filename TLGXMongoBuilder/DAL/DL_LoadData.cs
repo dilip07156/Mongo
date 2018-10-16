@@ -3244,5 +3244,172 @@ namespace DAL
             return Convert.ChangeType(value, targetType); // this will throw for "1"
         }
 
+
+        #region Load Accomodation 
+        public void LoadAccommodation()
+
+        {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+
+                    List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoList = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
+                    // int total = 0;
+                    int BatchSize = 1000;
+                    
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
+                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    try
+                    {
+                        //TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                        TotalZoneCount = Accommodation.Count();
+                    }
+                    catch (Exception ex) { }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
+                    if (mod > 0)
+                    {
+                        NoOfBatch = NoOfBatch + 1;
+                    }
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("AccommodationMaster");
+                    var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("AccommodationMaster");
+
+                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                    {
+                        _AccoList = GetAccommodationMasterdataToLoad(BatchSize, BatchNo);
+                        if (_AccoList.Count > 0)
+                        {
+                            collection.InsertManyAsync(_AccoList);
+                            #region To update CounterIn DistributionLog
+                            //if (LogId != Guid.Empty)
+                            //{
+                            //    MongoInsertedCount = MongoInsertedCount + _AccoList.Count();
+                            //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
+                            //}
+                            #endregion
+                        }
+                    }
+
+
+
+                    //_database = MongoDBHandler.mDatabase();
+                    //_database.DropCollection("MasterAccommodation");
+
+                    //var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("MasterAccommodation");
+
+                    //var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    //var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
+                    //var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
+
+                    //var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
+                    //IQueryable<DAL.Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping_Loop;
+
+                    //int TotalRecords = Accommodation.Count();
+                    //int iBatchSize = 100;
+                    //int iDataInsertedCounter = 0;
+                    //bool bAllDataInserted = false;
+
+                    //while (!bAllDataInserted)
+                    //{
+                    //    Accommodation_SupplierRoomTypeMapping_Loop = Accommodation_SupplierRoomTypeMapping.Where(w => w.MapId > iDataInsertedCounter && w.MapId <= (iDataInsertedCounter + iBatchSize)).Select(s => s);
+
+                    //    if (Accommodation_SupplierRoomTypeMapping_Loop.Count() > 0)
+                    //    {
+                    //        //var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping_Loop
+                    //        //                       join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
+                    //        //                       join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
+                    //        //                       from accorinew in accoritemp.DefaultIfEmpty()
+                    //        //                       select new DataContracts.Mapping.DC_RoomTypeMapping
+                    //        //                       {
+                    //        //                           SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
+                    //        //                           SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
+                    //        //                           SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
+                    //        //                           SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
+                    //        //                           Status = asrtm.MappingStatus.ToUpper().Trim(),
+                    //        //                           SystemRoomTypeMapId = asrtm.MapId.ToString(),
+                    //        //                           SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
+                    //        //                           SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
+                    //        //                           SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
+                    //        //                           SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
+                    //        //                           SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
+                    //        //                           Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
+                    //        //                       }).ToList();
+
+                    //        //if (roomTypeMapList.Count() > 0)
+                    //        //{
+                    //        //    collection.InsertMany(roomTypeMapList);
+                    //        //}
+
+                    //        iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
+
+                    //    }
+                    //    else
+                    //    {
+                    //        bAllDataInserted = true;
+                    //    }
+                    //}
+
+                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
+                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
+
+                    //collection = null;
+                    //_database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        private List<DataContracts.Mapping.DC_AccomodationMasterMapping> GetAccommodationMasterdataToLoad(int batchSize, int batchNo)
+        {
+            List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoListResultMain = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
+            //List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
+            try
+            {
+                #region ==== AccoMasterQuery
+                StringBuilder sbSelectAccoMaster = new StringBuilder();
+                StringBuilder sbOrderbyAccoMaster = new StringBuilder();
+                sbSelectAccoMaster.Append(@"  select CompanyHotelID as CommonHotelId,HotelName ,Country ,City ,StreetName ,StreetNumber ,Street3 ,Street4 ,Street5 ,PostalCode ,Town 
+                                    ,Location ,Area ,TLGXAccoId ,ProductCategory ,ProductCategorySubType ,isnull(IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
+                                HotelRating,CompanyRating,CompanyRecommended,RecommendedFor,Brand,Chain,Latitude,Longitude,FullAddress	from Accommodation with(nolock) ");
+                int skip = batchNo * batchSize;
+                sbOrderbyAccoMaster.Append("  ORDER BY CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
+
+                StringBuilder sbfinalZoneMaster = new StringBuilder();
+                sbfinalZoneMaster.Append(sbSelectAccoMaster + " ");
+                sbfinalZoneMaster.Append(" " + sbOrderbyAccoMaster + " ");
+                #endregion
+             
+
+
+
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        _AccoListResultMain = context.Database.SqlQuery<DataContracts.Mapping.DC_AccomodationMasterMapping>(sbfinalZoneMaster.ToString()).ToList();
+
+                        //Add  Zone_id for ZpList and Zc List
+                       
+                    }
+                    catch (Exception ex) { }
+                }
+
+                return _AccoListResultMain;
+            }
+            catch (Exception ex) { }
+            return _AccoListResultMain;
+        }
+        #endregion
+
     }
 }

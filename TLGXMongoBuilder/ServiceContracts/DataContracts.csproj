@@ -132,6 +132,7 @@
     <Compile Include="GetMasterData.cs" />
     <Compile Include="HotelDescription.cs" />
     <Compile Include="HotelSearchContracts.cs" />
+    <Compile Include="Mapping\DC_AccomodationMasterMapping.cs" />
     <Compile Include="Mapping\DC_CityMapping.cs" />
     <Compile Include="Mapping\DC_CountryMapping.cs" />
     <Compile Include="Mapping\DC_CrossSystemMapping.cs" />
