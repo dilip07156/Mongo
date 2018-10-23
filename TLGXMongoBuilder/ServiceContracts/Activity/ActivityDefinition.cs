@@ -133,8 +133,8 @@ namespace DataContracts.Activity
 
     public class ActivityLocation
     {
-        public decimal? Latitude { get; set; }
-        public decimal? Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
         public string Address { get; set; }
         public string Location { get; set; }
         public string Area { get; set; }
@@ -247,5 +247,6 @@ namespace DataContracts.Activity
         public string OperatingToDate { get; set; }
         public string DepartureCode { get; set; }
         public string DeparturePoint { get; set; }
+        public string DepartureDescription { get; set; }
     }
 }

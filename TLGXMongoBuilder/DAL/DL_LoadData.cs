@@ -15,6 +15,7 @@ namespace DAL
 {
     public enum PushStatus
     {
+        INSERT,
         SCHEDULED,
         RUNNNING,
         COMPLETED,
@@ -306,9 +307,11 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
+
                 if (ProdMapId == Guid.Empty)
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
@@ -354,6 +357,7 @@ namespace DAL
                                                       SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
                                                       SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
                                                       SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+                                                      TlgxMdmHotelId = (acco == null ? string.Empty : acco.TLGXAccoId.ToUpper()),
 
                                                       SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
                                                       SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
@@ -365,7 +369,11 @@ namespace DAL
                             if (productMapList.Count() > 0)
                             {
                                 var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                                collection.InsertManyAsync(productMapList);
+
+                                foreach (var prodMap in productMapList)
+                                {
+                                    collection.InsertOne(prodMap);
+                                }
 
                                 #region To update CounterIn DistributionLog
                                 MongoInsertedCount = MongoInsertedCount + productMapList.Count();
@@ -401,7 +409,8 @@ namespace DAL
                                         UPPER(con.Code) as SystemCountryCode,
                                         UPPER(con.Name) as SystemCountryName,
                                         UPPER(cm.Code) as SystemCityCode,
-                                        UPPER(cm.Name) as SystemCityName
+                                        UPPER(cm.Name) as SystemCityName,
+                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
                                         left Join m_CityMaster cm with(nolock) on apm.City_Id = cm.City_Id
@@ -411,7 +420,7 @@ namespace DAL
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMapping>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
+                            var res = collection.DeleteMany(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
@@ -422,7 +431,6 @@ namespace DAL
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
-                throw ex;
                 throw ex;
             }
         }
@@ -460,12 +468,13 @@ namespace DAL
                                                       SupplierProductCode = apm.SupplierProductReference.ToUpper(),
                                                       MapId = apm.MapId ?? 0,
                                                       SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                      TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                                   }).ToList();
 
                             if (productMapList.Count() > 0)
                             {
                                 var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode);
-                                collection.InsertManyAsync(productMapList);
+                                collection.InsertMany(productMapList);
 
                                 #region To update CounterIn DistributionLog
                                 MongoInsertedCount = MongoInsertedCount + productMapList.Count();
@@ -489,7 +498,8 @@ namespace DAL
                         sbSelect.Append(@"select  UPPER(s.Code) as SupplierCode,
                                         UPPER(apm.SupplierProductReference) as SupplierProductCode,
                                         apm.MapId,
-                                        UPPER(a.CompanyHotelID) as SystemProductCode
+                                        UPPER(a.CompanyHotelID) as SystemProductCode,
+                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
                                         left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id
@@ -497,7 +507,7 @@ namespace DAL
                         var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteOne(x => x.MapId == prod.MapId);
+                            var res = collection.DeleteMany(x => x.MapId == prod.MapId);
                             collection.InsertOneAsync(prod);
                         }
                     }
@@ -511,6 +521,7 @@ namespace DAL
             }
         }
         #endregion
+
         public void LoadActivityMapping(Guid LogId)
         {
             try
@@ -902,9 +913,15 @@ namespace DAL
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     _database = MongoDBHandler.mDatabase();
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
-                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
                     foreach (var Activity in ActivityList)
@@ -932,6 +949,10 @@ namespace DAL
                 throw ex;
             }
         }
+
+        /// <summary>
+        /// To update DaysOfWeek for activity by Supplier
+        /// </summary>
         public void UpdateActivityDOW()
         {
             try
@@ -940,8 +961,12 @@ namespace DAL
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-3));
-                    var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "ckis"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
                     foreach (var Activity in ActivityList)
@@ -1018,6 +1043,175 @@ namespace DAL
             }
         }
 
+
+        public void UpdateActivityPrices()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+                            var ActivityPrices = (from a in context.Activity_Prices.AsNoTracking()
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
+
+                            var Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
+                            {
+                                OptionCode = s.Price_OptionCode,
+                                PriceFor = s.Price_For,
+                                Price = Convert.ToDouble(s.Price),
+                                PriceType = s.Price_Type,
+                                PriceBasis = s.PriceBasis,
+                                PriceId = s.PriceCode,
+                                SupplierCurrency = s.PriceCurrency,
+                                FromPax = s.FromPax,
+                                ToPax = s.ToPax,
+                                Market = s.Market,
+                                PersonType = s.PersonType,
+                                ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
+                                ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString()
+                            }).ToList();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Prices, Prices);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public void UpdateActivityDescription()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "xoxoday"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+
+                            var ActivityDesc = (from a in context.Activity_Descriptions.AsNoTracking()
+                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                select a).ToList();
+
+                            var Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+
+                            var Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+
+
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Description, Description);
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            var UpdateDataOverview = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Overview, Overview);
+                            var updateResultOverview = collection.FindOneAndUpdate(filter, UpdateDataOverview);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
+
+        public void UpdateActivitySpecial()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == "viator"
+                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                    int iTotalCount = ActivityList.Count();
+                    int iCounter = 0;
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                            //var Specials = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                            //                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                            //                && a.AttributeSubType == "Specials"
+                            //                select a.AttributeValue).ToList();
+
+                            var Highlights = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                                            && a.AttributeSubType == "Highlights"
+                                            select a.AttributeValue).ToArray();
+
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+
+                            //var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Specials, Specials);
+                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.Highlights, Highlights);
+
+                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+
+                            iCounter++;
+
+                        }
+                        catch (Exception e)
+                        {
+                            continue;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+        }
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
@@ -1029,7 +1223,7 @@ namespace DAL
                     _database = MongoDBHandler.mDatabase();
 
                     //_database.DropCollection("ActivityDefinitions");
-
+                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-1));
                     var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
 
                     List<Activity_Flavour> ActivityList;
@@ -1039,7 +1233,7 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "CKIS"
+                                        && spm.SupplierName == "bemyguest"
                                         select a).ToList();
                     }
                     else
@@ -1048,11 +1242,12 @@ namespace DAL
                                         where a.Activity_Flavour_Id == Activity_Flavour_Id && a.CityCode != null
                                         select a).ToList();
                     }
-
+                    int iCounter = 0;
                     foreach (var Activity in ActivityList)
                     {
                         try
                         {
+                            iCounter++;
                             //if (Activity_Flavour_Id == Guid.Empty)
                             //{
                             //    //check if record is already exists
@@ -1141,6 +1336,7 @@ namespace DAL
 
                             var ActivityCT = (from a in context.Activity_CategoriesType.AsNoTracking()
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
+                                              && (a.IsActive ?? false) == true
                                               select a).ToList();
 
                             var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
@@ -1169,10 +1365,6 @@ namespace DAL
                                 }).ToList();
                             }
 
-                            //var ActivityFS = (from a in context.Activity_FlavourServices.AsNoTracking()
-                            //                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                            //                  select a).ToList();
-
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
                             newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
@@ -1187,7 +1379,7 @@ namespace DAL
 
                             newActivity.Name = Activity.ProductName;
 
-                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
 
@@ -1195,7 +1387,7 @@ namespace DAL
 
                             newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
 
-                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
 
                             newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
 
@@ -1355,6 +1547,10 @@ namespace DAL
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Advisory").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PackagePeriod").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "BestFor").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Itinerary").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "TagWith").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+
+
 
 
 
@@ -1392,19 +1588,20 @@ namespace DAL
                                                              Saturday = DOW.Sat ?? false,
 
                                                              DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
-                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint,
+                                                             DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
 
                                                          }).ToList();
 
-                            if (Activity_Flavour_Id == Guid.Empty)
-                            {
-                                collection.InsertOneAsync(newActivity);
-                            }
-                            else
-                            {
-                                var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                                collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                            }
+                            //if (Activity_Flavour_Id == Guid.Empty)
+                            //{
+                            //    collection.InsertOneAsync(newActivity);
+                            //}
+                            //else
+                            //{
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                            // }
 
                             newActivity = null;
                             ActivityClassAttr = null;
@@ -1420,6 +1617,7 @@ namespace DAL
                             ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
+
 
                         }
                         catch (Exception ex)
@@ -2674,12 +2872,17 @@ namespace DAL
             }
         }
 
-        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0)
+        private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0, string Supplier_Id = "", string Element = "", string Type = "")
         {
             string Status = string.Empty;
             string EditUser = "MPUSH";
+            StringBuilder setNewStatus = new StringBuilder();
 
-            if (status == PushStatus.RUNNNING)
+            if (status == PushStatus.INSERT)
+            {
+                Status = "Scheduled";
+            }
+            else if (status == PushStatus.RUNNNING)
             {
                 Status = "Running";
             }
@@ -2692,15 +2895,21 @@ namespace DAL
                 Status = "Error";
             }
 
-            StringBuilder setNewStatus = new StringBuilder();
-            setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            if (status == PushStatus.INSERT)
+            {
+                setNewStatus.Append("INSERT INTO DistributionLayerRefresh_Log(Id,Element,Type,Create_Date,Create_User,Status,Supplier_Id) VALUES(");
+                setNewStatus.Append("'" + LogId + "','" + Element + "','" + Type + "', GETDATE() " + ", '" + "MONGOPUSH" + "', '" + Status + "', '" + Supplier_Id + "');");
+            }
+            else
+            {
+                setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            }
+
+
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
-
                 context.Configuration.AutoDetectChangesEnabled = false;
-                var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                if (Log != null)
-                    context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+                context.Database.ExecuteSqlCommand(setNewStatus.ToString());
             }
             setNewStatus = null;
         }
@@ -2963,8 +3172,7 @@ namespace DAL
         }
         #endregion
 
-
-        public void UpdateHotelRoomTypeMapping(Guid Logid)
+        public void UpdateHotelRoomTypeMapping(Guid Logid, Guid Supplier_Id)
         {
             try
             {
@@ -2972,67 +3180,87 @@ namespace DAL
                 //Get Supplier ID from logid
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
-                    //Get SupplierId and Log id 
-                    var listLog = GetScheduledRTM();
-                    if (listLog != null)
+                    List<Guid> SupplierIds = new List<Guid>();
+                    if (Supplier_Id != Guid.Empty)
                     {
-                        foreach (var LogidForSupplier in listLog)
+                        SupplierIds.Add(Supplier_Id);
+                    }
+                    else
+                    {
+                        SupplierIds = context.Accommodation_SupplierRoomTypeMapping.Select(s => s.Supplier_Id ?? Guid.Empty).Distinct().ToList();
+                    }
+
+                    foreach (var SupplierId in SupplierIds)
+                    {
+                        int TotalCount = 0;
+                        int MLDataInsertedCount = 0;
+
+                        Guid NewLogid = Logid;
+                        if (Logid == Guid.Empty)
                         {
-                            int TotalCount = 0;
-                            int MLDataInsertedCount = 0;
-                            Guid _logId = Guid.Parse(LogidForSupplier);
-                            UpdateDistLogInfo(_logId, PushStatus.RUNNNING);
+                            NewLogid = Guid.NewGuid();
+                            UpdateDistLogInfo(NewLogid, PushStatus.INSERT, 0, 0, SupplierId.ToString(), "RoomType", "Mapping");
+                        }
+                        else
+                        {
+                            NewLogid = Logid;
+                        }
 
-                            #region -- List
-                            List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
-                            #endregion
+                        UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING);
 
-                            context.Configuration.AutoDetectChangesEnabled = false;
-                            context.Database.CommandTimeout = 0;
+                        #region -- List
+                        List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
+                        #endregion
 
-                            Guid Supplierid = (from s in context.DistributionLayerRefresh_Log where s.Id == _logId select s.Supplier_Id).FirstOrDefault() ?? Guid.Empty;
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        context.Database.CommandTimeout = 0;
 
-
-                            int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
-                            //Get Total Count
-                            StringBuilder sbTotalSelect = new StringBuilder();
-                            sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
+                        int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
+                        //Get Total Count
+                        StringBuilder sbTotalSelect = new StringBuilder();
+                        sbTotalSelect.Append(@"SELECT COUNT(1) From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
                                                     inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
                                                     inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
                                                     inner join Accommodation A WITH (NOLOCK) ON A.Accommodation_Id = SRTM.Accommodation_Id 
                                                     Where SRTM.MappingStatus IN('MAPPED','AUTOMAPPED') AND SRTM.Supplier_Id ='");
 
-                            sbTotalSelect.Append(Convert.ToString(Supplierid) + "'");
+                        sbTotalSelect.Append(Convert.ToString(SupplierId) + "'");
 
-                            context.Configuration.AutoDetectChangesEnabled = false;
-                            try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
-                            int NoOfBatch = TotalCount / BatchSize;
-                            int mod = TotalCount % BatchSize;
-                            if (mod > 0)
-                                NoOfBatch = NoOfBatch + 1;
-                            for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                        context.Configuration.AutoDetectChangesEnabled = false;
+                        try { TotalCount = context.Database.SqlQuery<int>(sbTotalSelect.ToString()).FirstOrDefault(); } catch (Exception ex) { }
+                        int NoOfBatch = TotalCount / BatchSize;
+                        int mod = TotalCount % BatchSize;
+                        if (mod > 0)
+                            NoOfBatch = NoOfBatch + 1;
+                        for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                        {
+                            _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, SupplierId);
+                            if (_objHRTM.Count > 0)
                             {
-                                _objHRTM = GetDataToPushMongo_RTM(BatchSize, BatchNo, Supplierid);
-                                if (_objHRTM.Count > 0)
+                                _database = MongoDBHandler.mDatabase();
+                                var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
+                                //For Upset 
+                                foreach (var item in _objHRTM)
                                 {
-                                    _database = MongoDBHandler.mDatabase();
-                                    // _database.DropCollection("RoomTypeMapping");
-                                    var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
-                                    collection.InsertMany(_objHRTM);
-                                    #region To update CounterIn DistributionLog
-                                    MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
-                                    UpdateDistLogInfo(_logId, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
-                                    #endregion
-
-                                    collection = null;
-                                    _database = null;
-                                    _objHRTM = null;
+                                    var filter = Builders<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, item.SystemRoomTypeMapId);
+                                    collection.ReplaceOne(filter, item, new UpdateOptions { IsUpsert = true });
                                 }
-                            }
-                            UpdateDistLogInfo(_logId, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
 
+                                //collection.InsertMany(_objHRTM);
+                                #region To update CounterIn DistributionLog
+                                MLDataInsertedCount = MLDataInsertedCount + _objHRTM.Count();
+                                UpdateDistLogInfo(NewLogid, PushStatus.RUNNNING, TotalCount, MLDataInsertedCount);
+                                #endregion
+
+                                collection = null;
+                                _database = null;
+                                _objHRTM = null;
+                            }
                         }
+                        UpdateDistLogInfo(NewLogid, PushStatus.COMPLETED, TotalCount, MLDataInsertedCount);
+
                     }
+
                 }
             }
             catch (Exception ex)
@@ -3041,6 +3269,7 @@ namespace DAL
                 throw;
             }
         }
+
         private List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> GetDataToPushMongo_RTM(int batchSize, int batchNo, Guid Supplier_id)
         {
             List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();

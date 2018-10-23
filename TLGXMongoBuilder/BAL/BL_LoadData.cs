@@ -42,6 +42,27 @@ namespace BAL
                 obj.UpdateActivityDOW();
             }
         }
+        public void UpdateActivitySpecial()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivitySpecial();
+            }
+        }
+        public void UpdateActivityPrices()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityPrices();
+            }
+        }
+        public void UpdateActivityDescription()
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.UpdateActivityDescription();
+            }
+        }
 
         public void LoadActivityMasters()
         {
@@ -125,7 +146,7 @@ namespace BAL
             }
         }
 
-        public void LoadProductMappingLite(string LogId,string ProdMapId)
+        public void LoadProductMappingLite(string LogId, string ProdMapId)
         {
             Guid gLogId;
             Guid gProdMapId;
@@ -198,7 +219,7 @@ namespace BAL
             }
         }
 
-        public void LoadAccoStaticData(string LogId,string Supplier_Id)
+        public void LoadAccoStaticData(string LogId, string Supplier_Id)
         {
             Guid logid = new Guid();
             Guid gSupplier_Id;
@@ -246,14 +267,15 @@ namespace BAL
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(string LogId)
+        public void UpdateHotelRoomTypeMapping(string LogId, string Supplier_Id)
         {
             Guid gLogId;
-            if (Guid.TryParse(LogId, out gLogId))
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.UpdateHotelRoomTypeMapping(gLogId);
+                    obj.UpdateHotelRoomTypeMapping(gLogId, gSupplier_Id);
                 }
             }
         }

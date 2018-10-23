@@ -67,7 +67,29 @@ namespace MapperSvc
                 objBL.UpdateActivityDOW();
             }
         }
-        
+        public void UpdateActivitySpecial()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateActivitySpecial();
+            }
+        }
+
+        public void UpdateActivityPrices()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateActivityPrices();
+            }
+        }
+        public void UpdateActivityDescription()
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateActivityDescription();
+            }
+        }
+
         public void LoadActivityMasters()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -220,11 +242,11 @@ namespace MapperSvc
         #endregion
 
 
-        public void UpdateHotelRoomTypeMapping(string LogId)
+        public void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.UpdateHotelRoomTypeMapping(LogId);
+                objBL.UpdateHotelRoomTypeMapping(LogId, Supplier_Id);
             }
         }
 

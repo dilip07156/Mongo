@@ -71,5 +71,6 @@ namespace DAL
         public string CountryName { get; set; }
         public string CountryCode { get; set; }
         public Nullable<double> MatchingScore { get; set; }
+        public Nullable<int> RowCounter { get; set; }
     }
 }
