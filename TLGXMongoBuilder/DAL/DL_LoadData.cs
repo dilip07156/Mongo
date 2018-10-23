@@ -9,6 +9,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Text.RegularExpressions;
 using MongoDB.Driver.Builders;
+using System.ComponentModel;
 
 namespace DAL
 {
@@ -2139,6 +2140,8 @@ namespace DAL
         // }
 
         public void LoadAccoStaticData(Guid log_id, Guid SupplierId)
+
+
         {
             try
             {
@@ -2160,7 +2163,7 @@ namespace DAL
 
                     context.Configuration.AutoDetectChangesEnabled = false;
                     //Get Master Attributes and Supplier Attribute Mapping
-                    string sqlMasterFor = "'HotelInfo','FacilityInfo','RoomInfo','RoomAmenities','Media'";
+                    string sqlMasterFor = "'HotelInfo','FacilityInfo','RoomInfo','RoomAmenities','Media','BedType','RoomInfo','RoomMedia','RoomAmenities'";
 
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
@@ -2212,6 +2215,17 @@ namespace DAL
                                     Area = HotelInfoDetails.Where(w => w.SystemAttribute == "AREA").Select(s => s.Value).FirstOrDefault(),
                                     City = HotelInfoDetails.Where(w => w.SystemAttribute == "CITY").Select(s => s.Value).FirstOrDefault(),
                                     Country = HotelInfoDetails.Where(w => w.SystemAttribute == "COUNTRY").Select(s => s.Value).FirstOrDefault(),
+
+                                    //New field Added
+                                    CityCode = HotelInfoDetails.Where(w => w.SystemAttribute == "CITYCODE").Select(s => s.Value).FirstOrDefault(),
+                                    CountryCode = HotelInfoDetails.Where(w => w.SystemAttribute == "COUNTRYCODE").Select(s => s.Value).FirstOrDefault(),
+                                    StateCode = HotelInfoDetails.Where(w => w.SystemAttribute == "STATECODE").Select(s => s.Value).FirstOrDefault(),
+                                    DistrictId = HotelInfoDetails.Where(w => w.SystemAttribute == "DISTRICTID").Select(s => s.Value).FirstOrDefault(),
+                                    DistrictName = HotelInfoDetails.Where(w => w.SystemAttribute == "DISTRICTNAME").Select(s => s.Value).FirstOrDefault(),
+                                    Region = HotelInfoDetails.Where(w => w.SystemAttribute == "REGION").Select(s => s.Value).FirstOrDefault(),
+
+                                    //New field Added
+
                                     Geometry = new DataContracts.StaticData.Geometry
                                     {
                                         Type = "LatLng",
@@ -2222,7 +2236,7 @@ namespace DAL
                                     State = HotelInfoDetails.Where(w => w.SystemAttribute == "STATE").Select(s => s.Value).FirstOrDefault(),
                                     Zone = HotelInfoDetails.Where(w => w.SystemAttribute == "ZONE").Select(s => s.Value).FirstOrDefault()
                                 },
-                                Affiliations = string.Empty,
+                                Affiliations = HotelInfoDetails.Where(w => w.SystemAttribute == "AFFILIATIONS").Select(s => s.Value).FirstOrDefault(),
                                 Brand = HotelInfoDetails.Where(w => w.SystemAttribute == "BRAND").Select(s => s.Value).FirstOrDefault(),
                                 Chain = HotelInfoDetails.Where(w => w.SystemAttribute == "CHAIN").Select(s => s.Value).FirstOrDefault(),
                                 CheckInTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKINTIME").Select(s => s.Value).FirstOrDefault(),
@@ -2232,6 +2246,23 @@ namespace DAL
                                 CompanyName = product.SupplierName.ToUpper(),
                                 CompanyProductId = product.SupplierProductCode.ToUpper(),
                                 CompanyRating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
+                                Stars = HotelInfoDetails.Where(w => w.SystemAttribute == "STARS").Select(s => s.Value).FirstOrDefault(),
+
+                                //New field Added
+
+                                CheckinCloseTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKINCLOSETIME").Select(s => s.Value).FirstOrDefault(),
+                                CheckoutCloseTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKOUTCLOSETIME").Select(s => s.Value).FirstOrDefault(),
+
+
+
+
+                                currency = HotelInfoDetails.Where(w => w.SystemAttribute == "CURRENCY").Select(s => s.Value).FirstOrDefault(),
+                                DefaultLanguage = HotelInfoDetails.Where(w => w.SystemAttribute == "DEFAULTLANGUAGE").Select(s => s.Value).FirstOrDefault(),
+
+                                //New field Added
+
+
+
                                 ContactDetails = new List<DataContracts.StaticData.ContactDetails>
                                 {
                                     new DataContracts.StaticData.ContactDetails
@@ -2249,7 +2280,8 @@ namespace DAL
                                             CountryCode = string.Empty,
                                             Number = HotelInfoDetails.Where(w => w.SystemAttribute == "TELEPHONE").Select(s => s.Value).FirstOrDefault()
                                         },
-                                        Website = HotelInfoDetails.Where(w => w.SystemAttribute == "WEBSITE").Select(s => s.Value).FirstOrDefault()
+                                        Website = HotelInfoDetails.Where(w => w.SystemAttribute == "WEBSITE").Select(s => s.Value).FirstOrDefault(),
+                                          MobileAppUrl = HotelInfoDetails.Where(w => w.SystemAttribute == "MOBILEAPPURL").Select(s => s.Value).FirstOrDefault()
                                     }
                                 },
                                 DisplayName = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELNAME").Select(s => s.Value).FirstOrDefault(),
@@ -2257,22 +2289,121 @@ namespace DAL
                                 FinanceControlId = null,
                                 General = new DataContracts.StaticData.General
                                 {
-                                    Extras = new List<DataContracts.StaticData.Extras> { new DataContracts.StaticData.Extras {  Label = "Short", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "SHORTDESCRIPTION").Select(s => s.Value).FirstOrDefault() } ,
-                                     new DataContracts.StaticData.Extras {  Label = "Long", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "LONGDESCRIPTION").Select(s => s.Value).FirstOrDefault() } }
+                                    Extras = new List<DataContracts.StaticData.Extras>
+                                    {
+                                        new DataContracts.StaticData.Extras {  Label = "Short", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "SHORTDESCRIPTION").Select(s => s.Value).FirstOrDefault() } ,
+                                        new DataContracts.StaticData.Extras {  Label = "Long", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "LONGDESCRIPTION").Select(s => s.Value).FirstOrDefault() },
+                                          //New field Added
+                                        new DataContracts.StaticData.Extras {  Label = "Exterior", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "EXTERIORDESCRIPTION").Select(s => s.Value).FirstOrDefault() },
+                                        new DataContracts.StaticData.Extras {  Label = "Lobby", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "LOBBYDESCRIPTION").Select(s => s.Value).FirstOrDefault() },
+                                        new DataContracts.StaticData.Extras {  Label = "Position", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "POSITIONDESCRIPTION").Select(s => s.Value).FirstOrDefault() },
+                                        new DataContracts.StaticData.Extras {  Label = "Restaurant", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "RESTAURANTDESCRIPTION").Select(s => s.Value).FirstOrDefault() },
+                                        new DataContracts.StaticData.Extras {  Label = "Room", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "ROOMDESCRIPTION").Select(s => s.Value).FirstOrDefault() }
+                                          //New field Added
+
+                                    },
+                                    YearBuilt = HotelInfoDetails.Where(w => w.SystemAttribute == "YEARBUILT").Select(s => s.Value).FirstOrDefault(),
+                                    YearRenovated = HotelInfoDetails.Where(w => w.SystemAttribute == "RENOVATIONYEAR").Select(s => s.Value).FirstOrDefault(),
+
                                 },
                                 IsMysteryProduct = false,
                                 IsTwentyFourHourCheckout = false,
                                 Name = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELNAME").Select(s => s.Value).FirstOrDefault(),
 
+                                //New field Added
+                                ProductCategorySubTypeId = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPEID").Select(s => s.Value).FirstOrDefault(),
+                                ExactRating = HotelInfoDetails.Where(w => w.SystemAttribute == "EXACTRATING").Select(s => s.Value).FirstOrDefault(),
+                                HotelMessage = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELMESSAGE").Select(s => s.Value).FirstOrDefault(),
+                                MaxPersonReservation = HotelInfoDetails.Where(w => w.SystemAttribute == "MAXPERSONRESERVATION").Select(s => s.Value).FirstOrDefault(),
+                                MaxRoomReservation = HotelInfoDetails.Where(w => w.SystemAttribute == "MAXROOMRESERVATION").Select(s => s.Value).FirstOrDefault(),
+                                noOfReviews = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFREVIEWS").Select(s => s.Value).FirstOrDefault(),
+                                HotelRanking = HotelInfoDetails.Where(w => w.SystemAttribute == "HOTELRANKING").Select(s => s.Value).FirstOrDefault(),
+                                ReviewScore = HotelInfoDetails.Where(w => w.SystemAttribute == "REVIEWSCORE").Select(s => s.Value).FirstOrDefault(),
+                                SpokenLanguages = HotelInfoDetails.Where(w => w.SystemAttribute == "SPOKENLANGUAGES").Select(s => s.Value).FirstOrDefault(),
+
+
+                                Facilities = HotelInfoDetails.Where(w => w.SystemAttribute == "FACILITIES").Select(s => s.Value).FirstOrDefault(),
+                                //New field Added
+
                                 ProductCatSubType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault(),
                                 Rating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
                                 RatingDatedOn = null,
-                                RecommendedFor = null,
+                                RecommendedFor = HotelInfoDetails.Where(w => w.SystemAttribute == "RECOMMENDEDFOR").Select(s => s.Value).ToList(),
                                 ResortType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault()
                             };
 
                             //NoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => s.Value).FirstOrDefault(),
                             //    NoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => s.Value).FirstOrDefault(),
+
+                            //New field Added
+                            //IsRatingEstimatedAutomatically = ;
+
+
+                            var ratingEstimated = HotelInfoDetails.Where(w => w.SystemAttribute == "ISRATINGESTIMATEDAUTOMATICALLY").Select(s => s.Value).FirstOrDefault();
+                            if (ratingEstimated != null)
+                            {
+                                bool IsratingEstimatedValue;
+                                var IsratingEstimated = CustomConvert(ratingEstimated, typeof(bool));
+                                if (Boolean.TryParse(Convert.ToString(IsratingEstimated), out IsratingEstimatedValue))
+                                {
+                                    newProduct.AccomodationInfo.IsRatingEstimatedAutomatically = IsratingEstimatedValue;
+                                }
+                            }
+
+
+
+                            var creditcardRequired = HotelInfoDetails.Where(w => w.SystemAttribute == "ISCREDITCARDREQUIRED").Select(s => s.Value).FirstOrDefault();
+                            if (creditcardRequired != null)
+                            {
+                                bool IscreditcardRequiredValue;
+                                var IsratingEstimated = CustomConvert(creditcardRequired, typeof(bool));
+                                if (Boolean.TryParse(Convert.ToString(IsratingEstimated), out IscreditcardRequiredValue))
+                                {
+                                    newProduct.AccomodationInfo.IsCreditcardRequired = IscreditcardRequiredValue;
+                                }
+
+                            }
+
+
+
+                            var BookWithoutCC = HotelInfoDetails.Where(w => w.SystemAttribute == "ISBOOKWITHOUTCC").Select(s => s.Value).FirstOrDefault();
+                            if (BookWithoutCC != null)
+                            {
+                                bool IsBookWithoutCCValue;
+                                var IsBookWithoutCC = CustomConvert(BookWithoutCC, typeof(bool));
+                                if (Boolean.TryParse(Convert.ToString(IsBookWithoutCC), out IsBookWithoutCCValue))
+                                {
+                                    newProduct.AccomodationInfo.IsBookWithoutCC = IsBookWithoutCCValue;
+                                }
+                            }
+
+
+                            var isRecommended = HotelInfoDetails.Where(w => w.SystemAttribute == "ISRECOMMENDED").Select(s => s.Value).FirstOrDefault();
+                            if (isRecommended != null)
+                            {
+                                bool IsRecommendedvalue;
+                                var IsRecommended = CustomConvert(isRecommended, typeof(bool));
+                                if (Boolean.TryParse(Convert.ToString(IsRecommended), out IsRecommendedvalue))
+                                {
+                                    newProduct.AccomodationInfo.IsRecommended = IsRecommendedvalue;
+                                }
+                            }
+
+
+
+                            newProduct.Policies = new List<DataContracts.StaticData.Policies>
+                                {
+                                    new DataContracts.StaticData.Policies { Type = "ChildrenPolicy" , Description = HotelInfoDetails.Where(w => w.SystemAttribute == "CHILDRENPOLICY").Select(s => s.Value).FirstOrDefault() } ,
+                                    new DataContracts.StaticData.Policies { Type = "InternetPolicy" , Description =HotelInfoDetails.Where(w => w.SystemAttribute == "INTERNETPOLICY").Select(s => s.Value).FirstOrDefault() },
+                                    new DataContracts.StaticData.Policies { Type = "ParkingPolicy" , Description =HotelInfoDetails.Where(w => w.SystemAttribute == "PARKINGPOLICY").Select(s => s.Value).FirstOrDefault() } ,
+                                    new DataContracts.StaticData.Policies { Type = "PetsPolicy",Description = HotelInfoDetails.Where(w => w.SystemAttribute == "PETSPOLICY").Select(s => s.Value).FirstOrDefault() } ,
+                                    new DataContracts.StaticData.Policies { Type = "GroupsPolicy",Description  = HotelInfoDetails.Where(w => w.SystemAttribute == "GROUPSPOLICY").Select(s => s.Value).FirstOrDefault()} ,
+                                    new DataContracts.StaticData.Policies { Type = "Policies",Description  = HotelInfoDetails.Where(w => w.SystemAttribute == "POLICIES").Select(s => s.Value).FirstOrDefault()} ,
+                                    new DataContracts.StaticData.Policies { Type = "RecreationPolicy",Description  = HotelInfoDetails.Where(w => w.SystemAttribute == "RECREATIONPOLICY").Select(s => s.Value).FirstOrDefault()} ,
+                                    new DataContracts.StaticData.Policies { Type = "TermsAndConditions",Description  = HotelInfoDetails.Where(w => w.SystemAttribute == "TERMSANDCONDITIONS").Select(s => s.Value).FirstOrDefault()} ,
+                                };
+
+                            //New field Added
 
                             int NoOfFloors, NoOfRooms;
 
@@ -2304,6 +2435,7 @@ namespace DAL
                                 Duration = null,
                                 HashTag = null,
                                 Highlights = null,
+                                //Interest = HotelInfoDetails.Where(w => w.SystemAttribute == "INTEREST").Select(s => s.Value).ToList(),
                                 Interest = null,
                                 SellingTips = null,
                                 Usp = null
@@ -2326,7 +2458,11 @@ namespace DAL
 
                                 newProduct.Facility.Add(new DataContracts.StaticData.Facility
                                 {
-                                    Type = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYTYPE").Select(s => s.Value).FirstOrDefault()
+                                    Facility_Id = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITY_ID").Select(s => s.Value).FirstOrDefault(),
+                                    Type = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYTYPE").Select(s => s.Value).FirstOrDefault(),
+                                    FacilityCategoryID = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYCATEGORYID").Select(s => s.Value).FirstOrDefault(),
+                                    Category = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYCATEGORY").Select(s => s.Value).FirstOrDefault(),
+                                    ExtraCharge = FacilityInfoDetails.Where(w => w.SystemAttribute == "EXTRACHARGE").Select(s => s.Value).FirstOrDefault(),
                                 });
                             }
 
@@ -2352,9 +2488,223 @@ namespace DAL
                                     MediaId = MediaDetails.Where(w => w.SystemAttribute == "MEDIAID").Select(s => s.Value).FirstOrDefault(),
                                     Description = MediaDetails.Where(w => w.SystemAttribute == "DESCRIPTION").Select(s => s.Value).FirstOrDefault(),
                                     FileType = "IMAGE",
-                                    FileName = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault() ?? MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault()
+                                    FileName = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault() ?? MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+
+                                    //New field Added
+                                    MediaPosition = MediaDetails.Where(w => w.SystemAttribute == "MEDIAPOSITION").Select(s => s.Value).FirstOrDefault(),
+                                    MediaWidth = MediaDetails.Where(w => w.SystemAttribute == "MEDIAWIDTH").Select(s => s.Value).FirstOrDefault(),
+                                    MediaHeight = MediaDetails.Where(w => w.SystemAttribute == "MEDIAHEIGHT").Select(s => s.Value).FirstOrDefault(),
+                                    LargeImageURL = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+                                    ThumbnailUrl = MediaDetails.Where(w => w.SystemAttribute == "THUMBNAILURL").Select(s => s.Value).FirstOrDefault(),
+                                    MediaFileFormat = MediaDetails.Where(w => w.SystemAttribute == "MEDIAFILEFORMAT").Select(s => s.Value).FirstOrDefault(),
+                                    SmallImageURL = MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+                                    //New field Added
+
+
                                 });
                             }
+
+                            #region Room Details fatch
+
+
+                            newProduct.Rooms = new List<DataContracts.StaticData.Rooms>();
+
+                            string sqlRoomInfo = "";
+                            sqlRoomInfo = "select a.Entity, a.SupplierEntity_Id from SupplierEntity a with (NoLock)  where a.Parent_Id = '" + product.SupplierEntity_Id + "' and a.Entity ='RoomInfo'";
+                            var RoomInfoList = context.Database.SqlQuery<DC_SupplierEntity>(sqlRoomInfo.ToString()).ToList();
+
+                            foreach (var RoomInfo in RoomInfoList)
+                            {
+
+                                //------------------------------Room Details 
+                                string resRoom = "";
+                                resRoom = "select b.SupplierProperty, IIF(b.SystemValue<> null,b.SystemValue,b.SupplierValue ) as Value,b.AttributeMap_Id,SystemAttribute = Upper(MAM.Name) from SupplierEntity a with (NoLock) ";
+                                resRoom = resRoom + " join SupplierEntityValues b with (NoLock) on a.SupplierEntity_Id = b.SupplierEntity_Id" + " join m_MasterAttributeMapping MA with (NoLock) on b.AttributeMap_Id = MA.MasterAttributeMapping_Id join m_masterattribute MAM with (NoLock) on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock) on MA.Supplier_Id = S.Supplier_Id where MAM.MasterFor in  (" + sqlMasterFor + ")";
+                                resRoom = resRoom + " and a.Supplier_Id = '" + product.Supplier_Id + "' and a.SupplierEntity_Id = '" + RoomInfo.SupplierEntity_Id + " ' ";
+                                var RoomInfoDetails = context.Database.SqlQuery<DC_SupplierProductValues>(resRoom.ToString()).ToList();
+
+                                var room = new DataContracts.StaticData.Rooms
+                                {
+                                    RoomTypeId = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMTYPEID").Select(s => s.Value).FirstOrDefault(),
+                                    RoomTypeName = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMTYPENAME").Select(s => s.Value).FirstOrDefault(),
+                                    RoomCategoryCode = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMCATEGORYCODE").Select(s => s.Value).FirstOrDefault(),
+                                    RoomCategoryName = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMCATEGORYNAME").Select(s => s.Value).FirstOrDefault(),
+                                    RoomCode = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMCODE").Select(s => s.Value).FirstOrDefault(),
+                                    CompanyRoomCategory = RoomInfoDetails.Where(w => w.SystemAttribute == "COMPANYROOMCATEGORY").Select(s => s.Value).FirstOrDefault(),
+                                    RoomDescription = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMDESCRIPTION").Select(s => s.Value).FirstOrDefault(),
+                                    //BathRoomCount = RoomInfoDetails.Where(w => w.SystemAttribute == "FACILITY_ID").Select(s => s.Value).FirstOrDefault(),
+                                    BathRoomType = RoomInfoDetails.Where(w => w.SystemAttribute == "BATHROOMTYPE").Select(s => s.Value).FirstOrDefault(),
+                                    Size = RoomInfoDetails.Where(w => w.SystemAttribute == "SIZE").Select(s => s.Value).FirstOrDefault(),
+                                    View = RoomInfoDetails.Where(w => w.SystemAttribute == "VIEW").Select(s => s.Value).FirstOrDefault(),
+                                    RoomRanking = RoomInfoDetails.Where(w => w.SystemAttribute == "ROOMRANKING").Select(s => s.Value).FirstOrDefault(),
+                                    AmenitiesType = RoomInfoDetails.Where(w => w.SystemAttribute == "AMENITIESTYPE").Select(s => s.Value).FirstOrDefault(),
+                                    IsRoomBookable = false,
+
+
+                                    //MaxPrice = RoomInfoDetails.Where(w => w.SystemAttribute == "MAXPRICE").Select(s => s.Value).FirstOrDefault(),
+                                    //MinPrice = RoomInfoDetails.Where(w => w.SystemAttribute == "MINPRICE").Select(s => s.Value).FirstOrDefault(),
+
+                                    //        Facility_Id = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITY_ID").Select(s => s.Value).FirstOrDefault(),
+                                    //        Type = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYTYPE").Select(s => s.Value).FirstOrDefault(),
+                                    //        FacilityCategoryID = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYCATEGORYID").Select(s => s.Value).FirstOrDefault(),
+                                    //        Category = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYCATEGORY").Select(s => s.Value).FirstOrDefault(),
+                                    //        ExtraCharge = FacilityInfoDetails.Where(w => w.SystemAttribute == "EXTRACHARGE").Select(s => s.Value).FirstOrDefault(),
+                                };
+
+
+                                var isRoomBookable = RoomInfoDetails.Where(w => w.SystemAttribute == "ISROOMBOOKABLE").Select(s => s.Value).FirstOrDefault();
+                                if (isRoomBookable != null)
+                                {
+                                    bool isRoomBookablevalue;
+                                    var IsRoomBookable = CustomConvert(isRoomBookable, typeof(bool));
+                                    if (Boolean.TryParse(Convert.ToString(IsRoomBookable), out isRoomBookablevalue))
+                                    {
+                                        room.IsRoomBookable = isRoomBookablevalue;
+                                    }
+                                }
+
+
+
+
+                                int BathRoomCount;
+                                var strBathRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "BATHROOMCOUNT").Select(s => s.Value).FirstOrDefault();
+                                if (strBathRooms != null)
+                                {
+                                    strBathRooms = Regex.Match(strBathRooms, @"\d+").Value;
+                                }
+
+
+                                if (int.TryParse(strBathRooms, out BathRoomCount))
+                                {
+                                    room.BathRoomCount = BathRoomCount;
+                                }
+
+                                //------------------------------Room Details 
+
+                                //------------------------------Room RoomAmenities
+                                //Get & Set RoomAmenities
+                                room.RoomAmenities = new List<DataContracts.StaticData.RoomAmenities>();
+
+                                string sqlRoomAmenityInfo = "";
+                                sqlRoomAmenityInfo = "select a.Entity, a.SupplierEntity_Id from SupplierEntity a with (NoLock)  where a.Parent_Id = '" + RoomInfo.SupplierEntity_Id + "' and a.Entity ='RoomAmenities'";
+                                var AmenityInfoList = context.Database.SqlQuery<DC_SupplierEntity>(sqlRoomAmenityInfo.ToString()).ToList();
+
+                                foreach (var Amenity in AmenityInfoList)
+                                {
+                                    string resAmenity = "";
+                                    resAmenity = "select b.SupplierProperty, IIF(b.SystemValue<> null,b.SystemValue,b.SupplierValue ) as Value,b.AttributeMap_Id,SystemAttribute = Upper(MAM.Name) from SupplierEntity a with (NoLock) ";
+                                    resAmenity = resAmenity + " join SupplierEntityValues b with (NoLock) on a.SupplierEntity_Id = b.SupplierEntity_Id" + " join m_MasterAttributeMapping MA with (NoLock) on b.AttributeMap_Id = MA.MasterAttributeMapping_Id join m_masterattribute MAM with (NoLock) on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock) on MA.Supplier_Id = S.Supplier_Id where MAM.MasterFor in  (" + sqlMasterFor + ")";
+                                    resAmenity = resAmenity + " and a.Supplier_Id = '" + product.Supplier_Id + "' and a.SupplierEntity_Id = '" + Amenity.SupplierEntity_Id + " ' ";
+                                    var AmenityInfoDetails = context.Database.SqlQuery<DC_SupplierProductValues>(resAmenity.ToString()).ToList();
+
+                                    room.RoomAmenities.Add(new DataContracts.StaticData.RoomAmenities
+                                    {
+                                        AmenityId = AmenityInfoDetails.Where(w => w.SystemAttribute == "AMENITYID").Select(s => s.Value).FirstOrDefault(),
+                                        RoomAmenityType = AmenityInfoDetails.Where(w => w.SystemAttribute == "ROOMAMENITYTYPE").Select(s => s.Value).FirstOrDefault(),
+                                        AmenityCategoryID = AmenityInfoDetails.Where(w => w.SystemAttribute == "AMENITYCATEGORYID").Select(s => s.Value).FirstOrDefault(),
+                                        AmenityCategory = AmenityInfoDetails.Where(w => w.SystemAttribute == "AMENITYCATEGORY").Select(s => s.Value).FirstOrDefault(),
+
+                                    });
+                                }
+                                //------------------------------Room RoomAmenities
+
+
+                                //------------------------------Room BedRooms
+                                //Get & Set BedRooms
+                                room.BedRooms = new List<DataContracts.StaticData.BedRooms>();
+
+                                var resu = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault();
+
+                                string sqlBedRoomsInfo = "";
+                                sqlBedRoomsInfo = "select a.Entity, a.SupplierEntity_Id from SupplierEntity a with (NoLock)  where a.Parent_Id = '" + RoomInfo.SupplierEntity_Id + "' and a.Entity ='BedType'";
+                                var BedRoomsInfoList = context.Database.SqlQuery<DC_SupplierEntity>(sqlBedRoomsInfo.ToString()).ToList();
+
+                                if (BedRoomsInfoList.Count > 0)
+                                {
+                                    foreach (var BedRoom in BedRoomsInfoList)
+                                    {
+                                        string resBedRoom = "";
+                                        resBedRoom = "select b.SupplierProperty, IIF(b.SystemValue<> null,b.SystemValue,b.SupplierValue ) as Value,b.AttributeMap_Id,SystemAttribute = Upper(MAM.Name) from SupplierEntity a with (NoLock) ";
+                                        resBedRoom = resBedRoom + " join SupplierEntityValues b with (NoLock) on a.SupplierEntity_Id = b.SupplierEntity_Id" + " join m_MasterAttributeMapping MA with (NoLock) on b.AttributeMap_Id = MA.MasterAttributeMapping_Id join m_masterattribute MAM with (NoLock) on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock) on MA.Supplier_Id = S.Supplier_Id where MAM.MasterFor in  (" + sqlMasterFor + ")";
+                                        resBedRoom = resBedRoom + " and a.Supplier_Id = '" + product.Supplier_Id + "' and a.SupplierEntity_Id = '" + BedRoom.SupplierEntity_Id + " ' ";
+                                        var BedRoomInfoDetails = context.Database.SqlQuery<DC_SupplierProductValues>(resBedRoom.ToString()).ToList();
+
+                                        room.BedRooms.Add(new DataContracts.StaticData.BedRooms
+                                        {
+                                            BedTypeID = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPEID").Select(s => s.Value).FirstOrDefault(),
+                                            BedType = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault(),
+                                            BeddingConfiguration = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDDINGCONFIGURATION").Select(s => s.Value).FirstOrDefault(),
+                                            
+                                            BedRoomCount = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDROOMCOUNT").Select(s => s.Value).FirstOrDefault(),
+                                            MaxAdultWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXADULTWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
+                                            MaxChildWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXCHILDWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
+                                            NoOfExreaBeds = BedRoomInfoDetails.Where(w => w.SystemAttribute == "NOOFEXREABEDS").Select(s => s.Value).FirstOrDefault(),
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    room.BedRooms.Add(new DataContracts.StaticData.BedRooms
+                                    {
+                                        BedTypeID = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPEID").Select(s => s.Value).FirstOrDefault(),
+                                        BedType = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault(),
+                                        BeddingConfiguration = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDDINGCONFIGURATION").Select(s => s.Value).FirstOrDefault(),
+                                        BedRoomCount = RoomInfoDetails.Where(w => w.SystemAttribute == "BEDROOMCOUNT").Select(s => s.Value).FirstOrDefault(),
+                                        MaxAdultWithExtraBed = RoomInfoDetails.Where(w => w.SystemAttribute == "MAXADULTWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
+                                        MaxChildWithExtraBed = RoomInfoDetails.Where(w => w.SystemAttribute == "MAXCHILDWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
+                                        NoOfExreaBeds = RoomInfoDetails.Where(w => w.SystemAttribute == "NOOFEXREABEDS").Select(s => s.Value).FirstOrDefault(),
+                                    });
+                                }
+
+                                //------------------------------Room BedRooms
+
+                                //------------------------------RoomMedia
+                                //Get & Set RoomMedia
+                                room.RoomMedia = new List<DataContracts.StaticData.Media>();
+                                string sqlRoomMedia = "";
+                                sqlRoomMedia = "select a.Entity, a.SupplierEntity_Id from SupplierEntity a with (NoLock) where a.Parent_Id = '" + RoomInfo.SupplierEntity_Id + "' and a.Entity = 'RoomMedia'";
+                                var RoomMediaList = context.Database.SqlQuery<DC_SupplierEntity>(sqlRoomMedia.ToString()).ToList();
+
+                                foreach (var RoomMedia in RoomMediaList)
+                                {
+                                    string sqlroommedia = "";
+                                    sqlroommedia = "select b.SupplierProperty, IIF(b.SystemValue <> null, b.SystemValue, b.SupplierValue) as Value,b.AttributeMap_Id,SystemAttribute = Upper(MAM.Name) from SupplierEntity a with (NoLock) ";
+                                    sqlroommedia = sqlroommedia + " join SupplierEntityValues b with (NoLock) on a.SupplierEntity_Id = b.SupplierEntity_Id join m_MasterAttributeMapping MA with (NoLock) on b.AttributeMap_Id = MA.MasterAttributeMapping_Id ";
+                                    sqlroommedia = sqlroommedia + " join m_masterattribute MAM with (NoLock) on MA.SystemMasterAttribute_Id = MAM.MasterAttribute_Id join Supplier S with (NoLock) on MA.Supplier_Id = S.Supplier_Id where" + " MAM.MasterFor in  (" + sqlMasterFor + ")";
+                                    sqlroommedia = sqlroommedia + " and a.Supplier_Id = '" + product.Supplier_Id + "' and  a.SupplierEntity_Id ='" + RoomMedia.SupplierEntity_Id + "'";
+
+                                    var MediaDetails = context.Database.SqlQuery<DC_SupplierProductValues>(sqlroommedia.ToString()).ToList();
+
+
+                                    room.RoomMedia.Add(new DataContracts.StaticData.Media
+                                    {
+                                        MediaId = MediaDetails.Where(w => w.SystemAttribute == "MEDIAID").Select(s => s.Value).FirstOrDefault(),
+                                        Description = MediaDetails.Where(w => w.SystemAttribute == "DESCRIPTION").Select(s => s.Value).FirstOrDefault(),
+                                        FileType = "IMAGE",
+                                        FileName = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault() ?? MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+
+                                        //New field Added
+                                        MediaPosition = MediaDetails.Where(w => w.SystemAttribute == "MEDIAPOSITION").Select(s => s.Value).FirstOrDefault(),
+                                        MediaWidth = MediaDetails.Where(w => w.SystemAttribute == "MEDIAWIDTH").Select(s => s.Value).FirstOrDefault(),
+                                        MediaHeight = MediaDetails.Where(w => w.SystemAttribute == "MEDIAHEIGHT").Select(s => s.Value).FirstOrDefault(),
+                                        LargeImageURL = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+                                        ThumbnailUrl = MediaDetails.Where(w => w.SystemAttribute == "THUMBNAILURL").Select(s => s.Value).FirstOrDefault(),
+                                        MediaFileFormat = MediaDetails.Where(w => w.SystemAttribute == "MEDIAFILEFORMAT").Select(s => s.Value).FirstOrDefault(),
+                                        SmallImageURL = MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault(),
+                                        //New field Added
+
+
+                                    });
+                                }
+                                //------------------------------RoomMedia
+
+                                newProduct.Rooms.Add(room);
+
+                            }
+
+                            #endregion
+
+                            
 
                             var filter = Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyId, product.SupplierName.ToUpper());
                             filter = filter & Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyProductId, product.SupplierProductCode.ToUpper());
@@ -3076,6 +3426,219 @@ namespace DAL
             return _objHRTM;
 
         }
+        private List<string> GetScheduledRTM()
+        {
+
+            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            {
+                try
+                {
+                    Guid supplierid = Guid.Parse("026C1D5C-44CD-4A0E-989D-7BD135153555");
+                    var listLog = (from s in context.DistributionLayerRefresh_Log
+                                   where s.Element == "RoomType" && s.Type == "Mapping" && s.Status == "Scheduled"
+                                   //&& s.Supplier_Id == supplierid
+                                   select s.Id.ToString()).ToList();
+                    return listLog;
+                }
+                catch (Exception)
+                {
+                    return null;
+                    throw;
+                }
+
+            }
+
+        }
+        //Custom Converting for 1,0 to boolean value
+        private object CustomConvert(object value, Type targetType)
+        {
+            decimal numericValue;
+            if ((targetType == typeof(bool) || targetType == typeof(bool?)) &&
+                value is string &&
+                decimal.TryParse((string)value, out numericValue))
+            {
+                return numericValue != 0;
+            }
+            var valueType = value.GetType();
+            var c1 = TypeDescriptor.GetConverter(valueType);
+            if (c1.CanConvertTo(targetType)) // this returns false for string->bool
+            {
+                return c1.ConvertTo(value, targetType);
+            }
+            var c2 = TypeDescriptor.GetConverter(targetType);
+            if (c2.CanConvertFrom(valueType)) // this returns true for string->bool, but will throw for "1"
+            {
+                return c2.ConvertFrom(value);
+            }
+            return Convert.ChangeType(value, targetType); // this will throw for "1"
+        }
+
+
+        #region Load Accomodation 
+        public void LoadAccommodation()
+
+        {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+
+                    List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoList = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
+                    // int total = 0;
+                    int BatchSize = 1000;
+                    
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
+                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    try
+                    {
+                        //TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                        TotalZoneCount = Accommodation.Count();
+                    }
+                    catch (Exception ex) { }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
+                    if (mod > 0)
+                    {
+                        NoOfBatch = NoOfBatch + 1;
+                    }
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("AccommodationMaster");
+                    var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("AccommodationMaster");
+
+                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                    {
+                        _AccoList = GetAccommodationMasterdataToLoad(BatchSize, BatchNo);
+                        if (_AccoList.Count > 0)
+                        {
+                            collection.InsertManyAsync(_AccoList);
+                            #region To update CounterIn DistributionLog
+                            //if (LogId != Guid.Empty)
+                            //{
+                            //    MongoInsertedCount = MongoInsertedCount + _AccoList.Count();
+                            //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
+                            //}
+                            #endregion
+                        }
+                    }
+
+
+
+                    //_database = MongoDBHandler.mDatabase();
+                    //_database.DropCollection("MasterAccommodation");
+
+                    //var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("MasterAccommodation");
+
+                    //var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    //var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
+                    //var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
+
+                    //var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
+                    //IQueryable<DAL.Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping_Loop;
+
+                    //int TotalRecords = Accommodation.Count();
+                    //int iBatchSize = 100;
+                    //int iDataInsertedCounter = 0;
+                    //bool bAllDataInserted = false;
+
+                    //while (!bAllDataInserted)
+                    //{
+                    //    Accommodation_SupplierRoomTypeMapping_Loop = Accommodation_SupplierRoomTypeMapping.Where(w => w.MapId > iDataInsertedCounter && w.MapId <= (iDataInsertedCounter + iBatchSize)).Select(s => s);
+
+                    //    if (Accommodation_SupplierRoomTypeMapping_Loop.Count() > 0)
+                    //    {
+                    //        //var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping_Loop
+                    //        //                       join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
+                    //        //                       join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
+                    //        //                       from accorinew in accoritemp.DefaultIfEmpty()
+                    //        //                       select new DataContracts.Mapping.DC_RoomTypeMapping
+                    //        //                       {
+                    //        //                           SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
+                    //        //                           SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
+                    //        //                           SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
+                    //        //                           SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
+                    //        //                           Status = asrtm.MappingStatus.ToUpper().Trim(),
+                    //        //                           SystemRoomTypeMapId = asrtm.MapId.ToString(),
+                    //        //                           SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
+                    //        //                           SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
+                    //        //                           SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
+                    //        //                           SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
+                    //        //                           SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
+                    //        //                           Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
+                    //        //                       }).ToList();
+
+                    //        //if (roomTypeMapList.Count() > 0)
+                    //        //{
+                    //        //    collection.InsertMany(roomTypeMapList);
+                    //        //}
+
+                    //        iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
+
+                    //    }
+                    //    else
+                    //    {
+                    //        bAllDataInserted = true;
+                    //    }
+                    //}
+
+                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
+                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
+
+                    //collection = null;
+                    //_database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+
+        private List<DataContracts.Mapping.DC_AccomodationMasterMapping> GetAccommodationMasterdataToLoad(int batchSize, int batchNo)
+        {
+            List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoListResultMain = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
+            //List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
+            try
+            {
+                #region ==== AccoMasterQuery
+                StringBuilder sbSelectAccoMaster = new StringBuilder();
+                StringBuilder sbOrderbyAccoMaster = new StringBuilder();
+                sbSelectAccoMaster.Append(@"  select CompanyHotelID as CommonHotelId,HotelName ,Country ,City ,StreetName ,StreetNumber ,Street3 ,Street4 ,Street5 ,PostalCode ,Town 
+                                    ,Location ,Area ,TLGXAccoId ,ProductCategory ,ProductCategorySubType ,isnull(IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
+                                HotelRating,CompanyRating,CompanyRecommended,RecommendedFor,Brand,Chain,Latitude,Longitude,FullAddress	from Accommodation with(nolock) ");
+                int skip = batchNo * batchSize;
+                sbOrderbyAccoMaster.Append("  ORDER BY CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
+
+                StringBuilder sbfinalZoneMaster = new StringBuilder();
+                sbfinalZoneMaster.Append(sbSelectAccoMaster + " ");
+                sbfinalZoneMaster.Append(" " + sbOrderbyAccoMaster + " ");
+                #endregion
+             
+
+
+
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        _AccoListResultMain = context.Database.SqlQuery<DataContracts.Mapping.DC_AccomodationMasterMapping>(sbfinalZoneMaster.ToString()).ToList();
+
+                        //Add  Zone_id for ZpList and Zc List
+                       
+                    }
+                    catch (Exception ex) { }
+                }
+
+                return _AccoListResultMain;
+            }
+            catch (Exception ex) { }
+            return _AccoListResultMain;
+        }
+        #endregion
 
     }
 }

@@ -294,5 +294,19 @@ namespace BAL
         }
         #endregion
 
+
+        public void LoadAccommodation()
+        {
+            //Guid logid = new Guid();
+            //Guid gSupplier_Id;
+            //if (Guid.TryParse(LogId, out logid) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
+            //{
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadAccommodation();
+                }
+            //}
+        }
+
     }
 }
