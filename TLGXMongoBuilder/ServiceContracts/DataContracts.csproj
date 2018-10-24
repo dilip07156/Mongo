@@ -132,7 +132,6 @@
     <Compile Include="GetMasterData.cs" />
     <Compile Include="HotelDescription.cs" />
     <Compile Include="HotelSearchContracts.cs" />
-    <Compile Include="Mapping\DC_AccomodationMasterMapping.cs" />
     <Compile Include="Mapping\DC_CityMapping.cs" />
     <Compile Include="Mapping\DC_CountryMapping.cs" />
     <Compile Include="Mapping\DC_CrossSystemMapping.cs" />
@@ -140,6 +139,7 @@
     <Compile Include="Mapping\DC_ProductMapping.cs" />
     <Compile Include="Mapping\DC_ProductMappingLite.cs" />
     <Compile Include="Mapping\DC_RoomTypeMapping.cs" />
+    <Compile Include="Masters\DC_Accommodation.cs" />
     <Compile Include="Masters\DC_City.cs" />
     <Compile Include="Masters\DC_Country.cs" />
     <Compile Include="Masters\DC_Keywords.cs" />

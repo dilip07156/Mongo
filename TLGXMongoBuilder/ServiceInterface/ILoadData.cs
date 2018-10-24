@@ -156,9 +156,12 @@ namespace ServiceContracts
         #endregion
 
 
+        /// <summary>
+        /// Load Master Accommodation Data to MongoDB
+        /// </summary>
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/Accommodation", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadAccommodation();
+        [WebGet(UriTemplate = "Load/MasterAccommodation/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadMasterAccommodation(string LogId);
     }
 }

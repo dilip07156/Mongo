@@ -30,6 +30,8 @@ namespace DAL
 
         protected static IMongoDatabase _database;
 
+        #region Masters
+
         public void LoadCountryMaster(Guid LogId)
         {
             try
@@ -193,6 +195,581 @@ namespace DAL
             }
         }
 
+        public void LoadKeywords()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("Keywords");
+
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_Keywords>("Keywords");
+
+                    var searchList = (from k in context.m_keyword
+                                      where k.Status == "ACTIVE"
+                                      orderby k.Sequence ?? 0
+                                      select new DataContracts.Masters.DC_Keywords
+                                      {
+                                          Keyword = k.Keyword,
+                                          Sequence = k.Sequence ?? 0,
+                                          EntityFor = k.EntityFor,
+                                          AttributeType = k.AttributeType,
+                                          AttributeSubLevelValue = k.AttributeSubLevelValue,
+                                          AttributeSubLevel = k.AttributeSubLevel,
+                                          AttributeLevel = k.AttributeLevel,
+                                          Attribute = k.Attribute ?? false,
+                                          Aliases = (from a in context.m_keyword_alias
+                                                     where a.Keyword_Id == k.Keyword_Id && a.Status == "ACTIVE"
+                                                     orderby (a.Sequence ?? 0), (a.NoOfHits ?? 0) descending
+                                                     select new DataContracts.Masters.DC_Keyword_Aliases
+                                                     {
+                                                         Value = a.Value,
+                                                         Sequence = a.Sequence ?? 0,
+                                                         NoOfHits = a.NoOfHits ?? 0
+                                                     }).ToList()
+                                      }).ToList();
+
+                    if (searchList.Count() > 0)
+                    {
+                        collection.InsertMany(searchList);
+                    }
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadActivityMasters()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("ActivityMasters");
+
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityMasters>("ActivityMasters");
+
+                    List<DataContracts.Activity.ActivityMasters> dataList = new List<DataContracts.Activity.ActivityMasters>();
+
+                    dataList = (from ma in context.m_masterattribute
+                                join pma in context.m_masterattribute on ma.ParentAttribute_Id equals pma.MasterAttribute_Id into pmaj
+                                from pmalj in pmaj.DefaultIfEmpty()
+                                where ma.IsActive == true && ma.MasterFor == "Activity"
+                                select new DataContracts.Activity.ActivityMasters
+                                {
+                                    Type = ma.Name.Trim(),
+                                    ParentType = pmalj.Name.Trim(),
+                                    Values = (from mav in context.m_masterattributevalue
+                                              join pmav in context.m_masterattributevalue on mav.ParentAttributeValue_Id equals pmav.MasterAttributeValue_Id into pmavj
+                                              from pmavlj in pmavj.DefaultIfEmpty()
+                                              where mav.MasterAttribute_Id == ma.MasterAttribute_Id && mav.IsActive == true
+                                              select new DataContracts.Activity.ActivityMasterValues
+                                              {
+                                                  Value = mav.AttributeValue.Trim(),
+                                                  ParentValue = pmavlj.AttributeValue.Trim()
+                                              }).ToList()
+                                }).ToList();
+
+
+                    collection.InsertManyAsync(dataList);
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadStates(Guid LogId)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("StateMaster");
+
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_State>("StateMaster");
+
+                    List<DataContracts.Masters.DC_State> dataList = new List<DataContracts.Masters.DC_State>();
+
+                    dataList = (from s in context.m_States
+                                join c in context.m_CountryMaster on s.Country_Id equals c.Country_Id into cj
+                                from clj in cj.DefaultIfEmpty()
+                                select new DataContracts.Masters.DC_State
+                                {
+                                    CountryCode = (clj.Code ?? string.Empty).Trim().ToUpper(),
+                                    CountryName = (clj.Name ?? string.Empty).Trim().ToUpper(),
+                                    StateCode = (s.StateCode ?? string.Empty).Trim().ToUpper(),
+                                    StateName = (s.StateName ?? string.Empty).Trim().ToUpper()
+                                }).ToList();
+
+
+                    collection.InsertManyAsync(dataList);
+
+                    collection = null;
+                    _database = null;
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadPorts(Guid LogId)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+
+
+                    List<DataContracts.Masters.DC_Port> dataList = new List<DataContracts.Masters.DC_Port>();
+
+                    dataList = (from p in context.m_PortMaster
+                                join c in context.m_CountryMaster on p.Country_Id equals c.Country_Id into cj
+                                from clj in cj.DefaultIfEmpty()
+                                join cty in context.m_CityMaster on p.City_Id equals cty.City_Id into ctyj
+                                from ctylj in ctyj.DefaultIfEmpty()
+                                join st in context.m_States on ctylj.State_Id equals st.State_Id into stj
+                                from stlj in stj.DefaultIfEmpty()
+                                select new DataContracts.Masters.DC_Port
+                                {
+                                    oag_country_code = p.oag_ctry ?? string.Empty,
+                                    oag_country_name = p.oag_ctryname ?? string.Empty,
+                                    oag_country_subcode = p.oag_subctry ?? string.Empty,
+                                    oag_inactive_indicator = p.oag_inactive ?? string.Empty,
+                                    oag_latitiude = p.oag_lat ?? string.Empty,
+                                    oag_location_code = p.OAG_loc ?? string.Empty,
+                                    oag_location_name = p.oag_name ?? string.Empty,
+                                    oag_location_subtype = (
+                                                                p.OAG_subtype == "A" ? "Airport" :
+                                                                p.OAG_subtype == "B" ? "Bus Station" :
+                                                                p.OAG_subtype == "H" ? "Harbour" :
+                                                                p.OAG_subtype == "O" ? "Off-line Point" :
+                                                                p.OAG_subtype == "R" ? "Rail Station" :
+                                                                p.OAG_subtype == "U" ? "Metro/Underground" :
+                                                                p.OAG_subtype == "V" ? "Miscellaneous" : "Multi Airport City"
+                                                            ),
+                                    oag_location_subtype_code = p.OAG_subtype ?? string.Empty,
+                                    oag_location_type = (
+                                                            p.OAG_type == "L" ? "Location with one port" :
+                                                            p.OAG_type == "A" ? "Airport belonging to multi airport city" :
+                                                            p.OAG_type == "M" ? "Multi airport city" : string.Empty
+                                                        ),
+                                    oag_location_type_code = p.OAG_type ?? string.Empty,
+                                    oag_longitude = p.oag_lon ?? string.Empty,
+                                    oag_multi_airport_citycode = p.OAG_multicity ?? string.Empty,
+                                    oag_port_name = p.oag_portname ?? string.Empty,
+                                    oag_state_code = p.oag_state ?? string.Empty,
+                                    oag_state_subcode = p.oag_substate ?? string.Empty,
+                                    oag_time_division = p.oag_timediv ?? string.Empty,
+
+                                    tlgx_country_code = (clj.Code ?? string.Empty),
+                                    tlgx_country_name = (clj.Name ?? string.Empty),
+                                    tlgx_city_code = (ctylj.Code ?? string.Empty),
+                                    tlgx_city_name = (ctylj.Name ?? string.Empty),
+                                    tlgx_state_code = (stlj.StateCode ?? string.Empty),
+                                    tlgx_state_name = (stlj.StateName ?? string.Empty)
+
+                                }).ToList();
+
+                    if (dataList.Count > 0)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        _database.DropCollection("PortMaster");
+                        var collection = _database.GetCollection<DataContracts.Masters.DC_Port>("PortMaster");
+                        collection.InsertManyAsync(dataList);
+
+                        collection = null;
+                        _database = null;
+                    }
+
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void LoadMasterAccommodation(Guid LogId)
+        {
+            int BatchSize = 1000;
+            int TotalCount = 0;
+            int Counter = 0;
+
+            try
+            {
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, Counter);
+
+
+                List<DataContracts.Masters.DC_Accomodation> _AccoList = new List<DataContracts.Masters.DC_Accomodation>();
+
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+
+                    try
+                    {
+                        TotalCount = context.Accommodations.Where(w => w.IsActive == true).Count();
+                    }
+                    catch (Exception ex) { }
+                }
+
+                int NoOfBatch = TotalCount / BatchSize;
+                int mod = TotalCount % BatchSize;
+                if (mod > 0)
+                {
+                    NoOfBatch = NoOfBatch + 1;
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter);
+
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Masters.DC_Accomodation>("AccommodationMaster");
+
+                for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                {
+                    _AccoList = GetAccommodationMaster_InBatches(BatchSize, BatchNo);
+                    if (_AccoList.Count > 0)
+                    {
+                        foreach (var acco in _AccoList)
+                        {
+                            var filter = Builders<DataContracts.Masters.DC_Accomodation>.Filter.Eq(c => c.CommonHotelId, acco.CommonHotelId);
+                            collection.ReplaceOneAsync(filter, acco, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        Counter = (BatchNo * BatchSize) + _AccoList.Count;
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter);
+                    }
+                }
+
+                //Local Function To Get Master Accommodation Data
+                List<DataContracts.Masters.DC_Accomodation> GetAccommodationMaster_InBatches(int batchSize, int batchNo)
+                {
+                    List<DataContracts.Masters.DC_Accomodation> _AccoListResultMain = new List<DataContracts.Masters.DC_Accomodation>();
+                    try
+                    {
+                        int skip = batchNo * batchSize;
+
+                        #region ==== AccoMasterQuery
+                        StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                        sbSelectAccoMaster.Append(@"  select CompanyHotelID as CommonHotelId, HotelName ,Country ,City ,StreetName ,StreetNumber ,Street3 ,Street4 ,Street5 ,PostalCode ,Town 
+                                    ,Location ,Area ,TLGXAccoId ,ProductCategory ,ProductCategorySubType ,isnull(IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
+                                HotelRating,CompanyRating,CompanyRecommended,RecommendedFor,Brand,Chain,Latitude,Longitude,FullAddress	from Accommodation with(nolock) ");
+                        sbSelectAccoMaster.AppendLine("  ORDER BY CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY;");
+
+                        #endregion
+
+                        using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_Accomodation>(sbSelectAccoMaster.ToString()).ToList();
+                        }
+                    }
+                    catch (Exception ex) { }
+                    return _AccoListResultMain;
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalCount, Counter);
+
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalCount, Counter);
+                throw ex;
+            }
+        }
+
+        #endregion
+
+        #region ZoneMaster
+        public void LoadZoneMaster(Guid LogId)
+        {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    if (LogId != Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                    }
+                    List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
+                    // int total = 0;
+                    int BatchSize = 1000;
+                    string strTotalCount = @"SELECT COUNT(1) FROM m_ZoneMaster with(nolock)";
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                    }
+                    catch (Exception ex) { }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
+                    if (mod > 0)
+                    {
+                        NoOfBatch = NoOfBatch + 1;
+                    }
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("ZoneMaster");
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
+
+                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                    {
+                        _ZoneList = GetZoneMasterdataToLoad(BatchSize, BatchNo);
+                        if (_ZoneList.Count > 0)
+                        {
+                            collection.InsertManyAsync(_ZoneList);
+                            #region To update CounterIn DistributionLog
+                            if (LogId != Guid.Empty)
+                            {
+                                MongoInsertedCount = MongoInsertedCount + _ZoneList.Count();
+                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
+                            }
+                            #endregion
+                        }
+                    }
+
+                    collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
+                    collection = null;
+                    _database = null;
+                    if (LogId != Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneCount, MongoInsertedCount);
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalZoneCount, MongoInsertedCount);
+                throw ex;
+            }
+        }
+
+        private List<DataContracts.Masters.DC_Zone_Master> GetZoneMasterdataToLoad(int batchSize, int batchNo)
+        {
+            List<DataContracts.Masters.DC_Zone_Master> _ZoneListResultMain = new List<DataContracts.Masters.DC_Zone_Master>();
+            List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
+            try
+            {
+                #region ==== ZoneMasterQuery
+                StringBuilder sbSelectZoneMaster = new StringBuilder();
+                StringBuilder sbOrderbyZoneMaster = new StringBuilder();
+                sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
+                                            Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
+                                            upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
+                                            FROM  m_zoneMaster zm  with(Nolock)
+                                            LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                            WHERE zm.isActive=1 ");
+                int skip = batchNo * batchSize;
+                sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
+
+                StringBuilder sbfinalZoneMaster = new StringBuilder();
+                sbfinalZoneMaster.Append(sbSelectZoneMaster + " ");
+                sbfinalZoneMaster.Append(" " + sbOrderbyZoneMaster + " ");
+                #endregion
+                #region ==== ZoneProductMapping SQL QUERY
+                StringBuilder sbSelectZoneProduct = new StringBuilder();
+                StringBuilder sbOrderByZoneProduct = new StringBuilder();
+                sbSelectZoneProduct.Append(@" SELECT zp.Zone_id, ac.CompanyHotelID as TLGXCompanyHotelID ,zp.Distance,
+                                                  upper(ltrim(rtrim(ac.HotelName))) as TLGXHotelName,zp.Included as IsIncluded,
+                                                  upper(ltrim(rtrim(zp.ProductType))) as TLGXProductType,upper(ltrim(rtrim(zp.Unit))) as Unit
+                                                  FROM  ZoneProduct_Mapping zp with(NOLOCK) 
+                                                  JOIN Accommodation ac with(NOLOCK)  on zp.Product_Id = ac.Accommodation_Id ");
+                sbOrderByZoneProduct.Append(" ORDER BY Distance ");
+
+                StringBuilder sbfinalZoneProduct = new StringBuilder();
+                sbfinalZoneProduct.Append(sbSelectZoneProduct + " ");
+                sbfinalZoneProduct.Append(" WHERE zp.zone_id  in ( ");
+                #endregion
+                #region ==== ZoneCityMapping SQL QUERY
+                StringBuilder sbSelectZoneCity = new StringBuilder();
+                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, upper(ltrim(rtrim(cm.code))) as TLGXCityCode
+                                               FROM  ZoneCity_Mapping zc with(NOLOCK) 
+                                               JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id ");
+
+                StringBuilder sbfinalZoneCity = new StringBuilder();
+                sbfinalZoneCity.Append(sbSelectZoneCity + " ");
+                sbfinalZoneCity.Append(" WHERE zc.zone_id  in ( ");
+
+                #endregion
+
+                List<DataContracts.Masters.DC_Zone_ProductMappingRQ> _ZoneProdListResult = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
+
+                List<DataContracts.Masters.DC_Zone_CityMappingRQ> _ZoneCityListResult = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
+
+                StringBuilder sbZone_id = new StringBuilder();
+
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        _ZoneListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_MasterRQ>(sbfinalZoneMaster.ToString()).ToList();
+
+                        //Add  Zone_id for ZpList and Zc List
+                        foreach (var id in _ZoneListResult)
+                        {
+                            sbZone_id.Append("'" + id.Zone_id + "',");
+                        }
+                        //To Get Zone product by Zone id
+                        sbfinalZoneProduct.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        sbfinalZoneProduct.Append(sbOrderByZoneProduct);
+                        _ZoneProdListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_ProductMappingRQ>(sbfinalZoneProduct.ToString()).ToList();
+                        // End == To Get Zone product by Zone id
+
+
+                        //To Get Zone city by Zone id
+                        sbfinalZoneCity.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        _ZoneCityListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CityMappingRQ>(sbfinalZoneCity.ToString()).ToList();
+
+                        foreach (var item in _ZoneListResult)
+                        {
+                            item.Zone_ProductMapping = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
+                            item.Zone_ProductMapping = _ZoneProdListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                            item.Zone_CityMapping = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
+                            item.Zone_CityMapping = _ZoneCityListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                        }
+                        _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
+                    }
+                    catch (Exception ex) { }
+                }
+
+                return _ZoneListResultMain;
+            }
+            catch (Exception ex) { }
+            return _ZoneListResultMain;
+        }
+
+        // Remove Zone_Id from above List 
+        private List<DataContracts.Masters.DC_Zone_Master> ConvertListWithoutId(List<DataContracts.Masters.DC_Zone_MasterRQ> RQ)
+        {
+            List<DataContracts.Masters.DC_Zone_Master> _ResultList = new List<DataContracts.Masters.DC_Zone_Master>();
+            try
+            {
+                _ResultList = RQ.ConvertAll(item => new DataContracts.Masters.DC_Zone_Master
+                {
+                    Id = item.Id,
+                    Zone_Name = item.Zone_Name,
+                    Zone_Type = item.Zone_Type,
+                    Zone_SubType = item.Zone_SubType,
+                    Latitude = item.Latitude,
+                    Longitude = item.Longitude,
+                    Zone_Radius = item.Zone_Radius,
+                    TLGXCountryCode = item.TLGXCountryCode,
+                    Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
+                    {
+                        TLGXCityCode = xcity.TLGXCityCode
+                    }),
+                    Zone_ProductMapping = item.Zone_ProductMapping.ConvertAll(xProd => new DataContracts.Masters.DC_Zone_ProductMapping
+                    {
+                        TLGXCompanyHotelID = xProd.TLGXCompanyHotelID,
+                        TLGXHotelName = xProd.TLGXHotelName,
+                        TLGXProductType = xProd.TLGXProductType,
+                        Distance = xProd.Distance,
+                        Unit = xProd.Unit,
+                        IsIncluded = xProd.IsIncluded
+                    })
+
+                });
+            }
+            catch (Exception ex) { throw; }
+            return _ResultList;
+        }
+
+
+        #endregion
+
+        #region ZoneTypeMaster
+        public void LoadZoneTypeMaster(Guid LogId)
+        {
+            int TotalZoneTypeCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                if (LogId != Guid.Empty)
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                }
+                _database = MongoDBHandler.mDatabase();
+                _database.DropCollection("ZoneTypeMaster");
+                var collection = _database.GetCollection<DataContracts.Masters.DC_ZoneTypeMaster>("ZoneTypeMaster");
+
+                List<DataContracts.Masters.DC_ZoneTypeMaster> dataList = new List<DataContracts.Masters.DC_ZoneTypeMaster>();
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    dataList = (from ma in context.m_masterattribute
+                                join mav in context.m_masterattributevalue on ma.MasterAttribute_Id equals mav.MasterAttribute_Id
+                                where ma.MasterFor.ToUpper() == "ZONE" && ma.Name.ToUpper() == "ZONETYPE"
+                                select new DataContracts.Masters.DC_ZoneTypeMaster
+                                {
+                                    Zone_Type = mav.AttributeValue.Trim().ToUpper(),
+                                    Zone_SubType = (from a in context.m_masterattributevalue
+                                                    where a.ParentAttributeValue_Id == mav.MasterAttributeValue_Id
+                                                    select a.AttributeValue.Trim().ToUpper()).ToList()
+
+                                }).ToList();
+                    if (dataList.Count > 0)
+                    {
+                        collection.InsertManyAsync(dataList);
+                        #region To update CounterIn DistributionLog
+                        if (LogId != Guid.Empty)
+                        {
+                            TotalZoneTypeCount = dataList.Count();
+                            MongoInsertedCount = MongoInsertedCount + dataList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                        }
+                        #endregion
+                    }
+
+                    collection = null;
+                    _database = null;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region Country And City Mapping
+
         public void LoadCountryMapping(Guid LogId)
         {
             try
@@ -298,7 +875,10 @@ namespace DAL
             }
         }
 
+        #endregion
+
         #region Product Mapping Push
+
         public void LoadProductMapping(Guid LogId, Guid ProdMapId)
         {
             int TotalAPMCount = 0;
@@ -520,7 +1100,31 @@ namespace DAL
                 throw ex;
             }
         }
+
+        public void LoadHotelMapping(Guid LogId)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        context.SaveChanges();
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+
+        }
+
         #endregion
+
+        #region Activity Mapping
 
         public void LoadActivityMapping(Guid LogId)
         {
@@ -599,132 +1203,6 @@ namespace DAL
                     collection.InsertMany(productMapList);
                     collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                     collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-
-                    collection = null;
-                    _database = null;
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-        public void LoadRoomTypeMapping()
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("RoomTypeMapping");
-
-                    var collection = _database.GetCollection<DataContracts.Mapping.DC_RoomTypeMapping>("RoomTypeMapping");
-
-                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
-                    var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
-                    var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
-
-                    var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
-                    IQueryable<DAL.Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping_Loop;
-
-                    int TotalRecords = Accommodation_SupplierRoomTypeMapping.Count();
-                    int iBatchSize = 100;
-                    int iDataInsertedCounter = 0;
-                    bool bAllDataInserted = false;
-
-                    while (!bAllDataInserted)
-                    {
-                        Accommodation_SupplierRoomTypeMapping_Loop = Accommodation_SupplierRoomTypeMapping.Where(w => w.MapId > iDataInsertedCounter && w.MapId <= (iDataInsertedCounter + iBatchSize)).Select(s => s);
-
-                        if (Accommodation_SupplierRoomTypeMapping_Loop.Count() > 0)
-                        {
-                            var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping_Loop
-                                                   join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
-                                                   join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
-                                                   from accorinew in accoritemp.DefaultIfEmpty()
-                                                   select new DataContracts.Mapping.DC_RoomTypeMapping
-                                                   {
-                                                       SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
-                                                       SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
-                                                       SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
-                                                       SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
-                                                       Status = asrtm.MappingStatus.ToUpper().Trim(),
-                                                       SystemRoomTypeMapId = asrtm.MapId.ToString(),
-                                                       SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
-                                                       SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
-                                                       SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
-                                                       SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
-                                                       SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
-                                                       Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
-                                                   }).ToList();
-
-                            if (roomTypeMapList.Count() > 0)
-                            {
-                                collection.InsertMany(roomTypeMapList);
-                            }
-
-                            iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
-
-                        }
-                        else
-                        {
-                            bAllDataInserted = true;
-                        }
-                    }
-
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
-                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
-
-                    collection = null;
-                    _database = null;
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-        public void LoadKeywords()
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("Keywords");
-
-                    var collection = _database.GetCollection<DataContracts.Masters.DC_Keywords>("Keywords");
-
-                    var searchList = (from k in context.m_keyword
-                                      where k.Status == "ACTIVE"
-                                      orderby k.Sequence ?? 0
-                                      select new DataContracts.Masters.DC_Keywords
-                                      {
-                                          Keyword = k.Keyword,
-                                          Sequence = k.Sequence ?? 0,
-                                          EntityFor = k.EntityFor,
-                                          AttributeType = k.AttributeType,
-                                          AttributeSubLevelValue = k.AttributeSubLevelValue,
-                                          AttributeSubLevel = k.AttributeSubLevel,
-                                          AttributeLevel = k.AttributeLevel,
-                                          Attribute = k.Attribute ?? false,
-                                          Aliases = (from a in context.m_keyword_alias
-                                                     where a.Keyword_Id == k.Keyword_Id && a.Status == "ACTIVE"
-                                                     orderby (a.Sequence ?? 0), (a.NoOfHits ?? 0) descending
-                                                     select new DataContracts.Masters.DC_Keyword_Aliases
-                                                     {
-                                                         Value = a.Value,
-                                                         Sequence = a.Sequence ?? 0,
-                                                         NoOfHits = a.NoOfHits ?? 0
-                                                     }).ToList()
-                                      }).ToList();
-
-                    if (searchList.Count() > 0)
-                    {
-                        collection.InsertMany(searchList);
-                    }
 
                     collection = null;
                     _database = null;
@@ -1043,7 +1521,6 @@ namespace DAL
             }
         }
 
-
         public void UpdateActivityPrices()
         {
             try
@@ -1157,7 +1634,6 @@ namespace DAL
             {
                 throw ex;
             }
-
         }
 
         public void UpdateActivitySpecial()
@@ -1185,9 +1661,9 @@ namespace DAL
                             //                select a.AttributeValue).ToList();
 
                             var Highlights = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
-                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
-                                            && a.AttributeSubType == "Highlights"
-                                            select a.AttributeValue).ToArray();
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.AttributeType == "Product"
+                                              && a.AttributeSubType == "Highlights"
+                                              select a.AttributeValue).ToArray();
 
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
 
@@ -1212,6 +1688,7 @@ namespace DAL
             }
 
         }
+
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
         {
             try
@@ -1550,10 +2027,6 @@ namespace DAL
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Itinerary").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
                             newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "TagWith").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
 
-
-
-
-
                             newActivity.SystemMapping = new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty };//ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
 
                             newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
@@ -1636,512 +2109,11 @@ namespace DAL
             }
         }
 
-        public void LoadActivityMasters()
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("ActivityMasters");
+        #endregion
 
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityMasters>("ActivityMasters");
-
-                    List<DataContracts.Activity.ActivityMasters> dataList = new List<DataContracts.Activity.ActivityMasters>();
-
-                    dataList = (from ma in context.m_masterattribute
-                                join pma in context.m_masterattribute on ma.ParentAttribute_Id equals pma.MasterAttribute_Id into pmaj
-                                from pmalj in pmaj.DefaultIfEmpty()
-                                where ma.IsActive == true && ma.MasterFor == "Activity"
-                                select new DataContracts.Activity.ActivityMasters
-                                {
-                                    Type = ma.Name.Trim(),
-                                    ParentType = pmalj.Name.Trim(),
-                                    Values = (from mav in context.m_masterattributevalue
-                                              join pmav in context.m_masterattributevalue on mav.ParentAttributeValue_Id equals pmav.MasterAttributeValue_Id into pmavj
-                                              from pmavlj in pmavj.DefaultIfEmpty()
-                                              where mav.MasterAttribute_Id == ma.MasterAttribute_Id && mav.IsActive == true
-                                              select new DataContracts.Activity.ActivityMasterValues
-                                              {
-                                                  Value = mav.AttributeValue.Trim(),
-                                                  ParentValue = pmavlj.AttributeValue.Trim()
-                                              }).ToList()
-                                }).ToList();
-
-
-                    collection.InsertManyAsync(dataList);
-
-                    collection = null;
-                    _database = null;
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-        public void LoadStates(Guid LogId)
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("StateMaster");
-
-                    var collection = _database.GetCollection<DataContracts.Masters.DC_State>("StateMaster");
-
-                    List<DataContracts.Masters.DC_State> dataList = new List<DataContracts.Masters.DC_State>();
-
-                    dataList = (from s in context.m_States
-                                join c in context.m_CountryMaster on s.Country_Id equals c.Country_Id into cj
-                                from clj in cj.DefaultIfEmpty()
-                                select new DataContracts.Masters.DC_State
-                                {
-                                    CountryCode = (clj.Code ?? string.Empty).Trim().ToUpper(),
-                                    CountryName = (clj.Name ?? string.Empty).Trim().ToUpper(),
-                                    StateCode = (s.StateCode ?? string.Empty).Trim().ToUpper(),
-                                    StateName = (s.StateName ?? string.Empty).Trim().ToUpper()
-                                }).ToList();
-
-
-                    collection.InsertManyAsync(dataList);
-
-                    collection = null;
-                    _database = null;
-
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
-                    }
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-        public void LoadPorts(Guid LogId)
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-
-
-                    List<DataContracts.Masters.DC_Port> dataList = new List<DataContracts.Masters.DC_Port>();
-
-                    dataList = (from p in context.m_PortMaster
-                                join c in context.m_CountryMaster on p.Country_Id equals c.Country_Id into cj
-                                from clj in cj.DefaultIfEmpty()
-                                join cty in context.m_CityMaster on p.City_Id equals cty.City_Id into ctyj
-                                from ctylj in ctyj.DefaultIfEmpty()
-                                join st in context.m_States on ctylj.State_Id equals st.State_Id into stj
-                                from stlj in stj.DefaultIfEmpty()
-                                select new DataContracts.Masters.DC_Port
-                                {
-                                    oag_country_code = p.oag_ctry ?? string.Empty,
-                                    oag_country_name = p.oag_ctryname ?? string.Empty,
-                                    oag_country_subcode = p.oag_subctry ?? string.Empty,
-                                    oag_inactive_indicator = p.oag_inactive ?? string.Empty,
-                                    oag_latitiude = p.oag_lat ?? string.Empty,
-                                    oag_location_code = p.OAG_loc ?? string.Empty,
-                                    oag_location_name = p.oag_name ?? string.Empty,
-                                    oag_location_subtype = (
-                                                                p.OAG_subtype == "A" ? "Airport" :
-                                                                p.OAG_subtype == "B" ? "Bus Station" :
-                                                                p.OAG_subtype == "H" ? "Harbour" :
-                                                                p.OAG_subtype == "O" ? "Off-line Point" :
-                                                                p.OAG_subtype == "R" ? "Rail Station" :
-                                                                p.OAG_subtype == "U" ? "Metro/Underground" :
-                                                                p.OAG_subtype == "V" ? "Miscellaneous" : "Multi Airport City"
-                                                            ),
-                                    oag_location_subtype_code = p.OAG_subtype ?? string.Empty,
-                                    oag_location_type = (
-                                                            p.OAG_type == "L" ? "Location with one port" :
-                                                            p.OAG_type == "A" ? "Airport belonging to multi airport city" :
-                                                            p.OAG_type == "M" ? "Multi airport city" : string.Empty
-                                                        ),
-                                    oag_location_type_code = p.OAG_type ?? string.Empty,
-                                    oag_longitude = p.oag_lon ?? string.Empty,
-                                    oag_multi_airport_citycode = p.OAG_multicity ?? string.Empty,
-                                    oag_port_name = p.oag_portname ?? string.Empty,
-                                    oag_state_code = p.oag_state ?? string.Empty,
-                                    oag_state_subcode = p.oag_substate ?? string.Empty,
-                                    oag_time_division = p.oag_timediv ?? string.Empty,
-
-                                    tlgx_country_code = (clj.Code ?? string.Empty),
-                                    tlgx_country_name = (clj.Name ?? string.Empty),
-                                    tlgx_city_code = (ctylj.Code ?? string.Empty),
-                                    tlgx_city_name = (ctylj.Name ?? string.Empty),
-                                    tlgx_state_code = (stlj.StateCode ?? string.Empty),
-                                    tlgx_state_name = (stlj.StateName ?? string.Empty)
-
-                                }).ToList();
-
-                    if (dataList.Count > 0)
-                    {
-                        _database = MongoDBHandler.mDatabase();
-                        _database.DropCollection("PortMaster");
-                        var collection = _database.GetCollection<DataContracts.Masters.DC_Port>("PortMaster");
-                        collection.InsertManyAsync(dataList);
-
-                        collection = null;
-                        _database = null;
-                    }
-
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
-                    }
-
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-        //// public void LoadAccoStaticData()
-        // {
-        //     try
-        //     {
-        //         using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-        //         {
-        //             context.Database.CommandTimeout = 0;
-        //             context.Configuration.AutoDetectChangesEnabled = false;
-
-        //             //Get Master Attributes and Supplier Attribute Mapping
-        //             string[] MasterFor = "HotelInfo,FacilityInfo,RoomInfo,RoomAmenities,Media".Split(',');
-
-
-        //             var MappingAttributes = (from MA in context.m_masterattribute
-        //                                      join MAM in context.m_MasterAttributeMapping on MA.MasterAttribute_Id equals MAM.SystemMasterAttribute_Id
-        //                                      join S in context.Suppliers on MAM.Supplier_Id equals S.Supplier_Id
-        //                                      where MasterFor.Contains(MA.MasterFor)
-        //                                      select new
-        //                                      {
-        //                                          S.Supplier_Id,
-        //                                          SupplierCode = S.Code,
-        //                                          MA.MasterFor,
-        //                                          MasterAttribute = MA.Name.ToUpper(),
-        //                                          MAM.SupplierMasterAttribute,
-        //                                          MAM.MasterAttributeMapping_Id
-        //                                      }).ToList();
-
-
-        //             _database = MongoDBHandler.mDatabase();
-        //             //_database.DropCollection("AccoStaticData");
-
-        //             var collection = _database.GetCollection<DataContracts.StaticData.Accomodation>("AccoStaticData");
-
-        //             List<SupplierEntity> SupplierProducts;
-
-        //             SupplierProducts = (from a in context.SupplierEntities
-        //                                 where a.Entity == "HotelInfo"
-        //                                 select a).ToList();
-
-
-
-
-        //             foreach (var product in SupplierProducts)
-        //             {
-        //                 try
-        //                 {
-        //                     //check if the product already exists
-        //                     var searchResultCount = collection.Find(f => f.AccomodationInfo.CompanyId == product.SupplierName.ToUpper() && f.AccomodationInfo.CompanyProductId == product.SupplierProductCode.ToUpper()).Count();
-        //                     if (searchResultCount > 0)
-        //                     {
-        //                         continue;
-        //                     }
-
-        //                     var newProduct = new DataContracts.StaticData.Accomodation();
-
-        //                     var SupplierProductValues = (from b in context.SupplierEntityValues.AsNoTracking()
-        //                                                  where b.SupplierEntity_Id == product.SupplierEntity_Id
-        //                                                  select new
-        //                                                  {
-        //                                                      b.SupplierEntity_Id,
-        //                                                      b.SupplierProperty,
-        //                                                      b.SupplierValue,
-        //                                                      b.SystemValue,
-        //                                                      b.AttributeMap_Id
-        //                                                  }).ToList();
-
-        //                     //My QUERY
-        //                     string sqlSupplierProductValues = "";
-        //                     sqlSupplierProductValues = "Select b.SupplierEntity_Id,b.SupplierProperty,b.SupplierValue,b.SystemValue,b.AttributeMap_Id from ";
-        //                     sqlSupplierProductValues = sqlSupplierProductValues + "SupplierEntityValues as b where  b.SupplierEntity_Id = '" + product.SupplierEntity_Id + "'";
-        //                     try { var SupplierProduct = context.Database.SqlQuery<string>(sqlSupplierProductValues.ToString()).ToList(); }
-        //                     catch (Exception ex) { }
-        //                     //end
-
-
-        //                     var HotelInfoDetails = (from a in SupplierProductValues
-        //                                             where a.SupplierEntity_Id == product.SupplierEntity_Id
-        //                                             select new
-        //                                             {
-        //                                                 a.SupplierProperty,
-        //                                                 Value = (a.SystemValue ?? a.SupplierValue),
-        //                                                 a.AttributeMap_Id,
-        //                                                 SystemAttribute = string.Empty
-        //                                             }).ToList();
-
-
-
-
-        //                     //Get System Attribute values joined with Entity Value data
-        //                     HotelInfoDetails = (from a in HotelInfoDetails
-        //                                         join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
-        //                                         where b.Supplier_Id == product.Supplier_Id
-        //                                         select new
-        //                                         {
-        //                                             a.SupplierProperty,
-        //                                             a.Value,
-        //                                             a.AttributeMap_Id,
-        //                                             SystemAttribute = b.MasterAttribute
-        //                                         }).ToList();
-
-
-
-        //                     //Supplier Level Details
-        //                     //newProduct.SupplierDetails = new DataContracts.StaticData.SupplierDetails
-        //                     //{
-        //                     //    SupplierCode = product.SupplierName,
-        //                     //    SupplierProductCode = product.SupplierProductCode
-        //                     //};
-
-        //                     //Get All Child Entity Elements and their values
-        //                     var ChildEntities = (from a in context.SupplierEntities.AsNoTracking()
-        //                                          where a.Parent_Id == product.SupplierEntity_Id
-        //                                          select new
-        //                                          {
-        //                                              a.Entity,
-        //                                              a.SupplierEntity_Id
-        //                                          }).ToList();
-
-        //                     var ChildEntityValues = (from a in context.SupplierEntities.AsNoTracking()
-        //                                              join b in context.SupplierEntityValues.AsNoTracking() on a.SupplierEntity_Id equals b.SupplierEntity_Id
-        //                                              where a.Parent_Id == product.SupplierEntity_Id
-        //                                              select new
-        //                                              {
-        //                                                  b.SupplierEntity_Id,
-        //                                                  b.SupplierProperty,
-        //                                                  b.SupplierValue,
-        //                                                  b.SystemValue,
-        //                                                  b.AttributeMap_Id
-        //                                              }).ToList();
-
-        //                     //SQl Query child entitities
-
-        //                     string sqlChildEntities = "";
-        //                     sqlChildEntities = "select a.Entity, a.SupplierEntity_Id from SupplierEntities a where a.Parent_Id = ' " + product.SupplierEntity_Id + "'";
-
-        //                     string sqlChildEntityValues = "";
-        //                     sqlChildEntityValues = "Select b.SupplierEntity_Id, b.SupplierProperty, b.SupplierValue,b.SystemValue, b.AttributeMap_Id from SupplierEntities a join SupplierEntityValues b on a.SupplierEntity_Id equals b.SupplierEntity_Id";
-        //                     sqlChildEntityValues = sqlChildEntityValues + "where a.Parent_Id = '" + product.SupplierEntity_Id + "'";
-
-
-        //                     //Accommodation Info
-        //                     newProduct.AccomodationInfo = new DataContracts.StaticData.AccomodationInfo
-        //                     {
-        //                         Address = new DataContracts.StaticData.Address
-        //                         {
-        //                             HouseNumber = string.Empty,
-        //                             Street = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET").Select(s => s.Value).FirstOrDefault(),
-        //                             Street2 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET2").Select(s => s.Value).FirstOrDefault(),
-        //                             Street3 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET3").Select(s => s.Value).FirstOrDefault(),
-        //                             Street4 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET4").Select(s => s.Value).FirstOrDefault(),
-        //                             Street5 = HotelInfoDetails.Where(w => w.SystemAttribute == "STREET5").Select(s => s.Value).FirstOrDefault(),
-        //                             Area = HotelInfoDetails.Where(w => w.SystemAttribute == "AREA").Select(s => s.Value).FirstOrDefault(),
-        //                             City = HotelInfoDetails.Where(w => w.SystemAttribute == "CITY").Select(s => s.Value).FirstOrDefault(),
-        //                             Country = HotelInfoDetails.Where(w => w.SystemAttribute == "COUNTRY").Select(s => s.Value).FirstOrDefault(),
-        //                             Geometry = new DataContracts.StaticData.Geometry
-        //                             {
-        //                                 Type = "LatLng",
-        //                                 Coordinates = HotelInfoDetails.Where(w => w.SystemAttribute == "LATITUDE" || w.SystemAttribute == "LONGITUDE").OrderBy(o => o.SystemAttribute).Select(s => Convert.ToDecimal(s.Value)).ToList()
-        //                             },
-        //                             Location = HotelInfoDetails.Where(w => w.SystemAttribute == "LOCATION").Select(s => s.Value).FirstOrDefault(),
-        //                             PostalCode = HotelInfoDetails.Where(w => w.SystemAttribute == "POSTALCODE").Select(s => s.Value).FirstOrDefault(),
-        //                             State = HotelInfoDetails.Where(w => w.SystemAttribute == "STATE").Select(s => s.Value).FirstOrDefault(),
-        //                             Zone = HotelInfoDetails.Where(w => w.SystemAttribute == "ZONE").Select(s => s.Value).FirstOrDefault()
-        //                         },
-        //                         Affiliations = string.Empty,
-        //                         Brand = HotelInfoDetails.Where(w => w.SystemAttribute == "BRAND").Select(s => s.Value).FirstOrDefault(),
-        //                         Chain = HotelInfoDetails.Where(w => w.SystemAttribute == "CHAIN").Select(s => s.Value).FirstOrDefault(),
-        //                         CheckInTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKINTIME").Select(s => s.Value).FirstOrDefault(),
-        //                         CheckOutTime = HotelInfoDetails.Where(w => w.SystemAttribute == "CHECKOUTTIME").Select(s => s.Value).FirstOrDefault(),
-        //                         CommonProductId = string.Empty,
-        //                         CompanyId = product.SupplierName.ToUpper(),
-        //                         CompanyName = product.SupplierName.ToUpper(),
-        //                         CompanyProductId = product.SupplierProductCode.ToUpper(),
-        //                         CompanyRating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
-        //                         ContactDetails = new List<DataContracts.StaticData.ContactDetails>
-        //                         {
-        //                             new DataContracts.StaticData.ContactDetails
-        //                             {
-        //                                 EmailAddress = HotelInfoDetails.Where(w => w.SystemAttribute == "EMAILADDRESS").Select(s => s.Value).FirstOrDefault(),
-        //                                 Fax = new DataContracts.StaticData.TelephoneFormat
-        //                                 {
-        //                                     CityCode  = string.Empty,
-        //                                     CountryCode = string.Empty,
-        //                                     Number = HotelInfoDetails.Where(w => w.SystemAttribute == "FAX").Select(s => s.Value).FirstOrDefault()
-        //                                 },
-        //                                 Phone = new DataContracts.StaticData.TelephoneFormat
-        //                                 {
-        //                                     CityCode  = string.Empty,
-        //                                     CountryCode = string.Empty,
-        //                                     Number = HotelInfoDetails.Where(w => w.SystemAttribute == "TELEPHONE").Select(s => s.Value).FirstOrDefault()
-        //                                 },
-        //                                 Website = HotelInfoDetails.Where(w => w.SystemAttribute == "WEBSITE").Select(s => s.Value).FirstOrDefault()
-        //                             }
-        //                         },
-        //                         DisplayName = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
-        //                         FamilyDetails = null,
-        //                         FinanceControlId = null,
-        //                         General = new DataContracts.StaticData.General
-        //                         {
-        //                             Extras = new List<DataContracts.StaticData.Extras> { new DataContracts.StaticData.Extras {  Label = "Short", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "SHORTDESCRIPTION").Select(s => s.Value).FirstOrDefault() } ,
-        //                              new DataContracts.StaticData.Extras {  Label = "Long", Description = HotelInfoDetails.Where(w => w.SystemAttribute == "LONGDESCRIPTION").Select(s => s.Value).FirstOrDefault() } }
-        //                         },
-        //                         IsMysteryProduct = false,
-        //                         IsTwentyFourHourCheckout = false,
-        //                         Name = HotelInfoDetails.Where(w => w.SystemAttribute == "NAME").Select(s => s.Value).FirstOrDefault(),
-        //                         NoOfFloors = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFFLOORS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
-        //                         NoOfRooms = HotelInfoDetails.Where(w => w.SystemAttribute == "NOOFROOMS").Select(s => Convert.ToInt32(s.Value)).FirstOrDefault(),
-        //                         ProductCatSubType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault(),
-        //                         Rating = HotelInfoDetails.Where(w => w.SystemAttribute == "RATING").Select(s => s.Value).FirstOrDefault(),
-        //                         RatingDatedOn = null,
-        //                         RecommendedFor = null,
-        //                         ResortType = HotelInfoDetails.Where(w => w.SystemAttribute == "PRODUCTCATEGORYSUBTYPE").Select(s => s.Value).FirstOrDefault()
-        //                     };
-
-        //                     newProduct.Overview = new DataContracts.StaticData.Overview
-        //                     {
-        //                         IsCompanyRecommended = false,
-        //                         Duration = null,
-        //                         HashTag = null,
-        //                         Highlights = null,
-        //                         Interest = null,
-        //                         SellingTips = null,
-        //                         Usp = null
-        //                     };
-
-        //                     //Get & Set Facilities
-        //                     newProduct.Facility = new List<DataContracts.StaticData.Facility>();
-
-        //                     //var FacilityInfoList = (from a in context.SupplierEntities
-        //                     //                        where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "FacilityInfo"
-        //                     //                        select a).ToList();
-
-        //                     var FacilityInfoList = (from a in ChildEntities
-        //                                             where a.Entity == "FacilityInfo"
-        //                                             select a).ToList();
-
-        //                     foreach (var Facility in FacilityInfoList)
-        //                     {
-        //                         var FacilityInfoDetails = (from a in ChildEntityValues
-        //                                                    where a.SupplierEntity_Id == Facility.SupplierEntity_Id
-        //                                                    select new
-        //                                                    {
-        //                                                        a.SupplierProperty,
-        //                                                        Value = (a.SystemValue ?? a.SupplierValue),
-        //                                                        a.AttributeMap_Id,
-        //                                                        SystemAttribute = string.Empty
-        //                                                    }).ToList();
-
-        //                         //Get System Attribute values joined with Entity Value data
-        //                         FacilityInfoDetails = (from a in FacilityInfoDetails
-        //                                                join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
-        //                                                where b.Supplier_Id == product.Supplier_Id
-        //                                                select new
-        //                                                {
-        //                                                    a.SupplierProperty,
-        //                                                    a.Value,
-        //                                                    a.AttributeMap_Id,
-        //                                                    SystemAttribute = b.MasterAttribute
-        //                                                }).ToList();
-
-
-        //                         newProduct.Facility.Add(new DataContracts.StaticData.Facility
-        //                         {
-        //                             Type = FacilityInfoDetails.Where(w => w.SystemAttribute == "FACILITYTYPE").Select(s => s.Value).FirstOrDefault()
-        //                         });
-        //                     }
-
-        //                     //Get & Set Media
-        //                     newProduct.Media = new List<DataContracts.StaticData.Media>();
-        //                     //var MediaList = (from a in context.SupplierEntities
-        //                     //                 where a.Parent_Id == product.SupplierEntity_Id && a.Entity == "Media"
-        //                     //                 select a).ToList();
-
-        //                     var MediaList = (from a in ChildEntities
-        //                                      where a.Entity == "Media"
-        //                                      select a).ToList();
-
-        //                     foreach (var Media in MediaList)
-        //                     {
-        //                         var MediaDetails = (from a in ChildEntityValues
-        //                                             where a.SupplierEntity_Id == Media.SupplierEntity_Id
-        //                                             select new
-        //                                             {
-        //                                                 a.SupplierProperty,
-        //                                                 Value = (a.SystemValue ?? a.SupplierValue),
-        //                                                 a.AttributeMap_Id,
-        //                                                 SystemAttribute = string.Empty
-        //                                             }).ToList();
-
-        //                         //Get System Attribute values joined with Entity Value data
-        //                         MediaDetails = (from a in MediaDetails
-        //                                         join b in MappingAttributes on a.AttributeMap_Id equals b.MasterAttributeMapping_Id
-        //                                         where b.Supplier_Id == product.Supplier_Id
-        //                                         select new
-        //                                         {
-        //                                             a.SupplierProperty,
-        //                                             a.Value,
-        //                                             a.AttributeMap_Id,
-        //                                             SystemAttribute = b.MasterAttribute
-        //                                         }).ToList();
-
-
-        //                         newProduct.Media.Add(new DataContracts.StaticData.Media
-        //                         {
-        //                             MediaId = MediaDetails.Where(w => w.SystemAttribute == "MEDIAID").Select(s => s.Value).FirstOrDefault(),
-        //                             Description = MediaDetails.Where(w => w.SystemAttribute == "DESCRIPTION").Select(s => s.Value).FirstOrDefault(),
-        //                             FileType = "IMAGE",
-        //                             FileName = MediaDetails.Where(w => w.SystemAttribute == "LARGEIMAGEURL").Select(s => s.Value).FirstOrDefault() ?? MediaDetails.Where(w => w.SystemAttribute == "SMALLIMAGEURL").Select(s => s.Value).FirstOrDefault()
-        //                         });
-        //                     }
-
-        //                     collection.InsertOneAsync(newProduct);
-
-        //                 }
-        //                 catch (Exception ex)
-        //                 {
-        //                     continue;
-        //                 }
-        //             }
-
-        //             collection = null;
-        //             _database = null;
-        //         }
-        //     }
-        //     catch (FaultException<DataContracts.ErrorNotifier> ex)
-        //     {
-        //         throw ex;
-        //     }
-        // }
+        #region Supplier Accommodation Static Data
 
         public void LoadAccoStaticData(Guid log_id, Guid SupplierId)
-
-
         {
             try
             {
@@ -2634,7 +2606,7 @@ namespace DAL
                                             BedTypeID = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPEID").Select(s => s.Value).FirstOrDefault(),
                                             BedType = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDTYPE").Select(s => s.Value).FirstOrDefault(),
                                             BeddingConfiguration = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDDINGCONFIGURATION").Select(s => s.Value).FirstOrDefault(),
-                                            
+
                                             BedRoomCount = BedRoomInfoDetails.Where(w => w.SystemAttribute == "BEDROOMCOUNT").Select(s => s.Value).FirstOrDefault(),
                                             MaxAdultWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXADULTWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
                                             MaxChildWithExtraBed = BedRoomInfoDetails.Where(w => w.SystemAttribute == "MAXCHILDWITHEXTRABED").Select(s => s.Value).FirstOrDefault(),
@@ -2704,7 +2676,7 @@ namespace DAL
 
                             #endregion
 
-                            
+
 
                             var filter = Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyId, product.SupplierName.ToUpper());
                             filter = filter & Builders<DataContracts.StaticData.Accomodation>.Filter.Eq(c => c.AccomodationInfo.CompanyProductId, product.SupplierProductCode.ToUpper());
@@ -2758,43 +2730,6 @@ namespace DAL
 
                 throw ex;
             }
-        }
-
-        public void UpdateCount(int totalcount, int MongoPushCount, Guid log_id)
-        {
-            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-            {
-                var Log = context.DistributionLayerRefresh_Log.Find(log_id);
-                if (Log != null)
-                {
-                    Log.MongoPushCount = MongoPushCount;
-                    Log.TotalCount = totalcount;
-                    Log.Edit_Date = DateTime.Now;
-                    Log.Edit_User = "MongoPush";
-                    context.SaveChanges();
-                }
-            }
-        }
-
-        public void LoadHotelMapping(Guid LogId)
-        {
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
-                    }
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-
         }
 
         public void UpdateAccoStaticDataSingleColumn()
@@ -2872,6 +2807,26 @@ namespace DAL
             }
         }
 
+        #endregion
+
+        #region Load Progess Update
+
+        public void UpdateCount(int totalcount, int MongoPushCount, Guid log_id)
+        {
+            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            {
+                var Log = context.DistributionLayerRefresh_Log.Find(log_id);
+                if (Log != null)
+                {
+                    Log.MongoPushCount = MongoPushCount;
+                    Log.TotalCount = totalcount;
+                    Log.Edit_Date = DateTime.Now;
+                    Log.Edit_User = "MongoPush";
+                    context.SaveChanges();
+                }
+            }
+        }
+
         private void UpdateDistLogInfo(Guid LogId, PushStatus status, int totalCount = 0, int insertedCount = 0, string Supplier_Id = "", string Element = "", string Type = "")
         {
             string Status = string.Empty;
@@ -2914,270 +2869,15 @@ namespace DAL
             setNewStatus = null;
         }
 
-        #region ZoneMaster
-        public void LoadZoneMaster(Guid LogId)
-        {
-            int TotalZoneCount = 0;
-            int MongoInsertedCount = 0;
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    context.Database.CommandTimeout = 0;
-                    if (LogId != Guid.Empty)
-                    {
-                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
-                    }
-                    List<DataContracts.Masters.DC_Zone_Master> _ZoneList = new List<DataContracts.Masters.DC_Zone_Master>();
-                    // int total = 0;
-                    int BatchSize = 1000;
-                    string strTotalCount = @"SELECT COUNT(1) FROM m_ZoneMaster with(nolock)";
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    try
-                    {
-                        TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
-                    }
-                    catch (Exception ex) { }
-                    int NoOfBatch = TotalZoneCount / BatchSize;
-                    int mod = TotalZoneCount % BatchSize;
-                    if (mod > 0)
-                    {
-                        NoOfBatch = NoOfBatch + 1;
-                    }
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("ZoneMaster");
-                    var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_Master>("ZoneMaster");
-
-                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
-                    {
-                        _ZoneList = GetZoneMasterdataToLoad(BatchSize, BatchNo);
-                        if (_ZoneList.Count > 0)
-                        {
-                            collection.InsertManyAsync(_ZoneList);
-                            #region To update CounterIn DistributionLog
-                            if (LogId != Guid.Empty)
-                            {
-                                MongoInsertedCount = MongoInsertedCount + _ZoneList.Count();
-                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
-                            }
-                            #endregion
-                        }
-                    }
-
-                    collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
-                    collection = null;
-                    _database = null;
-                    if (LogId != Guid.Empty)
-                    {
-                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneCount, MongoInsertedCount);
-                    }
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalZoneCount, MongoInsertedCount);
-                throw ex;
-            }
-        }
-
-        private List<DataContracts.Masters.DC_Zone_Master> GetZoneMasterdataToLoad(int batchSize, int batchNo)
-        {
-            List<DataContracts.Masters.DC_Zone_Master> _ZoneListResultMain = new List<DataContracts.Masters.DC_Zone_Master>();
-            List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
-            try
-            {
-                #region ==== ZoneMasterQuery
-                StringBuilder sbSelectZoneMaster = new StringBuilder();
-                StringBuilder sbOrderbyZoneMaster = new StringBuilder();
-                sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
-                                            Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
-                                            upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
-                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
-                                            FROM  m_zoneMaster zm  with(Nolock)
-                                            LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
-                                            WHERE zm.isActive=1 ");
-                int skip = batchNo * batchSize;
-                sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
-
-                StringBuilder sbfinalZoneMaster = new StringBuilder();
-                sbfinalZoneMaster.Append(sbSelectZoneMaster + " ");
-                sbfinalZoneMaster.Append(" " + sbOrderbyZoneMaster + " ");
-                #endregion
-                #region ==== ZoneProductMapping SQL QUERY
-                StringBuilder sbSelectZoneProduct = new StringBuilder();
-                StringBuilder sbOrderByZoneProduct = new StringBuilder();
-                sbSelectZoneProduct.Append(@" SELECT zp.Zone_id, ac.CompanyHotelID as TLGXCompanyHotelID ,zp.Distance,
-                                                  upper(ltrim(rtrim(ac.HotelName))) as TLGXHotelName,zp.Included as IsIncluded,
-                                                  upper(ltrim(rtrim(zp.ProductType))) as TLGXProductType,upper(ltrim(rtrim(zp.Unit))) as Unit
-                                                  FROM  ZoneProduct_Mapping zp with(NOLOCK) 
-                                                  JOIN Accommodation ac with(NOLOCK)  on zp.Product_Id = ac.Accommodation_Id ");
-                sbOrderByZoneProduct.Append(" ORDER BY Distance ");
-
-                StringBuilder sbfinalZoneProduct = new StringBuilder();
-                sbfinalZoneProduct.Append(sbSelectZoneProduct + " ");
-                sbfinalZoneProduct.Append(" WHERE zp.zone_id  in ( ");
-                #endregion
-                #region ==== ZoneCityMapping SQL QUERY
-                StringBuilder sbSelectZoneCity = new StringBuilder();
-                sbSelectZoneCity.Append(@" SELECT zc.Zone_id, upper(ltrim(rtrim(cm.code))) as TLGXCityCode
-                                               FROM  ZoneCity_Mapping zc with(NOLOCK) 
-                                               JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id ");
-
-                StringBuilder sbfinalZoneCity = new StringBuilder();
-                sbfinalZoneCity.Append(sbSelectZoneCity + " ");
-                sbfinalZoneCity.Append(" WHERE zc.zone_id  in ( ");
-
-                #endregion
-
-                List<DataContracts.Masters.DC_Zone_ProductMappingRQ> _ZoneProdListResult = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
-
-                List<DataContracts.Masters.DC_Zone_CityMappingRQ> _ZoneCityListResult = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
-
-                StringBuilder sbZone_id = new StringBuilder();
-
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    try
-                    {
-                        _ZoneListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_MasterRQ>(sbfinalZoneMaster.ToString()).ToList();
-
-                        //Add  Zone_id for ZpList and Zc List
-                        foreach (var id in _ZoneListResult)
-                        {
-                            sbZone_id.Append("'" + id.Zone_id + "',");
-                        }
-                        //To Get Zone product by Zone id
-                        sbfinalZoneProduct.Append(sbZone_id.ToString().TrimEnd(',') + ")");
-                        sbfinalZoneProduct.Append(sbOrderByZoneProduct);
-                        _ZoneProdListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_ProductMappingRQ>(sbfinalZoneProduct.ToString()).ToList();
-                        // End == To Get Zone product by Zone id
-
-
-                        //To Get Zone city by Zone id
-                        sbfinalZoneCity.Append(sbZone_id.ToString().TrimEnd(',') + ")");
-                        _ZoneCityListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CityMappingRQ>(sbfinalZoneCity.ToString()).ToList();
-
-                        foreach (var item in _ZoneListResult)
-                        {
-                            item.Zone_ProductMapping = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
-                            item.Zone_ProductMapping = _ZoneProdListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
-                            item.Zone_CityMapping = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
-                            item.Zone_CityMapping = _ZoneCityListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
-                        }
-                        _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
-                    }
-                    catch (Exception ex) { }
-                }
-
-                return _ZoneListResultMain;
-            }
-            catch (Exception ex) { }
-            return _ZoneListResultMain;
-        }
-
-        // Remove Zone_Id from above List 
-        private List<DataContracts.Masters.DC_Zone_Master> ConvertListWithoutId(List<DataContracts.Masters.DC_Zone_MasterRQ> RQ)
-        {
-            List<DataContracts.Masters.DC_Zone_Master> _ResultList = new List<DataContracts.Masters.DC_Zone_Master>();
-            try
-            {
-                _ResultList = RQ.ConvertAll(item => new DataContracts.Masters.DC_Zone_Master
-                {
-                    Id = item.Id,
-                    Zone_Name = item.Zone_Name,
-                    Zone_Type = item.Zone_Type,
-                    Zone_SubType = item.Zone_SubType,
-                    Latitude = item.Latitude,
-                    Longitude = item.Longitude,
-                    Zone_Radius = item.Zone_Radius,
-                    TLGXCountryCode = item.TLGXCountryCode,
-                    Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
-                    {
-                        TLGXCityCode = xcity.TLGXCityCode
-                    }),
-                    Zone_ProductMapping = item.Zone_ProductMapping.ConvertAll(xProd => new DataContracts.Masters.DC_Zone_ProductMapping
-                    {
-                        TLGXCompanyHotelID = xProd.TLGXCompanyHotelID,
-                        TLGXHotelName = xProd.TLGXHotelName,
-                        TLGXProductType = xProd.TLGXProductType,
-                        Distance = xProd.Distance,
-                        Unit = xProd.Unit,
-                        IsIncluded = xProd.IsIncluded
-                    })
-
-                });
-            }
-            catch (Exception ex) { throw; }
-            return _ResultList;
-        }
-
-
         #endregion
 
-        #region ZoneTypeMaster
-        public void LoadZoneTypeMaster(Guid LogId)
-        {
-            int TotalZoneTypeCount = 0;
-            int MongoInsertedCount = 0;
-            try
-            {
-                if (LogId != Guid.Empty)
-                {
-                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
-                }
-                _database = MongoDBHandler.mDatabase();
-                _database.DropCollection("ZoneTypeMaster");
-                var collection = _database.GetCollection<DataContracts.Masters.DC_ZoneTypeMaster>("ZoneTypeMaster");
-
-                List<DataContracts.Masters.DC_ZoneTypeMaster> dataList = new List<DataContracts.Masters.DC_ZoneTypeMaster>();
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    context.Database.CommandTimeout = 0;
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    dataList = (from ma in context.m_masterattribute
-                                join mav in context.m_masterattributevalue on ma.MasterAttribute_Id equals mav.MasterAttribute_Id
-                                where ma.MasterFor.ToUpper() == "ZONE" && ma.Name.ToUpper() == "ZONETYPE"
-                                select new DataContracts.Masters.DC_ZoneTypeMaster
-                                {
-                                    Zone_Type = mav.AttributeValue.Trim().ToUpper(),
-                                    Zone_SubType = (from a in context.m_masterattributevalue
-                                                    where a.ParentAttributeValue_Id == mav.MasterAttributeValue_Id
-                                                    select a.AttributeValue.Trim().ToUpper()).ToList()
-
-                                }).ToList();
-                    if (dataList.Count > 0)
-                    {
-                        collection.InsertManyAsync(dataList);
-                        #region To update CounterIn DistributionLog
-                        if (LogId != Guid.Empty)
-                        {
-                            TotalZoneTypeCount = dataList.Count();
-                            MongoInsertedCount = MongoInsertedCount + dataList.Count();
-                            UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
-                        }
-                        #endregion
-                    }
-
-                    collection = null;
-                    _database = null;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneTypeCount, MongoInsertedCount);
-                throw ex;
-            }
-        }
-        #endregion
-
+        #region Room Type Mapping
         public void UpdateHotelRoomTypeMapping(Guid Logid, Guid Supplier_Id)
         {
             try
             {
 
-                //Get Supplier ID from logid
+                //Get Supplier ID from log id
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     List<Guid> SupplierIds = new List<Guid>();
@@ -3212,7 +2912,6 @@ namespace DAL
                         List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
                         #endregion
 
-                        context.Configuration.AutoDetectChangesEnabled = false;
                         context.Database.CommandTimeout = 0;
 
                         int BatchSize = Convert.ToInt32(System.Configuration.ConfigurationManager.AppSettings["DataTransferBatchSize"]);
@@ -3309,7 +3008,7 @@ namespace DAL
                                             UPPER(SRTM.TX_RoomName) AS SystemNormalizedRoomType,
                                             UPPER(SRTM.Tx_StrippedName) AS SystemStrippedRoomType,
                                             SRTM.MappingStatus As Status,
-	                                        SRTM.MatchingScore
+                                            SRTM.MatchingScore
                                             From Accommodation_SupplierRoomTypeMapping SRTM with (nolock) 
                                             inner Join Accommodation_RoomInfo ARI with (nolock)  On SRTM.Accommodation_RoomInfo_Id = ARI.Accommodation_RoomInfo_Id
                                             inner join Supplier S WITH (NOLOCK) ON SRTM.Supplier_Id = S.Supplier_Id
@@ -3422,10 +3121,9 @@ namespace DAL
                 throw;
             }
 
-
             return _objHRTM;
-
         }
+
         private List<string> GetScheduledRTM()
         {
 
@@ -3449,6 +3147,86 @@ namespace DAL
             }
 
         }
+
+        public void LoadRoomTypeMapping()
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Database.CommandTimeout = 0;
+
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("RoomTypeMapping");
+
+                    var collection = _database.GetCollection<DataContracts.Mapping.DC_RoomTypeMapping>("RoomTypeMapping");
+
+                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
+                    var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
+                    var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
+
+                    var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
+                    IQueryable<DAL.Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping_Loop;
+
+                    int TotalRecords = Accommodation_SupplierRoomTypeMapping.Count();
+                    int iBatchSize = 100;
+                    int iDataInsertedCounter = 0;
+                    bool bAllDataInserted = false;
+
+                    while (!bAllDataInserted)
+                    {
+                        Accommodation_SupplierRoomTypeMapping_Loop = Accommodation_SupplierRoomTypeMapping.Where(w => w.MapId > iDataInsertedCounter && w.MapId <= (iDataInsertedCounter + iBatchSize)).Select(s => s);
+
+                        if (Accommodation_SupplierRoomTypeMapping_Loop.Count() > 0)
+                        {
+                            var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping_Loop
+                                                   join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
+                                                   join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
+                                                   from accorinew in accoritemp.DefaultIfEmpty()
+                                                   select new DataContracts.Mapping.DC_RoomTypeMapping
+                                                   {
+                                                       SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
+                                                       SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
+                                                       SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
+                                                       SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
+                                                       Status = asrtm.MappingStatus.ToUpper().Trim(),
+                                                       SystemRoomTypeMapId = asrtm.MapId.ToString(),
+                                                       SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
+                                                       SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
+                                                       SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
+                                                       SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
+                                                       SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
+                                                       Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
+                                                   }).ToList();
+
+                            if (roomTypeMapList.Count() > 0)
+                            {
+                                collection.InsertMany(roomTypeMapList);
+                            }
+
+                            iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
+
+                        }
+                        else
+                        {
+                            bAllDataInserted = true;
+                        }
+                    }
+
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
+                    collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
+
+                    collection = null;
+                    _database = null;
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
         //Custom Converting for 1,0 to boolean value
         private object CustomConvert(object value, Type targetType)
         {
@@ -3472,173 +3250,6 @@ namespace DAL
             }
             return Convert.ChangeType(value, targetType); // this will throw for "1"
         }
-
-
-        #region Load Accomodation 
-        public void LoadAccommodation()
-
-        {
-            int TotalZoneCount = 0;
-            int MongoInsertedCount = 0;
-            try
-            {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-
-                    List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoList = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
-                    // int total = 0;
-                    int BatchSize = 1000;
-                    
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    context.Database.CommandTimeout = 0;
-                    var Accommodation = (from a in context.Accommodations select a).AsQueryable();
-                    try
-                    {
-                        //TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
-                        TotalZoneCount = Accommodation.Count();
-                    }
-                    catch (Exception ex) { }
-                    int NoOfBatch = TotalZoneCount / BatchSize;
-                    int mod = TotalZoneCount % BatchSize;
-                    if (mod > 0)
-                    {
-                        NoOfBatch = NoOfBatch + 1;
-                    }
-                    _database = MongoDBHandler.mDatabase();
-                    _database.DropCollection("AccommodationMaster");
-                    var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("AccommodationMaster");
-
-                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
-                    {
-                        _AccoList = GetAccommodationMasterdataToLoad(BatchSize, BatchNo);
-                        if (_AccoList.Count > 0)
-                        {
-                            collection.InsertManyAsync(_AccoList);
-                            #region To update CounterIn DistributionLog
-                            //if (LogId != Guid.Empty)
-                            //{
-                            //    MongoInsertedCount = MongoInsertedCount + _AccoList.Count();
-                            //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
-                            //}
-                            #endregion
-                        }
-                    }
-
-
-
-                    //_database = MongoDBHandler.mDatabase();
-                    //_database.DropCollection("MasterAccommodation");
-
-                    //var collection = _database.GetCollection<DataContracts.Mapping.DC_AccomodationMasterMapping>("MasterAccommodation");
-
-                    //var Accommodation = (from a in context.Accommodations select a).AsQueryable();
-                    //var Accommodation_RoomInfo = (from a in context.Accommodation_RoomInfo select a).AsQueryable();
-                    //var Accommodation_SupplierRoomTypeAttributes = (from a in context.Accommodation_SupplierRoomTypeAttributes select a).AsQueryable();
-
-                    //var Accommodation_SupplierRoomTypeMapping = (from a in context.Accommodation_SupplierRoomTypeMapping select a).AsQueryable();
-                    //IQueryable<DAL.Accommodation_SupplierRoomTypeMapping> Accommodation_SupplierRoomTypeMapping_Loop;
-
-                    //int TotalRecords = Accommodation.Count();
-                    //int iBatchSize = 100;
-                    //int iDataInsertedCounter = 0;
-                    //bool bAllDataInserted = false;
-
-                    //while (!bAllDataInserted)
-                    //{
-                    //    Accommodation_SupplierRoomTypeMapping_Loop = Accommodation_SupplierRoomTypeMapping.Where(w => w.MapId > iDataInsertedCounter && w.MapId <= (iDataInsertedCounter + iBatchSize)).Select(s => s);
-
-                    //    if (Accommodation_SupplierRoomTypeMapping_Loop.Count() > 0)
-                    //    {
-                    //        //var roomTypeMapList = (from asrtm in Accommodation_SupplierRoomTypeMapping_Loop
-                    //        //                       join acco in Accommodation on asrtm.Accommodation_Id equals acco.Accommodation_Id
-                    //        //                       join accori in Accommodation_RoomInfo on new { AccoId = acco.Accommodation_Id, AccoRIId = asrtm.Accommodation_RoomInfo_Id ?? Guid.Empty } equals new { AccoId = accori.Accommodation_Id ?? Guid.Empty, AccoRIId = accori.Accommodation_RoomInfo_Id } into accoritemp
-                    //        //                       from accorinew in accoritemp.DefaultIfEmpty()
-                    //        //                       select new DataContracts.Mapping.DC_RoomTypeMapping
-                    //        //                       {
-                    //        //                           SupplierCode = asrtm.SupplierName.ToUpper().Trim(),
-                    //        //                           SupplierProductCode = asrtm.SupplierProductId.ToUpper().Trim(),
-                    //        //                           SupplierRoomTypeCode = asrtm.SupplierRoomId.ToUpper().Trim(),
-                    //        //                           SupplierRoomTypeName = asrtm.SupplierRoomName.ToUpper().Trim(),
-                    //        //                           Status = asrtm.MappingStatus.ToUpper().Trim(),
-                    //        //                           SystemRoomTypeMapId = asrtm.MapId.ToString(),
-                    //        //                           SystemProductCode = acco.CompanyHotelID.ToString().ToUpper().Trim(),
-                    //        //                           SystemRoomTypeCode = accorinew.RoomId.ToUpper().Trim(),
-                    //        //                           SystemRoomTypeName = accorinew.RoomCategory.ToUpper().Trim(),
-                    //        //                           SystemNormalizedRoomType = asrtm.TX_RoomName.ToUpper().Trim(),
-                    //        //                           SystemStrippedRoomType = asrtm.Tx_StrippedName.ToUpper().Trim(),
-                    //        //                           Attibutes = (Accommodation_SupplierRoomTypeAttributes.Where(w => w.RoomTypeMap_Id == asrtm.Accommodation_SupplierRoomTypeMapping_Id).Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes { Type = s.SystemAttributeKeyword, Value = s.SupplierRoomTypeAttribute }).ToList())
-                    //        //                       }).ToList();
-
-                    //        //if (roomTypeMapList.Count() > 0)
-                    //        //{
-                    //        //    collection.InsertMany(roomTypeMapList);
-                    //        //}
-
-                    //        iDataInsertedCounter = iDataInsertedCounter + Accommodation_SupplierRoomTypeMapping_Loop.Count();
-
-                    //    }
-                    //    else
-                    //    {
-                    //        bAllDataInserted = true;
-                    //    }
-                    //}
-
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeCode));
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_RoomTypeMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode).Ascending(_ => _.SupplierRoomTypeName));
-
-                    //collection = null;
-                    //_database = null;
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
-
-
-        private List<DataContracts.Mapping.DC_AccomodationMasterMapping> GetAccommodationMasterdataToLoad(int batchSize, int batchNo)
-        {
-            List<DataContracts.Mapping.DC_AccomodationMasterMapping> _AccoListResultMain = new List<DataContracts.Mapping.DC_AccomodationMasterMapping>();
-            //List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
-            try
-            {
-                #region ==== AccoMasterQuery
-                StringBuilder sbSelectAccoMaster = new StringBuilder();
-                StringBuilder sbOrderbyAccoMaster = new StringBuilder();
-                sbSelectAccoMaster.Append(@"  select CompanyHotelID as CommonHotelId,HotelName ,Country ,City ,StreetName ,StreetNumber ,Street3 ,Street4 ,Street5 ,PostalCode ,Town 
-                                    ,Location ,Area ,TLGXAccoId ,ProductCategory ,ProductCategorySubType ,isnull(IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
-                                HotelRating,CompanyRating,CompanyRecommended,RecommendedFor,Brand,Chain,Latitude,Longitude,FullAddress	from Accommodation with(nolock) ");
-                int skip = batchNo * batchSize;
-                sbOrderbyAccoMaster.Append("  ORDER BY CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
-
-                StringBuilder sbfinalZoneMaster = new StringBuilder();
-                sbfinalZoneMaster.Append(sbSelectAccoMaster + " ");
-                sbfinalZoneMaster.Append(" " + sbOrderbyAccoMaster + " ");
-                #endregion
-             
-
-
-
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
-                {
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    try
-                    {
-                        _AccoListResultMain = context.Database.SqlQuery<DataContracts.Mapping.DC_AccomodationMasterMapping>(sbfinalZoneMaster.ToString()).ToList();
-
-                        //Add  Zone_id for ZpList and Zc List
-                       
-                    }
-                    catch (Exception ex) { }
-                }
-
-                return _AccoListResultMain;
-            }
-            catch (Exception ex) { }
-            return _AccoListResultMain;
-        }
-        #endregion
 
     }
 }

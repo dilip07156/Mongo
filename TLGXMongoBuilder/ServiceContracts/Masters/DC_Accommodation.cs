@@ -1,18 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace DataContracts.Mapping
+namespace DataContracts.Masters
 {
     [DataContract]
     [BsonIgnoreExtraElements]
-    public class DC_AccomodationMasterMapping
+    public class DC_Accomodation
     {
         [BsonId]
         [DataMember]
@@ -23,7 +20,6 @@ namespace DataContracts.Mapping
 
         [DataMember]
         public string Country { get; set; }
-
 
         [DataMember]
         public string City { get; set; }
@@ -58,16 +54,14 @@ namespace DataContracts.Mapping
         [DataMember]
         public string TLGXAccoId { get; set; }
 
-
         [DataMember]
         public string ProductCategory { get; set; }
-
 
         [DataMember]
         public string ProductCategorySubType { get; set; }
 
         [DataMember]
         public bool IsRoomMappingCompleted { get; set; }
-   
+
     }
 }

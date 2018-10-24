@@ -53,6 +53,7 @@ namespace MapperSvc
                 objBL.UpdateActivityCategoryTypes();
             }
         }
+
         public void UpdateActivityInterestType()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -60,6 +61,7 @@ namespace MapperSvc
                 objBL.UpdateActivityInterestType();
             }
         }
+
         public void UpdateActivityDOW()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -67,6 +69,7 @@ namespace MapperSvc
                 objBL.UpdateActivityDOW();
             }
         }
+
         public void UpdateActivitySpecial()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -82,6 +85,7 @@ namespace MapperSvc
                 objBL.UpdateActivityPrices();
             }
         }
+
         public void UpdateActivityDescription()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -188,7 +192,6 @@ namespace MapperSvc
             }
         }
 
-
         public void LoadStates(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -204,7 +207,6 @@ namespace MapperSvc
                 objBL.LoadPorts(LogId);
             }
         }
-
 
         public void LoadAccoStaticData(string log_id, string supplier_id)
         {
@@ -230,7 +232,6 @@ namespace MapperSvc
             }
         }
 
-
         #region ZoneMaster
         public void LoadZoneMaster(string LogId)
         {
@@ -241,7 +242,6 @@ namespace MapperSvc
         }
         #endregion
 
-
         public void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -249,7 +249,6 @@ namespace MapperSvc
                 objBL.UpdateHotelRoomTypeMapping(LogId, Supplier_Id);
             }
         }
-
 
         #region ZoneType Master
         public void LoadZoneTypeMaster(string LogId)
@@ -261,12 +260,11 @@ namespace MapperSvc
         }
         #endregion
 
-
-        public void LoadAccommodation()
+        public void LoadMasterAccommodation(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadAccommodation();
+                objBL.LoadMasterAccommodation(LogId);
             }
         }
     }
