@@ -420,13 +420,15 @@ namespace DAL
 
         public void LoadMasterAccommodation(Guid LogId)
         {
+            UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
+
             int BatchSize = 1000;
             int TotalCount = 0;
             int Counter = 0;
 
             try
             {
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, Counter);
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, Counter, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
 
 
                 List<DataContracts.Masters.DC_Accomodation> _AccoList = new List<DataContracts.Masters.DC_Accomodation>();
@@ -449,7 +451,7 @@ namespace DAL
                     NoOfBatch = NoOfBatch + 1;
                 }
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter);
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
 
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Masters.DC_Accomodation>("AccommodationMaster");
@@ -466,7 +468,7 @@ namespace DAL
                         }
 
                         Counter = (BatchNo * BatchSize) + _AccoList.Count;
-                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter);
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
                     }
                 }
 
@@ -481,10 +483,18 @@ namespace DAL
                         #region ==== AccoMasterQuery
                         StringBuilder sbSelectAccoMaster = new StringBuilder();
 
-                        sbSelectAccoMaster.Append(@"  select CompanyHotelID as CommonHotelId, HotelName ,Country ,City ,StreetName ,StreetNumber ,Street3 ,Street4 ,Street5 ,PostalCode ,Town 
-                                    ,Location ,Area ,TLGXAccoId ,ProductCategory ,ProductCategorySubType ,isnull(IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
-                                HotelRating,CompanyRating,CompanyRecommended,RecommendedFor,Brand,Chain,Latitude,Longitude,FullAddress	from Accommodation with(nolock) ");
-                        sbSelectAccoMaster.AppendLine("  ORDER BY CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY;");
+                        sbSelectAccoMaster.Append(@"  
+                                                select ACC.CompanyHotelID as CommonHotelId,ACC.HotelName ,MCM.Code CountryCode,MCM.Name CountryName,CM.Code CityCode,MST.StateCode, MST.StateName,
+                                                Cm.Name CityName,ACC.StreetName ,ACC.StreetNumber,ACC.Street3 ,ACC.Street4 ,ACC.Street5 ,ACC.PostalCode ,ACC.Town,
+                                                ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
+                                                ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress,
+                                                Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
+                                                Left join m_CountryMaster MCM with(nolock) on MCM.Country_Id = ACC.Country_Id
+                                                LEft Join m_States MST with(nolock) on MST.State_Id = CM.State_Id
+                                                outer apply 
+                                                (SELECT top 1 * from Accommodation_Contact ACT with(nolock)  where ACT.Accommodation_Id = ACC.Accommodation_Id)
+                                                Cont ");
+                        sbSelectAccoMaster.AppendLine("  ORDER BY ACC.CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY;");
 
                         #endregion
 
@@ -498,12 +508,12 @@ namespace DAL
                     return _AccoListResultMain;
                 }
 
-                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalCount, Counter);
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalCount, Counter);
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATION", "MASTER");
                 throw ex;
             }
         }

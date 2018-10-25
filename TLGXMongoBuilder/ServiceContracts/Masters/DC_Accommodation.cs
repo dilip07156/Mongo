@@ -19,10 +19,22 @@ namespace DataContracts.Masters
         public string HotelName { get; set; }
 
         [DataMember]
-        public string Country { get; set; }
+        public string CountryCode { get; set; }
 
         [DataMember]
-        public string City { get; set; }
+        public string CountryName { get; set; }
+
+        [DataMember]
+        public string CityCode { get; set; }
+
+        [DataMember]
+        public string CityName { get; set; }
+
+        [DataMember]
+        public string StateCode { get; set; }
+
+        [DataMember]
+        public string StateName { get; set; }
 
         [DataMember]
         public string StreetName { get; set; }
@@ -54,14 +66,31 @@ namespace DataContracts.Masters
         [DataMember]
         public string TLGXAccoId { get; set; }
 
+
         [DataMember]
         public string ProductCategory { get; set; }
+
 
         [DataMember]
         public string ProductCategorySubType { get; set; }
 
         [DataMember]
         public bool IsRoomMappingCompleted { get; set; }
+
+        [DataMember]
+        public string Email { get; set; }
+
+        [DataMember]
+        public string Fax { get; set; }
+
+        [DataMember]
+        public string WebSiteURL { get; set; }
+
+        [DataMember]
+        public string Telephone { get; set; }
+
+        [DataMember]
+        public string FullAddress { get; set; }
 
     }
 }
