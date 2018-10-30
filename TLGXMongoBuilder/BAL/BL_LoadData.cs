@@ -19,6 +19,13 @@ namespace BAL
                 obj.LoadActivityDefinition(Guid.Empty);
             }
         }
+        public void LoadActivityDefinitionBySupplier(string suppliername)
+        {
+            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+            {
+                obj.LoadActivityDefinitionBySupplier(suppliername);
+            }
+        }
 
         public void UpdateActivityCategoryTypes()
         {
