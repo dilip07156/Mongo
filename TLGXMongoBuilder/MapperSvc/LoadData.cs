@@ -45,11 +45,11 @@ namespace MapperSvc
                 objBL.LoadActivityDefinition();
             }
         }
-        public void LoadActivityDefinitionBySupplier(string suppliername)
+        public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadActivityDefinitionBySupplier(suppliername);
+                objBL.LoadActivityDefinitionBySupplier(log_id,suppliername);
             }
 
         }

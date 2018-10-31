@@ -1747,7 +1747,7 @@ namespace DAL
         /// push data to mongo
         /// </summary>
         /// <param name="ActivityList"></param>
-        public void LoadActivityData(List<Activity_Flavour> ActivityList)
+        public bool LoadActivityData(List<Activity_Flavour> ActivityList)
         {
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
@@ -2123,9 +2123,10 @@ namespace DAL
                         continue;
                     }
                 }
-
                 collection = null;
                 _database = null;
+                return true;
+
             }
         }
         #endregion
@@ -2133,7 +2134,7 @@ namespace DAL
         /// get data by Supplier to push into mongo
         /// </summary>
         /// <param name="suppliername"></param>
-        public void LoadActivityDefinitionBySupplier(string suppliername)
+        public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
@@ -2148,11 +2149,43 @@ namespace DAL
                                     && spm.SupplierName == suppliername
                                     select a).ToList();
                     if (ActivityList.Count > 0)
+                    {
+
+                        UpdateLogStatus(log_id, "Running", "MongoPush");
                         LoadActivityData(ActivityList);
+                        UpdateLogStatus(log_id, "Completed", "MongoPush", ActivityList.Count);
+                    }
                 }
             }
         }
 
+        private void UpdateLogStatus(string log_id, string strStatus, string stredituser, int count = 0)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    var LogUpdate = context.DistributionLayerRefresh_Log.Find(log_id);
+                    if (LogUpdate != null)
+                    {
+                        LogUpdate.Status = strStatus;
+                        LogUpdate.Edit_Date = DateTime.Now;
+                        LogUpdate.Edit_User = stredituser;
+                        if (count > 0)
+                            LogUpdate.MongoPushCount = count;
+                        context.SaveChanges();
+                    }
+
+                    LogUpdate = null;
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
         #endregion
 
         #region Supplier Accommodation Static Data
@@ -2166,7 +2199,6 @@ namespace DAL
                     context.Database.CommandTimeout = 0;
                     context.Configuration.AutoDetectChangesEnabled = true;
                     //set the distribution log to running status
-
                     var Log = context.DistributionLayerRefresh_Log.Find(log_id);
                     if (Log != null)
                     {
