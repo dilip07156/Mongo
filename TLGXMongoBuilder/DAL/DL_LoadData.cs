@@ -1747,7 +1747,7 @@ namespace DAL
         /// push data to mongo
         /// </summary>
         /// <param name="ActivityList"></param>
-        public bool LoadActivityData(List<Activity_Flavour> ActivityList)
+        public bool LoadActivityData(List<Activity_Flavour> ActivityList, string log_id = "")
         {
             using (TLGX_DEVEntities context = new TLGX_DEVEntities())
             {
@@ -1756,10 +1756,17 @@ namespace DAL
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
                 int iCounter = 0;
+                int totalcount = ActivityList.Count();
                 foreach (var Activity in ActivityList)
                 {
                     try
                     {
+                        //Update Status
+                        if (!string.IsNullOrWhiteSpace(log_id))
+                        {
+                            if (iCounter % 100 == 0)
+                                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalcount, iCounter, string.Empty, string.Empty, string.Empty);
+                        }
                         iCounter++;
                         var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -2148,12 +2155,12 @@ namespace DAL
                                     where a.CityCode != null && (spm.IsActive ?? false) == true
                                     && spm.SupplierName == suppliername
                                     select a).ToList();
-                    if (ActivityList.Count > 0)
+                    int totalCount = ActivityList.Count;
+                    if (totalCount > 0)
                     {
-
-                        UpdateLogStatus(log_id, "Running", "MongoPush");
-                        LoadActivityData(ActivityList);
-                        UpdateLogStatus(log_id, "Completed", "MongoPush", ActivityList.Count);
+                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
+                        LoadActivityData(ActivityList, log_id);
+                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
                     }
                 }
             }
@@ -2166,7 +2173,7 @@ namespace DAL
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
-                    var LogUpdate = context.DistributionLayerRefresh_Log.Find(log_id);
+                    var LogUpdate = context.DistributionLayerRefresh_Log.Find(Guid.Parse(log_id));
                     if (LogUpdate != null)
                     {
                         LogUpdate.Status = strStatus;
