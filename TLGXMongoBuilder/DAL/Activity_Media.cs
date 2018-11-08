@@ -40,5 +40,6 @@ namespace DAL
         public Nullable<int> Media_Width { get; set; }
         public Nullable<int> Media_Height { get; set; }
         public string Media_Caption { get; set; }
+        public Nullable<bool> IsStaticFileAvailable { get; set; }
     }
 }

@@ -83,6 +83,7 @@
           <Property Name="Location_Id" Type="uniqueidentifier" />
           <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="50" />
           <Property Name="Priority" Type="int" />
+          <Property Name="IsRoomMappingCompleted" Type="bit" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -507,6 +508,26 @@
           <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
           <Property Name="MatchingScore" Type="float" />
           <Property Name="RowCounter" Type="int" />
+          <Property Name="IsNotTraining" Type="bit" />
+          <Property Name="Source" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="Accommodation_SupplierRoomTypeMapping_Values">
+          <Key>
+            <PropertyRef Name="Accommodation_SupplierRoomTypeMapping_Value_Id" />
+          </Key>
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Value_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Id" Type="uniqueidentifier" />
+          <Property Name="MapId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Accommodation_RoomInfo_Id" Type="uniqueidentifier" />
+          <Property Name="MatchingScore" Type="float" />
+          <Property Name="UserMappingStatus" Type="varchar" MaxLength="50" />
+          <Property Name="SystemMappingStatus" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="100" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="100" />
+          <Property Name="Edit_SystemUser" Type="varchar" MaxLength="100" />
+          <Property Name="SystemEditDate" Type="datetime" />
+          <Property Name="UserEditDate" Type="datetime" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -816,6 +837,7 @@
           <Property Name="Activity_Status_Edit_User" Type="nvarchar" MaxLength="255" />
           <Property Name="Activity_Status_Edit_Date" Type="datetime" />
           <Property Name="TourType" Type="nvarchar" MaxLength="100" />
+          <Property Name="TLGXDisplaySubType" Type="varchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="Activity_FlavourOptions">
           <Key>
@@ -972,8 +994,8 @@
           <Property Name="Create_Date" Type="datetime" />
           <Property Name="Edit_User" Type="varchar" MaxLength="50" />
           <Property Name="Edit_Date" Type="datetime" />
-          <Property Name="Media_Path" Type="nvarchar" MaxLength="255" />
-          <Property Name="Media_URL" Type="nvarchar" MaxLength="255" />
+          <Property Name="Media_Path" Type="nvarchar" MaxLength="500" />
+          <Property Name="Media_URL" Type="nvarchar" MaxLength="500" />
           <Property Name="Media_Position" Type="int" />
           <Property Name="Category" Type="nvarchar" MaxLength="255" />
           <Property Name="SubCategory" Type="nvarchar" MaxLength="255" />
@@ -985,6 +1007,7 @@
           <Property Name="Media_Width" Type="int" />
           <Property Name="Media_Height" Type="int" />
           <Property Name="Media_Caption" Type="nvarchar" MaxLength="255" />
+          <Property Name="IsStaticFileAvailable" Type="bit" />
         </EntityType>
         <EntityType Name="Activity_PickUpDrop">
           <Key>
@@ -1561,6 +1584,9 @@
           <Property Name="Google_PlaceId" Type="nvarchar" MaxLength="255" />
           <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
           <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="Key" Type="varchar" MaxLength="50" />
+          <Property Name="Rank" Type="varchar" MaxLength="50" />
+          <Property Name="Priority" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -1627,6 +1653,11 @@
           <Property Name="GooglePlaceID" Type="nvarchar" MaxLength="255" />
           <Property Name="Latitude" Type="nvarchar" MaxLength="255" />
           <Property Name="Longitude" Type="nvarchar" MaxLength="255" />
+          <Property Name="RegionName" Type="varchar" MaxLength="50" />
+          <Property Name="RegionCode" Type="varchar" MaxLength="50" />
+          <Property Name="Key" Type="varchar" MaxLength="50" />
+          <Property Name="Rank" Type="varchar" MaxLength="50" />
+          <Property Name="Priority" Type="varchar" MaxLength="50" />
         </EntityType>
         <EntityType Name="m_Currency">
           <Key>
@@ -2025,6 +2056,7 @@
           <EntitySet Name="Accommodation_Status" EntityType="Self.Accommodation_Status" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Accommodation_SupplierRoomTypeAttributes" EntityType="Self.Accommodation_SupplierRoomTypeAttributes" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Accommodation_SupplierRoomTypeMapping" EntityType="Self.Accommodation_SupplierRoomTypeMapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Accommodation_SupplierRoomTypeMapping_Values" EntityType="Self.Accommodation_SupplierRoomTypeMapping_Values" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity" EntityType="Self.Activity" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Ancillary" EntityType="Self.Activity_Ancillary" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_CategoriesType" EntityType="Self.Activity_CategoriesType" Schema="dbo" store:Type="Tables" />
@@ -2189,6 +2221,7 @@
           <EntitySet Name="Activity_FlavourServices" EntityType="TLGX_DEV_Model.Activity_FlavourServices" />
           <EntitySet Name="DistributionLayerRefresh_Log" EntityType="TLGX_DEV_Model.DistributionLayerRefresh_Log" />
           <EntitySet Name="Activity_Flavour" EntityType="TLGX_DEV_Model.Activity_Flavour" />
+          <EntitySet Name="Accommodation_SupplierRoomTypeMapping_Values" EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping_Values" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -2238,6 +2271,9 @@
           <Property Name="Google_PlaceId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Key" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Rank" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Priority" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="m_CountryMaster">
           <Key>
@@ -2274,6 +2310,11 @@
           <Property Name="GooglePlaceID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Latitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Longitude" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RegionName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="RegionCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Key" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Rank" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Priority" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="m_Currency">
           <Key>
@@ -3044,6 +3085,8 @@
           <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="MatchingScore" Type="Double" />
           <Property Name="RowCounter" Type="Int32" />
+          <Property Name="IsNotTraining" Type="Boolean" />
+          <Property Name="Source" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="Media_Attributes">
           <Key>
@@ -3139,6 +3182,7 @@
           <Property Name="Location_Id" Type="Guid" />
           <Property Name="TLGXAccoId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Priority" Type="Int32" />
+          <Property Name="IsRoomMappingCompleted" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity">
           <Key>
@@ -3390,8 +3434,8 @@
           <Property Name="Create_Date" Type="DateTime" Precision="3" />
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="Media_Path" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Media_URL" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Media_Path" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Media_URL" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Media_Position" Type="Int32" />
           <Property Name="Category" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="SubCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
@@ -3403,6 +3447,7 @@
           <Property Name="Media_Width" Type="Int32" />
           <Property Name="Media_Height" Type="Int32" />
           <Property Name="Media_Caption" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsStaticFileAvailable" Type="Boolean" />
         </EntityType>
         <EntityType Name="Activity_PickUpDrop">
           <Key>
@@ -4190,6 +4235,25 @@
           <Property Name="Activity_Status_Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="TLGXDisplaySubType" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Accommodation_SupplierRoomTypeMapping_Values">
+          <Key>
+            <PropertyRef Name="Accommodation_SupplierRoomTypeMapping_Value_Id" />
+          </Key>
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Value_Id" Type="Guid" Nullable="false" />
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Id" Type="Guid" />
+          <Property Name="MapId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Accommodation_RoomInfo_Id" Type="Guid" />
+          <Property Name="MatchingScore" Type="Double" />
+          <Property Name="UserMappingStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SystemMappingStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_SystemUser" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="SystemEditDate" Type="DateTime" Precision="3" />
+          <Property Name="UserEditDate" Type="DateTime" Precision="3" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -4229,6 +4293,9 @@
           <EntitySetMapping Name="m_CityMaster">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CityMaster">
               <MappingFragment StoreEntitySet="m_CityMaster">
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
+                <ScalarProperty Name="Rank" ColumnName="Rank" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
                 <ScalarProperty Name="Longitude" ColumnName="Longitude" />
                 <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="Google_PlaceId" ColumnName="Google_PlaceId" />
@@ -4252,6 +4319,11 @@
           <EntitySetMapping Name="m_CountryMaster">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.m_CountryMaster">
               <MappingFragment StoreEntitySet="m_CountryMaster">
+                <ScalarProperty Name="Priority" ColumnName="Priority" />
+                <ScalarProperty Name="Rank" ColumnName="Rank" />
+                <ScalarProperty Name="Key" ColumnName="Key" />
+                <ScalarProperty Name="RegionCode" ColumnName="RegionCode" />
+                <ScalarProperty Name="RegionName" ColumnName="RegionName" />
                 <ScalarProperty Name="Longitude" ColumnName="Longitude" />
                 <ScalarProperty Name="Latitude" ColumnName="Latitude" />
                 <ScalarProperty Name="GooglePlaceID" ColumnName="GooglePlaceID" />
@@ -5032,6 +5104,8 @@
           <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping">
               <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping">
+                <ScalarProperty Name="Source" ColumnName="Source" />
+                <ScalarProperty Name="IsNotTraining" ColumnName="IsNotTraining" />
                 <ScalarProperty Name="RowCounter" ColumnName="RowCounter" />
                 <ScalarProperty Name="MatchingScore" ColumnName="MatchingScore" />
                 <ScalarProperty Name="CountryCode" ColumnName="CountryCode" />
@@ -5113,6 +5187,7 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="IsRoomMappingCompleted" ColumnName="IsRoomMappingCompleted" />
                 <ScalarProperty Name="Priority" ColumnName="Priority" />
                 <ScalarProperty Name="TLGXAccoId" ColumnName="TLGXAccoId" />
                 <ScalarProperty Name="Location_Id" ColumnName="Location_Id" />
@@ -5437,6 +5512,7 @@
           <EntitySetMapping Name="Activity_Media">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Media">
               <MappingFragment StoreEntitySet="Activity_Media">
+                <ScalarProperty Name="IsStaticFileAvailable" ColumnName="IsStaticFileAvailable" />
                 <ScalarProperty Name="Media_Caption" ColumnName="Media_Caption" />
                 <ScalarProperty Name="Media_Height" ColumnName="Media_Height" />
                 <ScalarProperty Name="Media_Width" ColumnName="Media_Width" />
@@ -6236,6 +6312,7 @@
           <EntitySetMapping Name="Activity_Flavour">
             <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Flavour">
               <MappingFragment StoreEntitySet="Activity_Flavour">
+                <ScalarProperty Name="TLGXDisplaySubType" ColumnName="TLGXDisplaySubType" />
                 <ScalarProperty Name="TourType" ColumnName="TourType" />
                 <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
                 <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
@@ -6283,6 +6360,25 @@
                 <ScalarProperty Name="ProductName" ColumnName="ProductName" />
                 <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
                 <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Accommodation_SupplierRoomTypeMapping_Values">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping_Values">
+              <MappingFragment StoreEntitySet="Accommodation_SupplierRoomTypeMapping_Values">
+                <ScalarProperty Name="UserEditDate" ColumnName="UserEditDate" />
+                <ScalarProperty Name="SystemEditDate" ColumnName="SystemEditDate" />
+                <ScalarProperty Name="Edit_SystemUser" ColumnName="Edit_SystemUser" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="SystemMappingStatus" ColumnName="SystemMappingStatus" />
+                <ScalarProperty Name="UserMappingStatus" ColumnName="UserMappingStatus" />
+                <ScalarProperty Name="MatchingScore" ColumnName="MatchingScore" />
+                <ScalarProperty Name="Accommodation_RoomInfo_Id" ColumnName="Accommodation_RoomInfo_Id" />
+                <ScalarProperty Name="MapId" ColumnName="MapId" />
+                <ScalarProperty Name="Accommodation_SupplierRoomTypeMapping_Id" ColumnName="Accommodation_SupplierRoomTypeMapping_Id" />
+                <ScalarProperty Name="Accommodation_SupplierRoomTypeMapping_Value_Id" ColumnName="Accommodation_SupplierRoomTypeMapping_Value_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

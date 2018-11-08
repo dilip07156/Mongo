@@ -107,11 +107,6 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/RoomTypeMapping", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadRoomTypeMapping();
-
-        [OperationContract]
-        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/KeywordMaster", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadKeywords();
 
@@ -142,7 +137,6 @@ namespace ServiceContracts
         void LoadZoneMaster(string LogId);
         #endregion
 
-
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/HotelRoomTypeMapping/{LogId}/{Supplier_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
@@ -161,7 +155,7 @@ namespace ServiceContracts
         /// </summary>
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/MasterAccommodation/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadMasterAccommodation(string LogId);
+        [WebGet(UriTemplate = "Load/MasterAccommodation/{LogId}/{Accommodation_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadMasterAccommodation(string LogId, string Accommodation_Id);
     }
 }
