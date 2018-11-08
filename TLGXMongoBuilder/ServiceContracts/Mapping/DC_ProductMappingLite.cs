@@ -25,4 +25,15 @@ namespace DataContracts.Mapping
         [DataMember]
         public string TlgxMdmHotelId { get; set; }
     }
+
+    public class DC_ProductMappingLite_WithStatus
+    {
+        public string SupplierCode { get; set; }
+        public string SupplierProductCode { get; set; }
+        public int MapId { get; set; }
+        public string SystemProductCode { get; set; }
+        public string TlgxMdmHotelId { get; set; }
+        public string MappingStatus { get; set; }
+    }
+
 }

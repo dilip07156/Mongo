@@ -1119,16 +1119,28 @@ namespace DAL
                                         UPPER(apm.SupplierProductReference) as SupplierProductCode,
                                         apm.MapId,
                                         UPPER(a.CompanyHotelID) as SystemProductCode,
-                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId
+                                        UPPER(ISNULL(a.TLGXAccoId,'')) as TlgxMdmHotelId,
+                                        UPPER(ISNULL(apm.Status,'UNMAPPED')) as MappingStatus
                                         from Accommodation_productMapping  apm  with(nolock)
                                         join Supplier s  with(nolock) on apm.supplier_id= s.supplier_id 
-                                        left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id
-                                        where  apm.Accommodation_ProductMapping_Id ='" + ProdMapId + "' and apm.Status in ('MAPPED','AUTOMAPPED')");
-                        var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite>(sbSelect.ToString()).FirstOrDefault();
+                                        left join Accommodation a with(nolock) on apm.Accommodation_Id = a.Accommodation_Id 
+                                        where  apm.Accommodation_ProductMapping_Id ='" + ProdMapId + "';");
+                        var prod = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite_WithStatus>(sbSelect.ToString()).FirstOrDefault();
                         if (prod != null)
                         {
                             var res = collection.DeleteMany(x => x.MapId == prod.MapId);
-                            collection.InsertOneAsync(prod);
+
+                            if (prod.MappingStatus == "AUTOMAPPED" || prod.MappingStatus == "MAPPED")
+                            {
+                                collection.InsertOneAsync(new DataContracts.Mapping.DC_ProductMappingLite
+                                {
+                                    MapId = prod.MapId,
+                                    SupplierCode = prod.SupplierCode,
+                                    SupplierProductCode = prod.SupplierProductCode,
+                                    SystemProductCode = prod.SystemProductCode,
+                                    TlgxMdmHotelId = prod.TlgxMdmHotelId
+                                });
+                            }
                         }
                     }
                     #endregion
