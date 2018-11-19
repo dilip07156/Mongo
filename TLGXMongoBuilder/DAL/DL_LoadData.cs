@@ -825,45 +825,45 @@ namespace DAL
                 using (TLGX_DEVEntities context = new TLGX_DEVEntities())
                 {
                     var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
-                                        join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
-                                        join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
-                                        where cm.Status == "MAPPED"
-                                        select new DataContracts.Mapping.DC_CountryMapping
-                                        {
-                                            SupplierName = s.Name.Trim().ToUpper(),
-                                            SupplierCode = s.Code.Trim().ToUpper(),
-                                            CountryCode = c.Code.Trim().ToUpper(),
-                                            CountryName = c.Name.Trim().ToUpper(),
-                                            //CountryMapping_Id = cm.CountryMapping_Id.ToString(),
-                                            //Supplier_Id = s.Supplier_Id.ToString(),
-                                            //Country_Id = c.Country_Id.ToString(),
-                                            SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
-                                            SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
-                                            MapId = cm.MapID ?? 0
-                                        }).ToList();
+                                      join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
+                                      join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
+                                      where cm.Status == "MAPPED"
+                                      select new DataContracts.Mapping.DC_CountryMapping
+                                      {
+                                          SupplierName = s.Name.Trim().ToUpper(),
+                                          SupplierCode = s.Code.Trim().ToUpper(),
+                                          CountryCode = c.Code.Trim().ToUpper(),
+                                          CountryName = c.Name.Trim().ToUpper(),
+                                          //CountryMapping_Id = cm.CountryMapping_Id.ToString(),
+                                          //Supplier_Id = s.Supplier_Id.ToString(),
+                                          //Country_Id = c.Country_Id.ToString(),
+                                          SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                          SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
+                                          MapId = cm.MapID ?? 0
+                                      }).ToList();
 
                     if (MappedData != null && MappedData.Count > 0)
                     {
                         foreach (var city in MappedData)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, city.MapId);
-                            collection.ReplaceOneAsync(filter, city, new UpdateOptions { IsUpsert = true });
+                            collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
                         }
                     }
 
                     var NotMappedData = (from cm in context.m_CountryMapping.AsNoTracking()
-                                             where cm.Status != "MAPPED"
-                                             select new DataContracts.Mapping.DC_CountryMapping
-                                             {
-                                                 MapId = cm.MapID ?? 0
-                                             }).ToList();
+                                         where cm.Status != "MAPPED"
+                                         select new DataContracts.Mapping.DC_CountryMapping
+                                         {
+                                             MapId = cm.MapID ?? 0
+                                         }).ToList();
 
                     if (NotMappedData != null && NotMappedData.Count > 0)
                     {
                         foreach (var country in NotMappedData)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, country.MapId);
-                            collection.DeleteOneAsync(filter);
+                            collection.DeleteOne(filter);
                         }
                     }
 
@@ -951,50 +951,50 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
 
                     var CityListMapped = (from cm in context.m_CityMapping.AsNoTracking()
-                                    join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
-                                    join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
-                                    join supplier in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals supplier.Supplier_Id
-                                    where cm.Status == "MAPPED"
-                                    select new DataContracts.Mapping.DC_CityMapping
-                                    {
-                                        //CityMapping_Id = cm.CityMapping_Id.ToString(),
-                                        CityName = (city.Name ?? string.Empty).ToUpper(),
-                                        CityCode = (city.Code ?? string.Empty).ToUpper(),
-                                        SupplierCityCode = (cm.CityCode ?? string.Empty).ToUpper(),
-                                        SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
-                                        SupplierName = supplier.Name.ToUpper(),
-                                        SupplierCode = supplier.Code.ToUpper(),
-                                        CountryCode = country.Code.ToUpper(),
-                                        CountryName = country.Name.ToUpper(),
-                                        SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
-                                        SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
-                                        MapId = cm.MapID ?? 0
-                                    }).ToList();
+                                          join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
+                                          join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
+                                          join supplier in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals supplier.Supplier_Id
+                                          where cm.Status == "MAPPED"
+                                          select new DataContracts.Mapping.DC_CityMapping
+                                          {
+                                              //CityMapping_Id = cm.CityMapping_Id.ToString(),
+                                              CityName = (city.Name ?? string.Empty).ToUpper(),
+                                              CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                              SupplierCityCode = (cm.CityCode ?? string.Empty).ToUpper(),
+                                              SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                              SupplierName = supplier.Name.ToUpper(),
+                                              SupplierCode = supplier.Code.ToUpper(),
+                                              CountryCode = country.Code.ToUpper(),
+                                              CountryName = country.Name.ToUpper(),
+                                              SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                              SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
+                                              MapId = cm.MapID ?? 0
+                                          }).ToList();
 
                     if (CityListMapped != null && CityListMapped.Count > 0)
                     {
                         foreach (var city in CityListMapped)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
-                            collection.ReplaceOneAsync(filter, city, new UpdateOptions { IsUpsert = true });
+                            collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
                         }
                         //collection.InsertMany(CityListMapped);
                     }
 
 
                     var CityListNotMapped = (from cm in context.m_CityMapping.AsNoTracking()
-                                          where cm.Status != "MAPPED"
-                                          select new DataContracts.Mapping.DC_CityMapping
-                                          {
-                                              MapId = cm.MapID ?? 0
-                                          }).ToList();
+                                             where cm.Status != "MAPPED"
+                                             select new DataContracts.Mapping.DC_CityMapping
+                                             {
+                                                 MapId = cm.MapID ?? 0
+                                             }).ToList();
 
                     if (CityListNotMapped != null && CityListNotMapped.Count > 0)
                     {
                         foreach (var city in CityListNotMapped)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
-                            collection.DeleteOneAsync(filter);
+                            collection.DeleteOne(filter);
                         }
                     }
 
