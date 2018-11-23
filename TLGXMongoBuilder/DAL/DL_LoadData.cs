@@ -2354,6 +2354,65 @@ namespace DAL
                         UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
                     }
                 }
+                //Remove Inactive or deleted Data
+                try
+                {
+                    RemoveActivityDefinitionBySupplier(suppliername);
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
+
+        private void RemoveActivityDefinitionBySupplier(string suppliername, string Activity_Flavour_Id = null)
+        {
+            try
+            {
+                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    List<Activity_Flavour> ActivityList;
+                    if (Activity_Flavour_Id != null)
+                    {
+                        Guid _guidActivity_flavour_id = Guid.Parse(Activity_Flavour_Id);
+                        ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where spm.SupplierName == suppliername && a.Activity_Flavour_Id == _guidActivity_flavour_id
+                                        select a).ToList();
+                    }
+                    else
+                    {
+                        ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == false
+                                        && spm.SupplierName == suppliername
+                                        select a).ToList();
+                    }
+                    _database = MongoDBHandler.mDatabase();
+                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                    foreach (var Activity in ActivityList)
+                    {
+                        try
+                        {
+                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                            if (filter != null)
+                                collection.DeleteOne(filter);
+                        }
+                        catch (Exception ex)
+                        {
+
+                        }
+
+
+
+                    }
+                }
+            }
+            catch (Exception)
+            {
+
+                throw;
             }
         }
 
