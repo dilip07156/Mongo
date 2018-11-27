@@ -74,6 +74,13 @@ namespace DataContracts.Masters
         public string TLGXAccoId { get; set; }
 
         [DataMember]
+        public string Brand { get; set; }
+
+        [DataMember]
+        public string Chain { get; set; }
+
+
+        [DataMember]
         public bool IsRoomMappingCompleted { get; set; }
 
         [DataMember]
