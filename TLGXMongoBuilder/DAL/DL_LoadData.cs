@@ -500,7 +500,7 @@ namespace DAL
                                 TLGXAccoId = RemoveDiacritics(acco.TLGXAccoId),
                                 ProductCategory = RemoveDiacritics(acco.ProductCategory),
                                 ProductCategorySubType = RemoveDiacritics(acco.ProductCategorySubType),
-                                IsRoomMappingCompleted =acco.IsRoomMappingCompleted,
+                                IsRoomMappingCompleted = acco.IsRoomMappingCompleted,
                                 CommonHotelId = acco.CommonHotelId,
                                 Brand = RemoveDiacritics(acco.Brand),
                                 Chain = RemoveDiacritics(acco.Chain),
@@ -544,7 +544,9 @@ namespace DAL
                                                 Cm.Name CityName,ACC.StreetName ,ACC.StreetNumber,ACC.Street3 ,ACC.Street4 ,ACC.Street5 ,ACC.PostalCode ,ACC.Town,
                                                 ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
                                                 ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress, ACC.HotelRating as HotelStarRating,
-                                                ACC.Brand,ACC.Chain,Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone ,(case when ACC.IsActive = 1 then  'Active' when ACC.IsActive = 0 then  'Inactive' else '' end) as CodeStatus  from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
+                                                ACC.Brand,ACC.Chain,Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone ,(case when ACC.IsActive = 1 then  'Active' when ACC.IsActive = 0 then  'Inactive' else '' end) as CodeStatus , 
+                                                ACC.SuburbDowntown
+                                                from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
                                                 Left join m_CountryMaster MCM with(nolock) on MCM.Country_Id = ACC.Country_Id
                                                 LEft Join m_States MST with(nolock) on MST.State_Id = CM.State_Id
                                                 outer apply 
@@ -587,11 +589,15 @@ namespace DAL
             }
         }
 
-      
 
-        public static String RemoveDiacritics(String s)
+
+        public static String RemoveDiacritics(string s)
         {
-            string data = new string(CommonFunctions.RemoveDiacritics(s).RemoveLineEndings().Where(c => !char.IsControl(c)).ToArray());
+            string data = null;
+            if (s != null)
+            {
+                data = new string(CommonFunctions.RemoveDiacritics(s).RemoveLineEndings().Where(c => !char.IsControl(c)).ToArray());
+            }
 
             return data;
         }

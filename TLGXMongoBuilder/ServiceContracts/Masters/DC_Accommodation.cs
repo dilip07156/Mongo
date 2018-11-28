@@ -65,6 +65,9 @@ namespace DataContracts.Masters
         public string Town { get; set; }
 
         [DataMember]
+        public string SuburbDowntown { get; set; }
+
+        [DataMember]
         public string Location { get; set; }
 
         [DataMember]
