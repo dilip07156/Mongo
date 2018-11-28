@@ -107,5 +107,7 @@ namespace DataContracts.Masters
         [DataMember]
         public string Longitude { get; set; }
 
+        [DataMember]
+        public string CodeStatus { get; set; }
     }
 }
