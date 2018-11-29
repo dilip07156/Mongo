@@ -1109,7 +1109,7 @@ namespace DAL
                                                   join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
                                                   from acco in LJAcco.DefaultIfEmpty()
 
-                                                  where s.Code == SupplierCode
+                                                  where s.Code == SupplierCode && apm.IsActive == true
 
                                                   select new DataContracts.Mapping.DC_ProductMapping
                                                   {
@@ -1231,6 +1231,7 @@ namespace DAL
                                                   join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
                                                   join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
                                                   where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && s.Code == SupplierCode
+                                                  && apm.IsActive == true
                                                   select new DataContracts.Mapping.DC_ProductMappingLite
                                                   {
                                                       SupplierCode = s.Code.Trim().ToUpper(),
