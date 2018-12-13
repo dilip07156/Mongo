@@ -1174,7 +1174,7 @@ namespace DAL
                                                       SupplierCityName = apm.CityName.ToUpper(),
                                                       SupplierProductName = apm.ProductName.ToUpper(),
                                                       MappingStatus = apm.Status.ToUpper(),
-                                                      MapId = apm.MapId ?? 0,
+                                                      MapId = apm.MapId,
 
                                                       SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
                                                       SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
@@ -1289,7 +1289,7 @@ namespace DAL
                                                   {
                                                       SupplierCode = s.Code.Trim().ToUpper(),
                                                       SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                                      MapId = apm.MapId ?? 0,
+                                                      MapId = apm.MapId,
                                                       SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                                       TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                                   }).ToList();
@@ -2342,6 +2342,9 @@ namespace DAL
                                                          DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
 
                                                      }).ToList();
+
+                        //Activity TLGXDisplaySubType Setting
+                        newActivity.TLGXDisplaySubType = (context.Activity_Flavour.Where(x => x.Activity_Flavour_Id == Activity.Activity_Flavour_Id).Select(x => x.TLGXDisplaySubType).FirstOrDefault());
 
                         //if (Activity_Flavour_Id == Guid.Empty)
                         //{

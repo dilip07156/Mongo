@@ -179,9 +179,6 @@
     <Compile Include="Accommodation_SupplierRoomTypeMapping.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
-    <Compile Include="Accommodation_SupplierRoomTypeMapping_Values.cs">
-      <DependentUpon>TLGX_Model.tt</DependentUpon>
-    </Compile>
     <Compile Include="Activity.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>

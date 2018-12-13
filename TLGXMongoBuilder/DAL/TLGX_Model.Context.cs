@@ -44,7 +44,6 @@ namespace DAL
         public virtual DbSet<Supplier_APILocation> Supplier_APILocation { get; set; }
         public virtual DbSet<Supplier_Market> Supplier_Market { get; set; }
         public virtual DbSet<Supplier_ProductCategory> Supplier_ProductCategory { get; set; }
-        public virtual DbSet<Supplier_Schedule> Supplier_Schedule { get; set; }
         public virtual DbSet<m_CityMapping> m_CityMapping { get; set; }
         public virtual DbSet<m_CountryMapping> m_CountryMapping { get; set; }
         public virtual DbSet<m_MasterAttributeMapping> m_MasterAttributeMapping { get; set; }
@@ -79,7 +78,6 @@ namespace DAL
         public virtual DbSet<Activity_InclusionDetails> Activity_InclusionDetails { get; set; }
         public virtual DbSet<Activity_Inclusions> Activity_Inclusions { get; set; }
         public virtual DbSet<Activity_Itinerary> Activity_Itinerary { get; set; }
-        public virtual DbSet<Activity_Media> Activity_Media { get; set; }
         public virtual DbSet<Activity_PickUpDrop> Activity_PickUpDrop { get; set; }
         public virtual DbSet<Activity_PickUpDropDetail> Activity_PickUpDropDetail { get; set; }
         public virtual DbSet<Activity_PickupDropSchedule> Activity_PickupDropSchedule { get; set; }
@@ -113,6 +111,7 @@ namespace DAL
         public virtual DbSet<Activity_FlavourServices> Activity_FlavourServices { get; set; }
         public virtual DbSet<DistributionLayerRefresh_Log> DistributionLayerRefresh_Log { get; set; }
         public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
-        public virtual DbSet<Accommodation_SupplierRoomTypeMapping_Values> Accommodation_SupplierRoomTypeMapping_Values { get; set; }
+        public virtual DbSet<Activity_Media> Activity_Media { get; set; }
+        public virtual DbSet<Supplier_Schedule> Supplier_Schedule { get; set; }
     }
 }

@@ -42,5 +42,7 @@ namespace DAL
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public Nullable<bool> IsActive { get; set; }
         public string TLGXAccoRoomId { get; set; }
+        public string TX_RoomName { get; set; }
+        public string TX_RoomName_Stripped { get; set; }
     }
 }
