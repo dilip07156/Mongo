@@ -10,6 +10,7 @@ using MongoDB.Driver;
 using System.Text.RegularExpressions;
 using MongoDB.Driver.Builders;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace DAL
 {
@@ -477,8 +478,46 @@ namespace DAL
                     {
                         foreach (var acco in _AccoList)
                         {
+
+                            DataContracts.Masters.DC_Accomodation Accodata = new DataContracts.Masters.DC_Accomodation()
+                            {
+                                HotelName = RemoveDiacritics(acco.HotelName),
+                                CountryCode = RemoveDiacritics(acco.CountryCode),
+                                CountryName = RemoveDiacritics(acco.CountryName),
+                                CityCode = RemoveDiacritics(acco.CityCode),
+                                StateCode = RemoveDiacritics(acco.StateCode),
+                                StateName = RemoveDiacritics(acco.StateName),
+                                CityName = RemoveDiacritics(acco.CityName),
+                                StreetName = RemoveDiacritics(acco.StreetName),
+                                StreetNumber = RemoveDiacritics(acco.StreetNumber),
+                                Street3 = RemoveDiacritics(acco.Street3),
+                                Street4 = RemoveDiacritics(acco.Street4),
+                                Street5 = RemoveDiacritics(acco.Street5),
+                                PostalCode = RemoveDiacritics(acco.PostalCode),
+                                Town = RemoveDiacritics(acco.Town),
+                                Location = RemoveDiacritics(acco.Location),
+                                Area = RemoveDiacritics(acco.Area),
+                                TLGXAccoId = RemoveDiacritics(acco.TLGXAccoId),
+                                ProductCategory = RemoveDiacritics(acco.ProductCategory),
+                                ProductCategorySubType = RemoveDiacritics(acco.ProductCategorySubType),
+                                IsRoomMappingCompleted = acco.IsRoomMappingCompleted,
+                                CommonHotelId = acco.CommonHotelId,
+                                Brand = RemoveDiacritics(acco.Brand),
+                                Chain = RemoveDiacritics(acco.Chain),
+                                Latitude = RemoveDiacritics(acco.Latitude),
+                                Longitude = RemoveDiacritics(acco.Longitude),
+                                FullAddress = RemoveDiacritics(acco.FullAddress),
+                                HotelStarRating = RemoveDiacritics(acco.HotelStarRating),
+                                Email = RemoveDiacritics(acco.Email),
+                                Fax = RemoveDiacritics(acco.Fax),
+                                WebSiteURL = RemoveDiacritics(acco.WebSiteURL),
+                                Telephone = RemoveDiacritics(acco.Telephone),
+                                CodeStatus = RemoveDiacritics(acco.CodeStatus)
+                            };
+
+
                             var filter = Builders<DataContracts.Masters.DC_Accomodation>.Filter.Eq(c => c.CommonHotelId, acco.CommonHotelId);
-                            collection.ReplaceOne(filter, acco, new UpdateOptions { IsUpsert = true });
+                            collection.ReplaceOne(filter, Accodata, new UpdateOptions { IsUpsert = true });
                         }
 
                         if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
@@ -505,7 +544,9 @@ namespace DAL
                                                 Cm.Name CityName,ACC.StreetName ,ACC.StreetNumber,ACC.Street3 ,ACC.Street4 ,ACC.Street5 ,ACC.PostalCode ,ACC.Town,
                                                 ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
                                                 ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress, ACC.HotelRating as HotelStarRating,
-                                                ACC.Brand,ACC.Chain,Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
+                                                ACC.Brand,ACC.Chain,Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone ,(case when ACC.IsActive = 1 then  'Active' when ACC.IsActive = 0 then  'Inactive' else '' end) as CodeStatus , 
+                                                ACC.SuburbDowntown
+                                                from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
                                                 Left join m_CountryMaster MCM with(nolock) on MCM.Country_Id = ACC.Country_Id
                                                 LEft Join m_States MST with(nolock) on MST.State_Id = CM.State_Id
                                                 outer apply 
@@ -548,6 +589,18 @@ namespace DAL
             }
         }
 
+
+
+        public static String RemoveDiacritics(string s)
+        {
+            string data = null;
+            if (s != null)
+            {
+                data = new string(CommonFunctions.RemoveDiacritics(s).RemoveLineEndings().Where(c => !char.IsControl(c)).ToArray());
+            }
+
+            return data;
+        }
         #endregion
 
         #region ZoneMaster
