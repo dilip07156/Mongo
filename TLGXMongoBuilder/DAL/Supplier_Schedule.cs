@@ -15,7 +15,8 @@ namespace DAL
     public partial class Supplier_Schedule
     {
         public System.Guid SupplierScheduleID { get; set; }
-        public System.Guid Suppllier_ID { get; set; }
+        public System.Guid Supplier_ID { get; set; }
+        public string Entity { get; set; }
         public bool ISXMLSupplier { get; set; }
         public Nullable<bool> ISUpdateFrequence { get; set; }
         public string FrequencyTypeCode { get; set; }
@@ -24,6 +25,9 @@ namespace DAL
         public string DayOfWeek { get; set; }
         public Nullable<int> DateOfMonth { get; set; }
         public Nullable<int> WeekOfMonth { get; set; }
+        public Nullable<int> StartYear { get; set; }
+        public Nullable<int> EndYear { get; set; }
+        public string User_Role_Id { get; set; }
         public string StartTime { get; set; }
         public string EndTime { get; set; }
         public string Status { get; set; }
@@ -31,5 +35,7 @@ namespace DAL
         public string Create_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Edit_User { get; set; }
+        public string CronExpression { get; set; }
+        public Nullable<bool> IsActive { get; set; }
     }
 }

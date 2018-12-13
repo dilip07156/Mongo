@@ -45,5 +45,10 @@ namespace DAL
         public string GooglePlaceID { get; set; }
         public string Latitude { get; set; }
         public string Longitude { get; set; }
+        public string RegionName { get; set; }
+        public string RegionCode { get; set; }
+        public string Key { get; set; }
+        public string Rank { get; set; }
+        public string Priority { get; set; }
     }
 }
