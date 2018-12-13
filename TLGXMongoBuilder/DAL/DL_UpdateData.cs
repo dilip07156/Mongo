@@ -282,7 +282,7 @@ namespace DAL
                                         SupplierCityName = apm.CityName,
                                         SupplierProductName = apm.ProductName,
                                         MappingStatus = apm.Status,
-                                        MapId = apm.MapId ?? 0,
+                                        MapId = apm.MapId,
                                         SystemProductCode = a.CompanyHotelID.ToString(),
                                         SystemProductName = a.HotelName,
                                         SystemCountryName = a.country,
@@ -305,7 +305,7 @@ namespace DAL
                                         {
                                             SupplierCode = apm.SupplierName,
                                             SupplierProductCode = apm.SupplierProductReference,
-                                            MapId = apm.MapId ?? 0,
+                                            MapId = apm.MapId,
                                             SystemProductCode = a.CompanyHotelID.ToString()
                                         }).FirstOrDefault();
                     if (hotelMapLite != null)
