@@ -185,15 +185,7 @@ namespace BAL
                 obj.LoadActivityMappingLite();
             }
         }
-
-        public void LoadRoomTypeMapping()
-        {
-            using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
-            {
-                obj.LoadRoomTypeMapping();
-            }
-        }
-
+        
         public void LoadKeywords()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
@@ -302,13 +294,13 @@ namespace BAL
         #endregion
 
 
-        public void LoadMasterAccommodation(string LogId)
+        public void LoadMasterAccommodation(string LogId, string Accommodation_Id)
         {
-            if (Guid.TryParse(LogId, out Guid gLogId))
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(Accommodation_Id, out Guid gAccommodation_Id))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.LoadMasterAccommodation(gLogId);
+                    obj.LoadMasterAccommodation(gLogId, gAccommodation_Id);
                 }
             }
         }

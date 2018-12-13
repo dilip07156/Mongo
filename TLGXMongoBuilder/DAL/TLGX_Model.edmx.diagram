@@ -4,7 +4,7 @@
   <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
     <!-- Diagram content (shape and connector positions) -->
     <edmx:Diagrams>
-      <Diagram DiagramId="8973d5c8492e42ba9882f5f1ac9684ca" Name="Accomodation" ZoomLevel="46">
+      <Diagram DiagramId="8973d5c8492e42ba9882f5f1ac9684ca" Name="Accomodation" ZoomLevel="77">
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_ClassificationAttributes" Width="1.5" PointX="2.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Contact" Width="1.5" PointX="4.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_Descriptions" Width="1.5" PointX="2.75" PointY="5.75" />
@@ -24,6 +24,7 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping" Width="1.5" PointX="12.75" PointY="12.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Media_Attributes" Width="1.5" PointX="14.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation" Width="1.5" PointX="0.5" PointY="0.75" />
+        <EntityTypeShape EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping_Values" Width="1.5" PointX="15.375" PointY="4.75" />
       </Diagram>
       <Diagram DiagramId="2ae0b859787d4af1a632a2cd7f6676c2" Name="Masters" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityArea" Width="1.5" PointX="0.75" PointY="0.75" />
@@ -50,7 +51,7 @@
         <EntityTypeShape EntityType="TLGX_DEV_Model.ZoneCity_Mapping" Width="1.5" PointX="7.875" PointY="16.625" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.Supplier_Schedule" Width="1.5" PointX="13.375" PointY="12.75" />
       </Diagram>
-      <Diagram DiagramId="087092cd16664163ac6f791461e858e8" Name="Mapping" ZoomLevel="41" >
+      <Diagram DiagramId="087092cd16664163ac6f791461e858e8" Name="Mapping" ZoomLevel="93" >
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CityMapping" Width="1.5" PointX="6.75" PointY="5.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_CountryMapping" Width="1.5" PointX="8.75" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_DEV_Model.m_MasterAttributeMapping" Width="1.5" PointX="8.75" PointY="6.75" />

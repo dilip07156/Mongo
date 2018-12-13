@@ -183,14 +183,6 @@ namespace MapperSvc
             }
         }
 
-        public void LoadRoomTypeMapping()
-        {
-            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
-            {
-                objBL.LoadRoomTypeMapping();
-            }
-        }
-
         public void LoadKeywords()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -267,11 +259,11 @@ namespace MapperSvc
         }
         #endregion
 
-        public void LoadMasterAccommodation(string LogId)
+        public void LoadMasterAccommodation(string LogId, string Accommodation_Id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadMasterAccommodation(LogId);
+                objBL.LoadMasterAccommodation(LogId, Accommodation_Id);
             }
         }
     }

@@ -513,6 +513,24 @@
           <Property Name="IsNotTraining" Type="bit" />
           <Property Name="Source" Type="nvarchar" MaxLength="50" />
         </EntityType>
+        <EntityType Name="Accommodation_SupplierRoomTypeMapping_Values">
+          <Key>
+            <PropertyRef Name="Accommodation_SupplierRoomTypeMapping_Value_Id" />
+          </Key>
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Value_Id" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Id" Type="uniqueidentifier" />
+          <Property Name="MapId" Type="bigint" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Accommodation_RoomInfo_Id" Type="uniqueidentifier" />
+          <Property Name="MatchingScore" Type="float" />
+          <Property Name="UserMappingStatus" Type="varchar" MaxLength="50" />
+          <Property Name="SystemMappingStatus" Type="varchar" MaxLength="50" />
+          <Property Name="Create_User" Type="varchar" MaxLength="100" />
+          <Property Name="Create_Date" Type="datetime" />
+          <Property Name="Edit_User" Type="varchar" MaxLength="100" />
+          <Property Name="Edit_SystemUser" Type="varchar" MaxLength="100" />
+          <Property Name="SystemEditDate" Type="datetime" />
+          <Property Name="UserEditDate" Type="datetime" />
+        </EntityType>
         <EntityType Name="Activity">
           <Key>
             <PropertyRef Name="Activity_Id" />
@@ -978,8 +996,8 @@
           <Property Name="Create_Date" Type="datetime" />
           <Property Name="Edit_User" Type="varchar" MaxLength="50" />
           <Property Name="Edit_Date" Type="datetime" />
-          <Property Name="Media_Path" Type="nvarchar" MaxLength="255" />
-          <Property Name="Media_URL" Type="nvarchar" MaxLength="255" />
+          <Property Name="Media_Path" Type="nvarchar" MaxLength="500" />
+          <Property Name="Media_URL" Type="nvarchar" MaxLength="500" />
           <Property Name="Media_Position" Type="int" />
           <Property Name="Category" Type="nvarchar" MaxLength="255" />
           <Property Name="SubCategory" Type="nvarchar" MaxLength="255" />
@@ -2050,6 +2068,7 @@
           <EntitySet Name="Accommodation_Status" EntityType="Self.Accommodation_Status" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Accommodation_SupplierRoomTypeAttributes" EntityType="Self.Accommodation_SupplierRoomTypeAttributes" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Accommodation_SupplierRoomTypeMapping" EntityType="Self.Accommodation_SupplierRoomTypeMapping" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Accommodation_SupplierRoomTypeMapping_Values" EntityType="Self.Accommodation_SupplierRoomTypeMapping_Values" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity" EntityType="Self.Activity" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_Ancillary" EntityType="Self.Activity_Ancillary" Schema="dbo" store:Type="Tables" />
           <EntitySet Name="Activity_CategoriesType" EntityType="Self.Activity_CategoriesType" Schema="dbo" store:Type="Tables" />
@@ -2214,6 +2233,7 @@
           <EntitySet Name="Activity_Flavour" EntityType="TLGX_DEV_Model.Activity_Flavour" />
           <EntitySet Name="Activity_Media" EntityType="TLGX_DEV_Model.Activity_Media" />
           <EntitySet Name="Supplier_Schedule" EntityType="TLGX_DEV_Model.Supplier_Schedule" />
+          <EntitySet Name="Accommodation_SupplierRoomTypeMapping_Values" EntityType="TLGX_DEV_Model.Accommodation_SupplierRoomTypeMapping_Values" />
         </EntityContainer>
         <EntityType Name="m_CityArea">
           <Key>
@@ -3389,6 +3409,38 @@
           <Property Name="Create_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="Edit_User" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
         </EntityType>
+        <EntityType Name="Activity_Media">
+          <Key>
+            <PropertyRef Name="Activity_Media_Id" />
+          </Key>
+          <Property Name="Activity_Media_Id" Type="Guid" Nullable="false" />
+          <Property Name="Activity_Id" Type="Guid" />
+          <Property Name="Legacy_Product_Id" Type="Int32" />
+          <Property Name="MediaName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="MediaType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RoomCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="ValidFrom" Type="DateTime" Precision="3" />
+          <Property Name="ValidTo" Type="DateTime" Precision="3" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="Media_Path" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Media_URL" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Media_Position" Type="Int32" />
+          <Property Name="Category" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="SubCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="FileFormat" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="MediaID" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="MediaFileMaster" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Activity_Flavour_Id" Type="Guid" />
+          <Property Name="Media_Width" Type="Int32" />
+          <Property Name="Media_Height" Type="Int32" />
+          <Property Name="Media_Caption" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="IsStaticFileAvailable" Type="Boolean" />
+        </EntityType>
         <EntityType Name="Activity_PickUpDrop">
           <Key>
             <PropertyRef Name="Activity_PickUpDrop_Id" />
@@ -4176,6 +4228,24 @@
           <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="TLGXDisplaySubType" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+        </EntityType>
+        <EntityType Name="Accommodation_SupplierRoomTypeMapping_Values">
+          <Key>
+            <PropertyRef Name="Accommodation_SupplierRoomTypeMapping_Value_Id" />
+          </Key>
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Value_Id" Type="Guid" Nullable="false" />
+          <Property Name="Accommodation_SupplierRoomTypeMapping_Id" Type="Guid" />
+          <Property Name="MapId" Type="Int64" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Accommodation_RoomInfo_Id" Type="Guid" />
+          <Property Name="MatchingScore" Type="Double" />
+          <Property Name="UserMappingStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SystemMappingStatus" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_SystemUser" Type="String" MaxLength="100" FixedLength="false" Unicode="false" />
+          <Property Name="SystemEditDate" Type="DateTime" Precision="3" />
+          <Property Name="UserEditDate" Type="DateTime" Precision="3" />
         </EntityType>
         <EntityType Name="Activity_Media">
           <Key>
@@ -5471,6 +5541,38 @@
                 <ScalarProperty Name="Legacy_Product_Id" ColumnName="Legacy_Product_Id" />
                 <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
                 <ScalarProperty Name="Activity_Itinerary_Id" ColumnName="Activity_Itinerary_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Activity_Media">
+            <EntityTypeMapping TypeName="TLGX_DEV_Model.Activity_Media">
+              <MappingFragment StoreEntitySet="Activity_Media">
+                <ScalarProperty Name="Media_Caption" ColumnName="Media_Caption" />
+                <ScalarProperty Name="Media_Height" ColumnName="Media_Height" />
+                <ScalarProperty Name="Media_Width" ColumnName="Media_Width" />
+                <ScalarProperty Name="Activity_Flavour_Id" ColumnName="Activity_Flavour_Id" />
+                <ScalarProperty Name="MediaFileMaster" ColumnName="MediaFileMaster" />
+                <ScalarProperty Name="MediaID" ColumnName="MediaID" />
+                <ScalarProperty Name="FileFormat" ColumnName="FileFormat" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="SubCategory" ColumnName="SubCategory" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="Media_Position" ColumnName="Media_Position" />
+                <ScalarProperty Name="Media_URL" ColumnName="Media_URL" />
+                <ScalarProperty Name="Media_Path" ColumnName="Media_Path" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="ValidTo" ColumnName="ValidTo" />
+                <ScalarProperty Name="ValidFrom" ColumnName="ValidFrom" />
+                <ScalarProperty Name="RoomCategory" ColumnName="RoomCategory" />
+                <ScalarProperty Name="MediaType" ColumnName="MediaType" />
+                <ScalarProperty Name="MediaName" ColumnName="MediaName" />
+                <ScalarProperty Name="Legacy_Product_Id" ColumnName="Legacy_Product_Id" />
+                <ScalarProperty Name="Activity_Id" ColumnName="Activity_Id" />
+                <ScalarProperty Name="Activity_Media_Id" ColumnName="Activity_Media_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

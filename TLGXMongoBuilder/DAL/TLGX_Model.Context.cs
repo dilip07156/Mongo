@@ -111,6 +111,7 @@ namespace DAL
         public virtual DbSet<Activity_FlavourServices> Activity_FlavourServices { get; set; }
         public virtual DbSet<DistributionLayerRefresh_Log> DistributionLayerRefresh_Log { get; set; }
         public virtual DbSet<Activity_Flavour> Activity_Flavour { get; set; }
+        public virtual DbSet<Accommodation_SupplierRoomTypeMapping_Values> Accommodation_SupplierRoomTypeMapping_Values { get; set; }
         public virtual DbSet<Activity_Media> Activity_Media { get; set; }
         public virtual DbSet<Supplier_Schedule> Supplier_Schedule { get; set; }
     }
