@@ -1013,7 +1013,7 @@ namespace DAL
                                               //CityMapping_Id = cm.CityMapping_Id.ToString(),
                                               CityName = (city.Name ?? string.Empty).ToUpper(),
                                               CityCode = (city.Code ?? string.Empty).ToUpper(),
-                                              SupplierCityCode = (cm.CityCode ?? string.Empty).ToUpper(),
+                                              SupplierCityCode = (supplier.Code.ToUpper() == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
                                               SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
                                               SupplierName = supplier.Name.ToUpper(),
                                               SupplierCode = supplier.Code.ToUpper(),
