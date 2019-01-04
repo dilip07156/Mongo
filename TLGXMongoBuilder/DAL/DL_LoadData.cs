@@ -3339,7 +3339,7 @@ namespace DAL
                         foreach (var item in _objHRTM)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, item.SystemRoomTypeMapId);
-                            collection.ReplaceOneAsync(filter, item, new UpdateOptions { IsUpsert = true });
+                            collection.ReplaceOne(filter, item, new UpdateOptions { IsUpsert = true });
 
                             counter++;
 
