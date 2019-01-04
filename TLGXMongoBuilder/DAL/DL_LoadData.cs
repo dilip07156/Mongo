@@ -3277,7 +3277,7 @@ namespace DAL
                 {
                     context.Database.CommandTimeout = 0;
 
-                    SupplierIds = context.Suppliers.Where(w => w.StatusCode == "ACTIVE").Select(s => new Supplier { Supplier_Id = s.Supplier_Id, Code = s.Code.ToUpper() }).ToList();
+                    SupplierIds = context.Suppliers.Where(w => w.StatusCode == "ACTIVE").Select(s => s).ToList();
                     if (Supplier_Id != Guid.Empty)
                     {
                         SupplierIds = SupplierIds.Where(w => w.Supplier_Id == Supplier_Id).ToList();
@@ -3317,7 +3317,7 @@ namespace DAL
 
                     List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest> _objHRTM = new List<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>();
 
-                    _objHRTM = GetDataToPushMongo_RTM(SupplierId.Supplier_Id, SupplierId.Code);
+                    _objHRTM = GetDataToPushMongo_RTM(SupplierId.Supplier_Id, SupplierId.Code.ToUpper());
 
                     UpdateDistLogInfo(Logid, PushStatus.RUNNNING, _objHRTM.Count(), 0, SupplierId.ToString(), "ROOMTYPE", "MAPPING");
 
