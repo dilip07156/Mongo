@@ -1040,7 +1040,12 @@ namespace DAL
                                                  MapId = cm.MapID ?? 0
                                              }).ToList();
 
-                    if (CityListNotMapped != null && CityListNotMapped.Count > 0)
+                    var mapidsinmongo = collection.Find(x => true).Project(u => new { u.MapId }).ToList();
+                    var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                             join d in CityListNotMapped on m.MapId equals d.MapId
+                                             select m).ToList();
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                     {
                         foreach (var city in CityListNotMapped)
                         {
