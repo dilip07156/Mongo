@@ -12,15 +12,18 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class m_CityArea
+    public partial class Activity_MediaAttributes
     {
-        public System.Guid CityArea_Id { get; set; }
-        public Nullable<System.Guid> City_Id { get; set; }
-        public string Name { get; set; }
-        public string Code { get; set; }
+        public System.Guid Activity_MediaAttributes_Id { get; set; }
+        public Nullable<System.Guid> Activity_Media_Id { get; set; }
+        public string AttributeType { get; set; }
+        public string AttributeValue { get; set; }
+        public Nullable<bool> IsActive { get; set; }
+        public string Status { get; set; }
         public Nullable<System.DateTime> Create_Date { get; set; }
         public string Create_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Edit_User { get; set; }
+        public Nullable<bool> IsSystemAttribute { get; set; }
     }
 }

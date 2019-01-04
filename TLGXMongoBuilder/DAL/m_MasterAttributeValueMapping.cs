@@ -18,11 +18,11 @@ namespace DAL
         public System.Guid MasterAttributeMapping_Id { get; set; }
         public System.Guid SystemMasterAttributeValue_Id { get; set; }
         public string SupplierMasterAttributeValue { get; set; }
+        public string SupplierMasterAttributeCode { get; set; }
         public bool IsActive { get; set; }
         public string Create_User { get; set; }
         public System.DateTime Create_Date { get; set; }
         public string Edit_User { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
-        public string SupplierMasterAttributeCode { get; set; }
     }
 }

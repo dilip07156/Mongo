@@ -44,7 +44,6 @@ namespace DAL
         public string Email { get; set; }
         public string Fax { get; set; }
         public string Website { get; set; }
-        public int MapId { get; set; }
         public string Remarks { get; set; }
         public Nullable<int> Legacy_Htl_ID { get; set; }
         public string address { get; set; }
@@ -69,5 +68,6 @@ namespace DAL
         public string ProductType { get; set; }
         public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
         public Nullable<int> RowCounter { get; set; }
+        public int MapId { get; set; }
     }
 }

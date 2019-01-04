@@ -18,13 +18,6 @@ namespace DAL
         public System.Guid Activity_Flavor_ID { get; set; }
         public Nullable<System.Guid> Activity_DaysOfOperation_Id { get; set; }
         public string SupplierFrequency { get; set; }
-        public Nullable<bool> Mon { get; set; }
-        public Nullable<bool> Tues { get; set; }
-        public Nullable<bool> Wed { get; set; }
-        public Nullable<bool> Thur { get; set; }
-        public Nullable<bool> Fri { get; set; }
-        public Nullable<bool> Sat { get; set; }
-        public Nullable<bool> Sun { get; set; }
         public string SupplierStartTime { get; set; }
         public string StartTime { get; set; }
         public string SupplierEndTime { get; set; }
@@ -39,5 +32,12 @@ namespace DAL
         public string EditUser { get; set; }
         public Nullable<System.DateTime> EditDate { get; set; }
         public string DurationType { get; set; }
+        public Nullable<bool> Mon { get; set; }
+        public Nullable<bool> Tues { get; set; }
+        public Nullable<bool> Wed { get; set; }
+        public Nullable<bool> Thur { get; set; }
+        public Nullable<bool> Fri { get; set; }
+        public Nullable<bool> Sat { get; set; }
+        public Nullable<bool> Sun { get; set; }
     }
 }

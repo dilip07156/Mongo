@@ -100,8 +100,6 @@ namespace DataContracts.Mapping
 
     public class DC_RoomTypeMapping_Attributes_HRTM
     {
-        [BsonIgnore]
-        public Guid? RoomTypeMap_Id { get; set; }
         public string Key { get; set; }
         public string Value { get; set; }
     }
