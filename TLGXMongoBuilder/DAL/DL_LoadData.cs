@@ -1142,9 +1142,6 @@ namespace DAL
                 {
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
 
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode));
                     using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
                     {
                         using (TLGX_Entities context = new TLGX_Entities())
@@ -1154,7 +1151,6 @@ namespace DAL
                             //ALL APM Count
                             TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.IsActive == true).Count();
                             var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
-                            //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                             foreach (var SupplierCode in SupplierCodes)
                             {
                                 var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
@@ -1203,15 +1199,12 @@ namespace DAL
                                                          where subpet == null
                                                          select m.MapId).ToList();
 
-
-
                                 if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                                 {
                                     foreach (var MapId in MapIdsToBeDeleted)
                                     {
                                         var filter = Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.MapId, MapId);
-                                        filter = filter & Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.SupplierCode, SupplierCode.SupplierCode);
-                                        collection.DeleteOne(filter);
+                                        collection.DeleteMany(filter);
                                     }
                                 }
 
@@ -1221,105 +1214,18 @@ namespace DAL
                                     foreach (var product in productMapList)
                                     {
                                         var filter = Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.MapId, product.MapId);
-                                        collection.ReplaceOneAsync(filter, product, new UpdateOptions { IsUpsert = true });
+                                        collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
                                     }
 
+                                    MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
                                 }
-
-
-
-
-
-
-                                //var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
-
-                                //if (productMapList.Count() > 0)
-                                //{
-                                //    foreach (var prodMap in productMapList)
-                                //    {
-                                //        collection.InsertOneAsync(prodMap);
-                                //    }
-
-                                //    #region To update CounterIn DistributionLog
-                                //    MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                                //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
-                                //    #endregion
-                                //}
                             }
-
-
-
-
-
-
 
                             UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
                         }
                         scope.Complete();
-
-
                     }
-
-
-                    #region Index Management
-                    var listOfindexes = collection.Indexes.List().ToList();
-                    foreach (var index in listOfindexes)
-                    {
-                        Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
-                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
-                        {
-                            Is_IX_SupplierCode_SupplierProductCode_Exists = true;
-                        }
-
-                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
-                        {
-                            Is_IX_SupplierCode_SystemProductCode_Exists = true;
-                        }
-
-                        if ((string)rss["key"]["MapId"] != null)
-                        {
-                            Is_IX_MapId_Exists = true;
-                        }
-                    }
-
-                    if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
-                    {
-                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode);
-                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                        collection.Indexes.CreateOneAsync(IndexModel);
-                    }
-
-                    if (!Is_IX_SupplierCode_SystemProductCode_Exists)
-                    {
-                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
-                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                        collection.Indexes.CreateOneAsync(IndexModel);
-                    }
-
-
-                    if (!Is_IX_SupplierCode_SystemCityCode_Exists)
-                    {
-                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
-                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                        collection.Indexes.CreateOneAsync(IndexModel);
-                    }
-
-                    if (!Is_IX_MapId_Exists)
-                    {
-                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                        var keys = IndexBuilder.Ascending(_ => _.MapId);
-                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                        collection.Indexes.CreateOneAsync(IndexModel);
-                    }
-
-                    #endregion
-
-
-                    collection = null;
-                    _database = null;
                 }
                 else
                 {
@@ -1372,6 +1278,65 @@ namespace DAL
                     }
                     #endregion
                 }
+
+                #region Index Management
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemCityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                collection = null;
+                _database = null;
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -3364,12 +3329,19 @@ namespace DAL
                 setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
             }
 
-
-            using (TLGX_Entities context = new TLGX_Entities())
+            try
             {
-                context.Configuration.AutoDetectChangesEnabled = false;
-                context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    context.Database.ExecuteSqlCommand(setNewStatus.ToString());
+                }
             }
+            catch
+            {
+
+            }
+            
             setNewStatus = null;
         }
 
