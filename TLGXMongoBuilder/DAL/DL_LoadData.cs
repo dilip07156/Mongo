@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using MongoDB.Driver.Builders;
 using System.ComponentModel;
 using System.Globalization;
+using Newtonsoft.Json;
 
 namespace DAL
 {
@@ -2357,7 +2358,12 @@ namespace DAL
                         //{
                         var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
                         collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+
                         // }
+
+                        //Call to Generate message static method send Messages.
+
+                        SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
 
                         newActivity = null;
                         ActivityClassAttr = null;
