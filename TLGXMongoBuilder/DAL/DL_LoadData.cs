@@ -1188,7 +1188,11 @@ namespace DAL
 
                                                   }).ToList();
 
-                            var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
+                            //var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
+
+                            var resMongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode);
+
+                            //var resData 
 
                             if (productMapList.Count() > 0)
                             {
