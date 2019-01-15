@@ -1190,7 +1190,7 @@ namespace DAL
 
                                                       }).ToList();
 
-                                var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
+                            var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
 
                                 if (productMapList.Count() > 0)
                                 {
