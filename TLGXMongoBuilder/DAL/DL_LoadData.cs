@@ -2435,6 +2435,10 @@ namespace DAL
                         collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
                         // }
 
+                        //Call to Generate message static method send Messages.
+
+                        SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
+
                         newActivity = null;
                         ActivityClassAttr = null;
                         ActivityDesc = null;

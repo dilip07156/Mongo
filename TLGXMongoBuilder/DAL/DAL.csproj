@@ -341,8 +341,10 @@
     <Compile Include="m_ZoneMaster.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
+    <Compile Include="ProduceMessage.cs" />
     <Compile Include="ProductDAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Proxy.cs" />
     <Compile Include="Supplier.cs">
       <DependentUpon>TLGX_Model.tt</DependentUpon>
     </Compile>
