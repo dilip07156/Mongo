@@ -1129,6 +1129,10 @@ namespace DAL
         {
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
+            bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+            bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+            bool Is_IX_SupplierCode_SystemCityCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
             try
             {
                 _database = MongoDBHandler.mDatabase();
@@ -1190,29 +1194,132 @@ namespace DAL
 
                                                       }).ToList();
 
-                            var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
 
-                                if (productMapList.Count() > 0)
+                                var mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => new { u.MapId }).ToList();
+
+                                var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                         join d in productMapList on m.MapId equals d.MapId into gj
+                                                         from subpet in gj.DefaultIfEmpty()
+                                                         where subpet == null
+                                                         select m.MapId).ToList();
+
+
+
+                                if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                                 {
-                                    foreach (var prodMap in productMapList)
+                                    foreach (var MapId in MapIdsToBeDeleted)
                                     {
-                                        collection.InsertOneAsync(prodMap);
+                                        var filter = Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.MapId, MapId);
+                                        filter = filter & Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.SupplierCode, SupplierCode.SupplierCode);
+                                        collection.DeleteOne(filter);
+                                    }
+                                }
+
+
+                                if (productMapList != null && productMapList.Count() > 0)
+                                {
+                                    foreach (var product in productMapList)
+                                    {
+                                        var filter = Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.MapId, product.MapId);
+                                        collection.ReplaceOneAsync(filter, product, new UpdateOptions { IsUpsert = true });
                                     }
 
-                                    #region To update CounterIn DistributionLog
-                                    MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
-                                    #endregion
                                 }
+
+
+
+
+
+
+                                //var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
+
+                                //if (productMapList.Count() > 0)
+                                //{
+                                //    foreach (var prodMap in productMapList)
+                                //    {
+                                //        collection.InsertOneAsync(prodMap);
+                                //    }
+
+                                //    #region To update CounterIn DistributionLog
+                                //    MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                                //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                                //    #endregion
+                                //}
                             }
 
-                            collection = null;
-                            _database = null;
+
+
+
+
+
 
                             UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
                         }
                         scope.Complete();
+
+
                     }
+
+
+                    #region Index Management
+                    var listOfindexes = collection.Indexes.List().ToList();
+                    foreach (var index in listOfindexes)
+                    {
+                        Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["MapId"] != null)
+                        {
+                            Is_IX_MapId_Exists = true;
+                        }
+                    }
+
+                    if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+
+                    if (!Is_IX_SupplierCode_SystemCityCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_MapId_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.MapId);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    #endregion
+
+
+                    collection = null;
+                    _database = null;
                 }
                 else
                 {
