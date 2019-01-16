@@ -1137,6 +1137,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
+                
 
                 if (ProdMapId == Guid.Empty)
                 {
@@ -1153,7 +1154,10 @@ namespace DAL
                             context.Database.CommandTimeout = 0;
                             //ALL APM Count
                             TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.IsActive == true).Count();
-                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+
+                            //var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+
+                            var SupplierCodes = context.Suppliers.Where(w => w.Code == "ARABIAN ADVENTURES" && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
                             //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                             foreach (var SupplierCode in SupplierCodes)
                             {
@@ -1210,8 +1214,7 @@ namespace DAL
                                     foreach (var MapId in MapIdsToBeDeleted)
                                     {
                                         var filter = Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.MapId, MapId);
-                                        filter = filter & Builders<DataContracts.Mapping.DC_ProductMapping>.Filter.Eq(c => c.SupplierCode, SupplierCode.SupplierCode);
-                                        collection.DeleteOne(filter);
+                                        collection.DeleteManyAsync(filter);
                                     }
                                 }
 
@@ -1225,26 +1228,6 @@ namespace DAL
                                     }
 
                                 }
-
-
-
-
-
-
-                                //var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
-
-                                //if (productMapList.Count() > 0)
-                                //{
-                                //    foreach (var prodMap in productMapList)
-                                //    {
-                                //        collection.InsertOneAsync(prodMap);
-                                //    }
-
-                                //    #region To update CounterIn DistributionLog
-                                //    MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                                //    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
-                                //    #endregion
-                                //}
                             }
 
 
