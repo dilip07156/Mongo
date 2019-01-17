@@ -1137,7 +1137,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
-                
+
 
                 if (ProdMapId == Guid.Empty)
                 {
@@ -1155,9 +1155,9 @@ namespace DAL
                             //ALL APM Count
                             TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.IsActive == true).Count();
 
-                            //var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+                            //var SupplierCodes = context.Suppliers.Where(w => w.Code == "ARABIAN ADVENTURES" && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
 
-                            var SupplierCodes = context.Suppliers.Where(w => w.Code == "ARABIAN ADVENTURES" && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
                             //List<string> SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GTA").Select(s => s.Code.ToUpper()).Distinct().ToList();
                             foreach (var SupplierCode in SupplierCodes)
                             {
@@ -1229,11 +1229,7 @@ namespace DAL
 
                                 }
                             }
-
-
-
-
-
+                            
 
 
                             UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
@@ -1368,6 +1364,9 @@ namespace DAL
         {
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
+            bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+            bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
             try
             {
                 _database = MongoDBHandler.mDatabase();
@@ -1377,47 +1376,143 @@ namespace DAL
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                     //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-                    using (TLGX_Entities context = new TLGX_Entities())
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted }))
                     {
-                        context.Configuration.AutoDetectChangesEnabled = false;
-                        context.Database.CommandTimeout = 0;
-                        //TotalCount
-                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
 
-                        var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
-                        foreach (var SupplierCode in SupplierCodes)
+                        using (TLGX_Entities context = new TLGX_Entities())
                         {
-                            var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
-                                                  join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
-                                                  where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
-                                                  && apm.IsActive == true
-                                                  select new DataContracts.Mapping.DC_ProductMappingLite
-                                                  {
-                                                      SupplierCode = SupplierCode.SupplierCode,
-                                                      SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                                      MapId = apm.MapId,
-                                                      SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
-                                                      TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
-                                                  }).ToList();
-                            var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
-                            if (productMapList.Count() > 0)
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+                            //TotalCount
+                            TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
+
+                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+                            //var SupplierCodes = context.Suppliers.Where(w => w.Code == "ARABIAN ADVENTURES" && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+
+                            foreach (var SupplierCode in SupplierCodes)
                             {
-                                foreach (var prod in productMapList)
+                                var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                                                      join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                                      where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
+                                                      && apm.IsActive == true
+                                                      select new DataContracts.Mapping.DC_ProductMappingLite
+                                                      {
+                                                          SupplierCode = SupplierCode.SupplierCode,
+                                                          SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                          MapId = apm.MapId,
+                                                          SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                          TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
+                                                      }).ToList();
+
+
+
+
+                                var mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => new { u.MapId }).ToList();
+
+                                var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                         join d in productMapList on m.MapId equals d.MapId into gj
+                                                         from subpet in gj.DefaultIfEmpty()
+                                                         where subpet == null
+                                                         select m.MapId).ToList();
+
+
+
+                                if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                                 {
-                                    collection.InsertOneAsync(prod);
+                                    foreach (var MapId in MapIdsToBeDeleted)
+                                    {
+                                        var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, MapId);
+                                        collection.DeleteManyAsync(filter);
+                                    }
                                 }
+
+
+                                if (productMapList != null && productMapList.Count() > 0)
+                                {
+                                    foreach (var product in productMapList)
+                                    {
+                                        var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, product.MapId);
+                                        collection.ReplaceOneAsync(filter, product, new UpdateOptions { IsUpsert = true });
+                                    }
+
+                                }
+
+
+
+                                //var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
+                                //if (productMapList.Count() > 0)
+                                //{
+                                //    foreach (var prod in productMapList)
+                                //    {
+                                //        collection.InsertOneAsync(prod);
+                                //    }
                                 #region To update CounterIn DistributionLog
                                 MongoInsertedCount = MongoInsertedCount + productMapList.Count();
                                 UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
                                 #endregion
+                                //}
                             }
+
+
+                            UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
+
                         }
-                        collection = null;
-                        _database = null;
-
-                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
-
+                        scope.Complete();
+                       
                     }
+
+
+
+                    #region Index Management
+                    var listOfindexes = collection.Indexes.List().ToList();
+                    foreach (var index in listOfindexes)
+                    {
+                        Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["MapId"] != null)
+                        {
+                            Is_IX_MapId_Exists = true;
+                        }
+                    }
+
+                    if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+
+                    if (!Is_IX_MapId_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.MapId);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    #endregion
+
+                    collection = null;
+                    _database = null;
                 }
                 else
                 {
