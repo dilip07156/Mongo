@@ -12,6 +12,7 @@ using MongoDB.Driver.Builders;
 using System.ComponentModel;
 using System.Globalization;
 using System.Data;
+using DataContracts.Masters;
 
 namespace DAL
 {
@@ -990,79 +991,16 @@ namespace DAL
         {
             try
             {
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
                 bool Is_IX_SupplierCode_SupplierCityCode_Exists = false;
                 bool Is_IX_SupplierCode_CityCode_Exists = false;
                 bool Is_IX_MapId_Exists = false;
+                int TotalRecords = 0;
+                int TotalProcessed = 0;
 
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
-
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-
-                    context.Configuration.AutoDetectChangesEnabled = false;
-
-                    var CityListMapped = (from cm in context.m_CityMapping.AsNoTracking()
-                                          join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
-                                          join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
-                                          join supplier in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals supplier.Supplier_Id
-                                          where cm.Status == "MAPPED"
-                                          select new DataContracts.Mapping.DC_CityMapping
-                                          {
-                                              //CityMapping_Id = cm.CityMapping_Id.ToString(),
-                                              CityName = (city.Name ?? string.Empty).ToUpper(),
-                                              CityCode = (city.Code ?? string.Empty).ToUpper(),
-                                              SupplierCityCode = (supplier.Code.ToUpper() == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
-                                              SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
-                                              SupplierName = supplier.Name.ToUpper(),
-                                              SupplierCode = supplier.Code.ToUpper(),
-                                              CountryCode = country.Code.ToUpper(),
-                                              CountryName = country.Name.ToUpper(),
-                                              SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
-                                              SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
-                                              MapId = cm.MapID ?? 0
-                                          }).ToList();
-
-                    if (CityListMapped != null && CityListMapped.Count > 0)
-                    {
-                        foreach (var city in CityListMapped)
-                        {
-                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
-                            collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
-                        }
-                        //collection.InsertMany(CityListMapped);
-                    }
-
-
-                    var CityListNotMapped = (from cm in context.m_CityMapping.AsNoTracking()
-                                             where cm.Status != "MAPPED"
-                                             select new DataContracts.Mapping.DC_CityMapping
-                                             {
-                                                 MapId = cm.MapID ?? 0
-                                             }).ToList();
-
-                    var mapidsinmongo = collection.Find(x => true).Project(u => new { u.MapId }).ToList();
-                    var MapIdsToBeDeleted = (from m in mapidsinmongo
-                                             join d in CityListNotMapped on m.MapId equals d.MapId
-                                             select m).ToList();
-
-                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
-                    {
-                        foreach (var city in CityListNotMapped)
-                        {
-                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
-                            collection.DeleteOne(filter);
-                        }
-                    }
-
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.Create_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
-                }
 
                 #region Index Management
                 var listOfindexes = collection.Indexes.List().ToList();
@@ -1111,8 +1049,100 @@ namespace DAL
 
                 #endregion
 
+                List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions()
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                        Timeout = new TimeSpan(0, 2, 0)
+                    }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                        {
+                            SupplierCode = s.Code.ToUpper(),
+                            Supplier_Id = s.Supplier_Id,
+                            SupplierName = s.Name.ToUpper()
+                        }).ToList();
+
+                        TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED").Count();
+                    }
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, 0, string.Empty, "City", "Mapping");
+
+                foreach (var supplier in SupplierCodes)
+                {
+                    List<DataContracts.Mapping.DC_CityMapping> CityListMapped = new List<DataContracts.Mapping.DC_CityMapping>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions()
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                        Timeout = new TimeSpan(0, 2, 0)
+                    }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            CityListMapped = (from cm in context.m_CityMapping.AsNoTracking()
+                                              join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
+                                              join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
+                                              where cm.Supplier_Id == supplier.Supplier_Id && cm.Status == "MAPPED"
+                                              select new DataContracts.Mapping.DC_CityMapping
+                                              {
+                                                  //CityMapping_Id = cm.CityMapping_Id.ToString(),
+                                                  CityName = (city.Name ?? string.Empty).ToUpper(),
+                                                  CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                                  SupplierCityCode = (supplier.SupplierCode == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
+                                                  SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                                  SupplierName = supplier.SupplierName,
+                                                  SupplierCode = supplier.SupplierCode,
+                                                  CountryCode = country.Code.ToUpper(),
+                                                  CountryName = country.Name.ToUpper(),
+                                                  SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                                  SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
+                                                  MapId = cm.MapID ?? 0
+                                              }).ToList();
+
+                        }
+                    }
+
+                    var MappedIds = CityListMapped.Select(s => s.MapId).ToList();
+                    var mapidsinmongo = collection.Find(x => x.SupplierCode == supplier.SupplierCode).Project(u => new { u.MapId }).ToList();
+                    var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                             where !MappedIds.Contains(m.MapId)
+                                             select m).ToList();
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var city in MapIdsToBeDeleted)
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
+                            collection.DeleteMany(filter);
+                        }
+                    }
+                    if (CityListMapped != null && CityListMapped.Count > 0)
+                    {
+                        foreach (var city in CityListMapped)
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
+                            collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
+                        }
+                    }
+
+                    TotalProcessed += MappedIds.Count();
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
+                }
+
                 collection = null;
                 _database = null;
+
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1207,7 +1237,6 @@ namespace DAL
                                         collection.DeleteMany(filter);
                                     }
                                 }
-
 
                                 if (productMapList != null && productMapList.Count() > 0)
                                 {
@@ -3345,7 +3374,7 @@ namespace DAL
             {
 
             }
-            
+
             setNewStatus = null;
         }
 

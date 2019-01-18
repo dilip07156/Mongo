@@ -25,4 +25,11 @@ namespace DataContracts.Masters
         [DataMember]
         public string SupplierType { get; set; }
     }
+
+    public class DC_Supplier_ShortVersion
+    {
+        public Guid Supplier_Id { get; set; }
+        public string SupplierName { get; set; }
+        public string SupplierCode { get; set; }
+    }
 }
