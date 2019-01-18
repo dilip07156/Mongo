@@ -1164,6 +1164,7 @@
           <Property Name="PersonType" Type="varchar" MaxLength="40" />
           <Property Name="AgeFrom" Type="varchar" MaxLength="40" />
           <Property Name="AgeTo" Type="varchar" MaxLength="40" />
+          <Property Name="PackageSupplier" Type="varchar" MaxLength="150" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -3100,6 +3101,7 @@
           <Property Name="PersonType" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="AgeFrom" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
           <Property Name="AgeTo" Type="String" MaxLength="40" FixedLength="false" Unicode="false" />
+          <Property Name="PackageSupplier" Type="String" MaxLength="150" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="Activity_ReviewsAndScores">
           <Key>
@@ -4865,6 +4867,7 @@
           <EntitySetMapping Name="Activity_Prices">
             <EntityTypeMapping TypeName="TLGX_Model.Activity_Prices">
               <MappingFragment StoreEntitySet="Activity_Prices">
+                <ScalarProperty Name="PackageSupplier" ColumnName="PackageSupplier" />
                 <ScalarProperty Name="AgeTo" ColumnName="AgeTo" />
                 <ScalarProperty Name="AgeFrom" ColumnName="AgeFrom" />
                 <ScalarProperty Name="PersonType" ColumnName="PersonType" />

@@ -2377,7 +2377,8 @@ namespace DAL
                             Market = s.Market,
                             PersonType = s.PersonType,
                             ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
-                            ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString()
+                            ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString(),
+                            PackageSupplier = s.PackageSupplier
                         }).ToList();
 
                         newActivity.ProductOptions = (from afo in ActivityFO

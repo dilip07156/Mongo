@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace DataContracts.Activity
 {
+    [BsonIgnoreExtraElements]
     public class ActivityDefinition
     {
         //[BsonId]
@@ -217,6 +218,7 @@ namespace DataContracts.Activity
         public string PersonType { get; set; }
         public string ValidFrom { get; set; }
         public string ValidTo { get; set; }
+        public string PackageSupplier { get; set; }
     }
 
     public class SystemMapping

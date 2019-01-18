@@ -38,5 +38,6 @@ namespace DAL
         public string PersonType { get; set; }
         public string AgeFrom { get; set; }
         public string AgeTo { get; set; }
+        public string PackageSupplier { get; set; }
     }
 }
