@@ -996,6 +996,7 @@ namespace DAL
                 bool Is_IX_SupplierCode_SupplierCityCode_Exists = false;
                 bool Is_IX_SupplierCode_CityCode_Exists = false;
                 bool Is_IX_MapId_Exists = false;
+                bool Is_IX_CityCode_Exists = false;
                 int TotalRecords = 0;
                 int TotalProcessed = 0;
 
@@ -1021,6 +1022,11 @@ namespace DAL
                     {
                         Is_IX_MapId_Exists = true;
                     }
+
+                    if ((string)rss["key"]["CityCode"] != null)
+                    {
+                        Is_IX_CityCode_Exists = true;
+                    }
                 }
 
                 if (!Is_IX_SupplierCode_SupplierCityCode_Exists)
@@ -1043,6 +1049,14 @@ namespace DAL
                 {
                     IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
                     var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_CityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.CityCode);
                     CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
                     collection.Indexes.CreateOneAsync(IndexModel);
                 }
