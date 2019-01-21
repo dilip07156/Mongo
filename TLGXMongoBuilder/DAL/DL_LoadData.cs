@@ -1855,7 +1855,6 @@ namespace DAL
                     var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "ckis"
                                         select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
                     int iTotalCount = ActivityList.Count();
                     int iCounter = 0;
@@ -2108,6 +2107,7 @@ namespace DAL
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
                     context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
 
                     _database = MongoDBHandler.mDatabase();
 
@@ -2122,7 +2122,6 @@ namespace DAL
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                         where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "bemyguest"
                                         select a).ToList();
                     }
                     else
@@ -2154,6 +2153,7 @@ namespace DAL
             using (TLGX_Entities context = new TLGX_Entities())
             {
                 context.Configuration.AutoDetectChangesEnabled = false;
+                context.Database.CommandTimeout = 0;
 
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
@@ -2502,20 +2502,12 @@ namespace DAL
                                                      }).ToList();
 
                         //Activity TLGXDisplaySubType Setting
-                        newActivity.TLGXDisplaySubType = (context.Activity_Flavour.Where(x => x.Activity_Flavour_Id == Activity.Activity_Flavour_Id).Select(x => x.TLGXDisplaySubType).FirstOrDefault());
+                        newActivity.TLGXDisplaySubType = Activity.TLGXDisplaySubType;
 
-                        //if (Activity_Flavour_Id == Guid.Empty)
-                        //{
-                        //    collection.InsertOneAsync(newActivity);
-                        //}
-                        //else
-                        //{
                         var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
                         collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-                        // }
 
                         //Call to Generate message static method send Messages.
-
                         SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
 
                         newActivity = null;
@@ -2556,6 +2548,8 @@ namespace DAL
             using (TLGX_Entities context = new TLGX_Entities())
             {
                 context.Configuration.AutoDetectChangesEnabled = false;
+                context.Database.CommandTimeout = 0;
+
                 List<Activity_Flavour> ActivityList;
 
                 if (suppliername != string.Empty)
@@ -2565,6 +2559,7 @@ namespace DAL
                                     where a.CityCode != null && (spm.IsActive ?? false) == true
                                     && spm.SupplierName == suppliername
                                     select a).ToList();
+
                     int totalCount = ActivityList.Count;
                     if (totalCount > 0)
                     {
