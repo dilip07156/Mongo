@@ -25,16 +25,16 @@ namespace DAL
         public string SystemProductCategorySubType { get; set; }
         public string SystemProductType { get; set; }
         public string SystemProductNameSubType { get; set; }
+        public string SystemInterestType { get; set; }
         public Nullable<System.Guid> SystemProductCategory_ID { get; set; }
         public Nullable<System.Guid> SystemProductCategorySubType_ID { get; set; }
         public Nullable<System.Guid> SystemProductType_ID { get; set; }
         public Nullable<System.Guid> SystemProductNameSubType_ID { get; set; }
+        public Nullable<System.Guid> SystemInterestType_ID { get; set; }
         public Nullable<bool> IsActive { get; set; }
         public System.DateTime Create_Date { get; set; }
         public Nullable<System.DateTime> Edit_Date { get; set; }
         public string Create_User { get; set; }
         public string Edit_User { get; set; }
-        public string SystemInterestType { get; set; }
-        public Nullable<System.Guid> SystemInterestType_ID { get; set; }
     }
 }

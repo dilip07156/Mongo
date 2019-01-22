@@ -19,7 +19,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
 
@@ -121,7 +121,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
 
@@ -190,7 +190,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
                     var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
@@ -264,7 +264,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
 
@@ -361,7 +361,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
 
@@ -400,7 +400,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     var CountryName = (from c in context.m_CountryMaster
                                        where c.Code == Code
@@ -450,7 +450,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     var City = (from city in context.m_CityMaster
                                 join country in context.m_CountryMaster on city.Country_Id equals country.Country_Id
@@ -495,7 +495,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     var City = (from city in context.m_CityMaster
                                 join country in context.m_CountryMaster on city.Country_Id equals country.Country_Id
@@ -558,7 +558,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
 
                     var Supplier = (from s in context.Suppliers
@@ -603,7 +603,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
 
                     var Supplier = (from s in context.Suppliers
@@ -664,7 +664,7 @@ namespace DAL
         {
             try
             {
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
 
 

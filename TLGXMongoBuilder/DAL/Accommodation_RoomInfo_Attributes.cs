@@ -12,12 +12,12 @@ namespace DAL
     using System;
     using System.Collections.Generic;
     
-    public partial class m_Currency
+    public partial class Accommodation_RoomInfo_Attributes
     {
-        public System.Guid Currency_Id { get; set; }
-        public string Currency { get; set; }
-        public string ISO_Alphabetic_Code { get; set; }
-        public string ISO_Numeric_Code { get; set; }
-        public string Minor_unit { get; set; }
+        public System.Guid Accommodation_RoomInfo_Attribute_Id { get; set; }
+        public System.Guid Accommodation_RoomInfo_Id { get; set; }
+        public string Accommodation_RoomInfo_Attribute { get; set; }
+        public string SystemAttributeKeyword { get; set; }
+        public System.Guid SystemAttributeKeyword_Id { get; set; }
     }
 }

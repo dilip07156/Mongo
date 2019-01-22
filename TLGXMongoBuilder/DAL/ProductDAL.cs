@@ -80,7 +80,7 @@ namespace DAL
         //{
         //    try
         //    {
-        //        using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+        //        using (TLGX_Entities context = new TLGX_Entities())
         //        {
 
         //            _database = MongoDBHandler.mDatabase();
@@ -300,7 +300,7 @@ namespace DAL
 
         public void LoadHotelDefinitions()
         {
-            using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+            using (TLGX_Entities context = new TLGX_Entities())
             {
                 _database = MongoDBHandler.mDatabase();
                 

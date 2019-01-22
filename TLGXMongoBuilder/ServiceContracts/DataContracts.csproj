@@ -119,6 +119,7 @@
     <Compile Include="Activity\ActivityDefinition.cs" />
     <Compile Include="Activity\ActivityMasters.cs" />
     <Compile Include="AuthenticateContract.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="DC_SupplierEntity.cs" />
     <Compile Include="Dc_SupplierEntitySingleValue.cs" />
     <Compile Include="DC_SupplierProductValues.cs" />
