@@ -4705,7 +4705,7 @@ namespace DAL
 
                 }
 
-                using (TLGX_DEVEntities context = new TLGX_DEVEntities())
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
                     var Log = context.DistributionLayerRefresh_Log.Find(Logid);
                     if (Log != null)
