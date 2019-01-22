@@ -480,6 +480,39 @@ namespace DAL
                     {
                         foreach (var acco in _AccoList)
                         {
+                            /* Need write CompanyVersion Function */
+                            List< DC_AccomodationCompanyVersions> lstCompanyVersion = GetAccommodationCompanyVersion(acco.Accommodation_Id);
+                            lstCompanyVersion.ForEach(x =>
+                            {
+                                RemoveDiacritics(x.CommonProductId);
+                                RemoveDiacritics(x.CompanyProductId);
+                                RemoveDiacritics(x.CompanyId);
+                                RemoveDiacritics(x.CompanyName);
+                                RemoveDiacritics(x.ProductName);
+                                RemoveDiacritics(x.ProductDisplayName);
+                                RemoveDiacritics(x.StarRating);
+                                RemoveDiacritics(x.CompanyRating);
+                                RemoveDiacritics(x.ProductCatSubType);
+                                RemoveDiacritics(x.Brand);
+                                RemoveDiacritics(x.Chain);
+                                RemoveDiacritics(x.HouseNumber);
+                                RemoveDiacritics(x.Street);
+                                RemoveDiacritics(x.Street2);
+                                RemoveDiacritics(x.Street3);
+                                RemoveDiacritics(x.Street4);
+                                RemoveDiacritics(x.Street5);
+                                RemoveDiacritics(x.Zone);
+                                RemoveDiacritics(x.PostalCode);
+                                RemoveDiacritics(x.Country);
+                                RemoveDiacritics(x.State);
+                                RemoveDiacritics(x.City);
+                                RemoveDiacritics(x.Area);
+                                RemoveDiacritics(x.Location);
+                                RemoveDiacritics(x.Latitude);
+                                RemoveDiacritics(x.Longitude);
+                                RemoveDiacritics(x.TLGXAccoId);
+                            }
+                            );
 
                             DataContracts.Masters.DC_Accomodation Accodata = new DataContracts.Masters.DC_Accomodation()
                             {
@@ -514,7 +547,8 @@ namespace DAL
                                 Fax = RemoveDiacritics(acco.Fax),
                                 WebSiteURL = RemoveDiacritics(acco.WebSiteURL),
                                 Telephone = RemoveDiacritics(acco.Telephone),
-                                CodeStatus = RemoveDiacritics(acco.CodeStatus)
+                                CodeStatus = RemoveDiacritics(acco.CodeStatus),
+                                AccomodationCompanyVersions =  lstCompanyVersion
                             };
 
 
@@ -542,7 +576,7 @@ namespace DAL
                         StringBuilder sbSelectAccoMaster = new StringBuilder();
 
                         sbSelectAccoMaster.Append(@"  
-                                                select ACC.CompanyHotelID as CommonHotelId,ACC.HotelName ,MCM.Code CountryCode,MCM.Name CountryName,CM.Code CityCode,MST.StateCode, MST.StateName,
+                                                select  ACC.Accommodation_Id  as Accommodation_Id, ACC.CompanyHotelID as CommonHotelId,ACC.HotelName ,MCM.Code CountryCode,MCM.Name CountryName,CM.Code CityCode,MST.StateCode, MST.StateName,
                                                 Cm.Name CityName,ACC.StreetName ,ACC.StreetNumber,ACC.Street3 ,ACC.Street4 ,ACC.Street5 ,ACC.PostalCode ,ACC.Town,
                                                 ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
                                                 ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress, ACC.HotelRating as HotelStarRating,
@@ -570,6 +604,39 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
                             _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_Accomodation>(sbSelectAccoMaster.ToString()).ToList();
+                        }
+                    }
+                    catch (Exception ex) { }
+                    return _AccoListResultMain;
+                }
+
+
+
+                //Location Function to get Accommodation Master Version Data
+
+                List<DataContracts.Masters.DC_AccomodationCompanyVersions> GetAccommodationCompanyVersion(Guid gAccommodation_Id)
+                {
+                    List<DataContracts.Masters.DC_AccomodationCompanyVersions> _AccoListResultMain = new List<DataContracts.Masters.DC_AccomodationCompanyVersions>();
+                    try
+                    {
+                       
+
+                        #region AccoMasterQuery
+                        StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                        sbSelectAccoMaster.Append(@"  
+                                                Select CommonProductId,CompanyProductId,CompanyId,CompanyName,ProductName,ProductDisplayName,StarRating,CompanyRating,ProductCatSubType,
+                                                Brand,Chain,HouseNumber,Street,Street2,Street3,Street4,Street5,Zone,PostalCode,Country,
+                                                State,City,Area,Location,Latitude,Longitude,TLGXAccoId from Accommodation_CompanyVersion with(nolock)  ");
+                        sbSelectAccoMaster.AppendLine(" WHERE Accommodation_Id = '" + gAccommodation_Id + "';");
+                      
+
+                        #endregion
+
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_AccomodationCompanyVersions>(sbSelectAccoMaster.ToString()).ToList();
                         }
                     }
                     catch (Exception ex) { }

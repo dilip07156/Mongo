@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
+using System.Collections.Generic;
 
 namespace DataContracts.Masters
 {
@@ -23,7 +24,6 @@ namespace DataContracts.Masters
 
         [DataMember]
         public string ProductCategorySubType { get; set; }
-
 
         [DataMember]
         public string CountryCode { get; set; }
@@ -112,5 +112,15 @@ namespace DataContracts.Masters
 
         [DataMember]
         public string CodeStatus { get; set; }
+
+        [DataMember]
+        public List<DC_AccomodationCompanyVersions> AccomodationCompanyVersions { get; set; }
+
+        //GAURAV_TMAP_1034
+        [BsonIgnore]
+        [DataMember]
+        public System.Guid Accommodation_Id { get; set; }
+
     }
+
 }
