@@ -3433,9 +3433,22 @@ namespace DAL
 
         public void UpdateVisaDefinition(Guid Logid)
         {
-
             try
             {
+                int counter = 0;
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Status = "Running";
+                        Log.Edit_Date = DateTime.Now;
+                        Log.Edit_User = "MPUSH";
+                        context.SaveChanges();
+                    }
+                }
+
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("VisaMapping");
 
@@ -3449,6 +3462,17 @@ namespace DAL
                 project = project.Include("VisaDetail");
 
                 var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Edit_Date = DateTime.Now;
+                        Log.TotalCount = CollecionVisaCountries == null ? 0 : int.Parse(CollecionVisaCountries.CountDocuments(new BsonDocument()).ToString());
+                        context.SaveChanges();
+                    }
+                }
 
                 List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
 
@@ -3475,6 +3499,7 @@ namespace DAL
 
                         objVisaDetail.CountryCode = (string)VisaJson["VisaDetail"]["CountryCode"];
                         objVisaDetail.CountryName = (string)VisaJson["VisaDetail"]["CountryName"];
+
                         #region Visa
                         objVisaDetail.Visa = new List<Visa>();
 
@@ -3494,7 +3519,7 @@ namespace DAL
                                 // fill CategoryForms Object
                                 objVisaInformationNew.CategoryForms = new CategoryForms();
                                 objVisaInformationNew.CategoryForms.CategoryForm = new List<CategoryForm>();
-                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"] != null && 
+                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"] != null &&
                                     VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"].ToList().Count > 0)
                                 {
                                     var TypeOfCategoryForm = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"].GetType();
@@ -3664,7 +3689,7 @@ namespace DAL
                                         if (TypeOfInformation.Name.ToUpper() == "JOBJECT")
                                         {
                                             if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"] != null &&
-                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"] != null && 
+                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"] != null &&
                                                 VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"].ToList().Count > 0)
                                             {
                                                 objVisaInformation2New.Information = new Information();
@@ -3827,7 +3852,7 @@ namespace DAL
 
                                                                 }
                                                                 else
-                                                                {                                                                   
+                                                                {
                                                                     int TotalCategoryNotesNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"].ToList().Count;
 
                                                                     for (int d = 0; d < TotalCategoryNotesNodes; d++)
@@ -3838,13 +3863,13 @@ namespace DAL
                                                                             objVisaCategoryDetailNew.CategoryNotes.Notes.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]
                                                                                            ["CategoryNotes"][d]));
                                                                         }
-                                                                 
+
                                                                     }
 
                                                                 }
                                                             }
                                                         }
-                                                    } 
+                                                    }
                                                 }
                                                 if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"] != null)
                                                 {
@@ -3886,7 +3911,7 @@ namespace DAL
                                                             }
                                                         }
 
-                                                    } 
+                                                    }
                                                 }
 
 
@@ -3911,7 +3936,7 @@ namespace DAL
                                                         {
                                                             objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
                                                                                                      ["Information"]["DocumentsRequired"]);
-                                                        } 
+                                                        }
                                                     }
                                                 }
                                                 else
@@ -3990,17 +4015,17 @@ namespace DAL
                                                     {
                                                         objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]
                                                                                                  ["Information"]["DocumentsRequired"]);
-                                                    } 
+                                                    }
                                                 }
                                             }
                                             else
-                                            { 
+                                            {
                                                 int TotalInformationNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"].ToList().Count;
                                                 objVisaCategoryDetailNew.CategoryInfo[0].Information = new List<VisaInformationChildNode>();
 
                                                 for (int q = 0; q < TotalInformationNodes; q++)
                                                 {
-                                                    if (Convert.ToString(   VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]) != "{}" &&
+                                                    if (Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]) != "{}" &&
                                                         Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]) != "")
                                                     {
 
@@ -4703,6 +4728,17 @@ namespace DAL
 
                     VisaMappingCollection.InsertOne(objVisaDefinition);
 
+                    counter++;
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                        if (Log != null)
+                        {
+                            Log.Edit_Date = DateTime.Now;
+                            Log.MongoPushCount = counter;
+                            context.SaveChanges();
+                        }
+                    }
                 }
 
                 using (TLGX_Entities context = new TLGX_Entities())
@@ -4711,13 +4747,23 @@ namespace DAL
                     if (Log != null)
                     {
                         Log.Status = "Completed";
+                        Log.Edit_Date = DateTime.Now;
                         context.SaveChanges();
                     }
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                throw ex;
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Status = "Error";
+                        Log.Edit_Date = DateTime.Now;
+                        context.SaveChanges();
+                    }
+                }
             }
         }
         #endregion
