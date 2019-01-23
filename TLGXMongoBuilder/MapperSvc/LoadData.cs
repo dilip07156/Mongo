@@ -38,6 +38,16 @@ namespace MapperSvc
             }
         }
 
+        public void UpdateVisaDefinition(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateVisaDefinition(LogId);
+            }
+
+        }
+
+
         public void LoadActivityDefinition()
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
