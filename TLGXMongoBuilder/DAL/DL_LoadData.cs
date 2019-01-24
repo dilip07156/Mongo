@@ -3646,13 +3646,18 @@ namespace DAL
                                         objVisaInfoInew.VisaGeneralInformation = new List<VisaGeneralInformation>();
 
                                         VisaGeneralInformation objVisaGeneralInformationNew = new VisaGeneralInformation();
-                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"].GetType().Name.ToUpper() == "JOBJECT")
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null && 
+                                            VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"].GetType().Name.ToUpper() == "JOBJECT")
                                         {
 
                                         }
                                         else
                                         {
-                                            objVisaGeneralInformationNew.GeneralInfo = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"];
+                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null)
+                                            {
+                                                objVisaGeneralInformationNew.GeneralInfo = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"];
+                                            }
+                                           
                                         }
 
                                         objVisaInfoInew.VisaGeneralInformation.Add(objVisaGeneralInformationNew);
@@ -3894,23 +3899,26 @@ namespace DAL
                                                      ["Information"] != null && VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
                                                      ["Information"].GetType().Name.ToUpper() != "JARRAY")
                                                 {
-                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].ProcessingTime = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
-                                                          ["Information"]["ProcessingTime"]);
-                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].VisaProcedure = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
-                                                                                                   ["Information"]["VisaProcedure"]);
-                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
-                                                                                              ["Information"]["content"]);
-                                                    if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"] != null)
+                                                    if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"].ToList().Count != 0)
                                                     {
-                                                        var TypeOfDocumentRequiredNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"].GetType();
-                                                        if (TypeOfDocumentRequiredNode.Name.ToUpper() == "JOBJECT")
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].ProcessingTime = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                        ["Information"]["ProcessingTime"]);
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].VisaProcedure = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                       ["Information"]["VisaProcedure"]);
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                  ["Information"]["content"]);
+                                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"] != null)
                                                         {
+                                                            var TypeOfDocumentRequiredNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"].GetType();
+                                                            if (TypeOfDocumentRequiredNode.Name.ToUpper() == "JOBJECT")
+                                                            {
 
-                                                        }
-                                                        else
-                                                        {
-                                                            objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
-                                                                                                     ["Information"]["DocumentsRequired"]);
+                                                            }
+                                                            else
+                                                            {
+                                                                objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                         ["Information"]["DocumentsRequired"]);
+                                                            }
                                                         } 
                                                     }
                                                 }
