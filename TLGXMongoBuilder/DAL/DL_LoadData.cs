@@ -2112,19 +2112,14 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
 
-                    _database = MongoDBHandler.mDatabase();
-
-                    //_database.DropCollection("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-1));
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-
                     List<Activity_Flavour> ActivityList;
 
                     if (Activity_Flavour_Id == Guid.Empty)
                     {
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        join sup in context.Suppliers.AsNoTracking() on spm.Supplier_ID equals sup.Supplier_Id
+                                        where sup.StatusCode == "ACTIVE" && a.CityCode != null && (spm.IsActive ?? false) == true
                                         select a).ToList();
                     }
                     else
@@ -2136,6 +2131,30 @@ namespace DAL
                     if (ActivityList.Count > 0)
                     {
                         LoadActivityData(ActivityList);
+
+                        //Delete inactive records
+                        if (Activity_Flavour_Id == Guid.Empty)
+                        {
+                            _database = MongoDBHandler.mDatabase();
+                            var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+
+                            var MappedIds = ActivityList.Select(s => Convert.ToInt32(s.CommonProductNameSubType_Id)).ToList();
+                            var mapidsinmongo = collection.Find(x => true).Project(u => new { u.SystemActivityCode }).ToList();
+                            var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                     where !MappedIds.Contains(m.SystemActivityCode)
+                                                     select m).ToList();
+                            if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                            {
+                                foreach (var obj in MapIdsToBeDeleted)
+                                {
+                                    var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, obj.SystemActivityCode);
+                                    collection.DeleteMany(filter);
+
+                                    //Call to Generate message static method send Messages.
+                                    SendToKafka.SendMessage(obj.SystemActivityCode, "ACTIVITY", "DELETE");
+                                }
+                            }
+                        }
                     }
 
                 }
@@ -2160,18 +2179,23 @@ namespace DAL
 
             foreach (var Activity in ActivityList)
             {
+                bool Success = false;
+
+                DataContracts.Activity.ActivityDefinition newActivity = new DataContracts.Activity.ActivityDefinition();
+
                 using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions()
                 {
                     IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
                     Timeout = new TimeSpan(0, 2, 0)
                 }))
                 {
-                    using (TLGX_Entities context = new TLGX_Entities())
+                    try
                     {
-                        context.Configuration.AutoDetectChangesEnabled = false;
-                        context.Database.CommandTimeout = 0;
-                        try
+                        using (TLGX_Entities context = new TLGX_Entities())
                         {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
 
                             var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
@@ -2280,9 +2304,6 @@ namespace DAL
                             var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
                                               select a).ToList();
-
-                            //create new mongo object record
-                            var newActivity = new DataContracts.Activity.ActivityDefinition();
 
                             //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
 
@@ -2531,13 +2552,7 @@ namespace DAL
                             //Activity TLGXDisplaySubType Setting
                             newActivity.TLGXDisplaySubType = Activity.TLGXDisplaySubType;
 
-                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
 
-                            //Call to Generate message static method send Messages.
-                            SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
-
-                            newActivity = null;
                             ActivityClassAttr = null;
                             ActivityDesc = null;
                             ActivityInc = null;
@@ -2551,23 +2566,34 @@ namespace DAL
                             ActivityFOAttribute = null;
                             //ActivitySPMCA = null;
                             ActivityFO = null;
-
-                            //Update Status
-                            if (!string.IsNullOrWhiteSpace(log_id))
-                            {
-                                if (iCounter % 100 == 0)
-                                    UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalcount, iCounter, string.Empty, string.Empty, string.Empty);
-                            }
-                            iCounter++;
                         }
-                        catch (Exception ex)
-                        {
-                            continue;
-                        }
+                        Success = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Success = false;
                     }
                     scope.Complete();
                 }
 
+                if (Success)
+                {
+                    var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                    collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+
+                    //Call to Generate message static method send Messages.
+                    SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
+
+                    newActivity = null;
+
+                    //Update Status
+                    if (!string.IsNullOrWhiteSpace(log_id))
+                    {
+                        if (iCounter % 100 == 0)
+                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalcount, iCounter, string.Empty, string.Empty, string.Empty);
+                    }
+                    iCounter++;
+                }
             }
 
             collection = null;
@@ -2581,37 +2607,45 @@ namespace DAL
         /// <param name="suppliername"></param>
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
-            using (TLGX_Entities context = new TLGX_Entities())
+            using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions()
             {
-                context.Configuration.AutoDetectChangesEnabled = false;
-                context.Database.CommandTimeout = 0;
-
-                List<Activity_Flavour> ActivityList;
-
-                if (suppliername != string.Empty)
+                IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                Timeout = new TimeSpan(0, 2, 0)
+            }))
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
-                    ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
-                                    join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                    where a.CityCode != null && (spm.IsActive ?? false) == true
-                                    && spm.SupplierName == suppliername
-                                    select a).ToList();
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
 
-                    int totalCount = ActivityList.Count;
-                    if (totalCount > 0)
+                    List<Activity_Flavour> ActivityList;
+
+                    if (suppliername != string.Empty)
                     {
-                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
-                        LoadActivityData(ActivityList, log_id);
-                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
+                        ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        && spm.SupplierName == suppliername
+                                        select a).ToList();
+
+                        int totalCount = ActivityList.Count;
+                        if (totalCount > 0)
+                        {
+                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
+                            LoadActivityData(ActivityList, log_id);
+                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
+                        }
                     }
                 }
-                //Remove Inactive or deleted Data
-                try
-                {
-                    RemoveActivityDefinitionBySupplier(suppliername);
-                }
-                catch (Exception)
-                {
-                }
+            }
+
+            //Remove Inactive or deleted Data
+            try
+            {
+                RemoveActivityDefinitionBySupplier(suppliername);
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -2646,16 +2680,14 @@ namespace DAL
                         try
                         {
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            if (filter != null)
-                                collection.DeleteOne(filter);
+                            collection.DeleteOne(filter);
+                            //Call to Generate message static method send Messages.
+                            SendToKafka.SendMessage(Activity.CommonProductNameSubType_Id, "ACTIVITY", "DELETE");
                         }
                         catch (Exception ex)
                         {
 
                         }
-
-
-
                     }
                 }
             }
