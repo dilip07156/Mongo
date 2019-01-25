@@ -565,6 +565,7 @@ namespace DAL
                 }
 
                 //Local Function To Get Master Accommodation Data
+                #region Get Master Accommodation Data Local Function
                 List<DataContracts.Masters.DC_Accomodation> GetAccommodationMaster_InBatches(int batchSize, int batchNo, Guid gAccommodation_Id)
                 {
                     List<DataContracts.Masters.DC_Accomodation> _AccoListResultMain = new List<DataContracts.Masters.DC_Accomodation>();
@@ -609,10 +610,12 @@ namespace DAL
                     catch (Exception ex) { }
                     return _AccoListResultMain;
                 }
+                #endregion
 
 
 
                 //Location Function to get Accommodation Master Version Data
+                #region Get Accommodation Master Version Data
 
                 List<DataContracts.Masters.DC_AccomodationCompanyVersions> GetAccommodationCompanyVersion(Guid gAccommodation_Id)
                 {
@@ -641,7 +644,8 @@ namespace DAL
                     }
                     catch (Exception ex) { }
                     return _AccoListResultMain;
-                }
+                } 
+                #endregion
 
                 if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
                 {
