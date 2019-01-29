@@ -305,5 +305,16 @@ namespace BAL
             }
         }
 
+        public void LoadMasterAccommodationRoomInfo(string LogId, string Accommodation_Id)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(Accommodation_Id, out Guid gAccommodation_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadMasterAccommodationRoomInfo(gLogId, gAccommodation_Id);
+                }
+            }
+        }
+
     }
 }
