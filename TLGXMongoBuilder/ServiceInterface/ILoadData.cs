@@ -27,6 +27,11 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/VisaMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void UpdateVisaDefinition(string LogId);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ActivityDefinitionBySupplier/{LogId}/{suppliername}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadActivityDefinitionBySupplier(string LogId, string suppliername);
 

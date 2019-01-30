@@ -31,8 +31,7 @@ namespace DAL
 
                 KafkaMessage newMsg = new KafkaMessage
                 {
-                    Address = System.Configuration.ConfigurationManager.AppSettings["Address"],
-                    Topic = System.Configuration.ConfigurationManager.AppSettings["Topic"],
+                    Address = System.Configuration.ConfigurationManager.AppSettings["KafkaAddress"],
                     SecurityDetail = new SecurityDetail
                     {
                         UserName = "1213",
@@ -40,6 +39,11 @@ namespace DAL
                     },
                     Payload = rss.ToString()
                 };
+
+                if(Entity.ToUpper() == "ACTIVITY")
+                {
+                    newMsg.Topic = System.Configuration.ConfigurationManager.AppSettings["ActivityTopic"];
+                }
                 
                 object result = null;
                 Proxy.PostData("/Kafka/Produce", newMsg, typeof(KafkaMessage), typeof(List<string>), out result);
