@@ -1268,7 +1268,7 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
 
-                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
                             {
                                 SupplierCode = s.Code.ToUpper(),
                                 Supplier_Id = s.Supplier_Id,
@@ -1442,6 +1442,12 @@ namespace DAL
 
                 if (ProdMapId == Guid.Empty)
                 {
+                    if (LogId == Guid.Empty)
+                    {
+                        LogId = Guid.NewGuid();
+                        UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                    }
+
                     #region Index Management
                     bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
                     bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
@@ -1508,7 +1514,7 @@ namespace DAL
 
                     #endregion
 
-                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
 
                     List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
 
@@ -1523,7 +1529,7 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
 
-                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "DESIYA").Select(s => new DC_Supplier_ShortVersion
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
                             {
                                 SupplierCode = s.Code.ToUpper(),
                                 Supplier_Id = s.Supplier_Id,
@@ -1534,6 +1540,8 @@ namespace DAL
                         }
                         scope.Complete();
                     }
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MAPPINGLITE");
 
                     foreach (var SupplierCode in SupplierCodes)
                     {
@@ -1552,17 +1560,17 @@ namespace DAL
                                 context.Database.CommandTimeout = 0;
 
                                 productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
-                                                      join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
-                                                      where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
-                                                      && apm.IsActive == true
-                                                      select new DataContracts.Mapping.DC_ProductMappingLite
-                                                      {
-                                                          SupplierCode = SupplierCode.SupplierCode,
-                                                          SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                                          MapId = apm.MapId,
-                                                          SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
-                                                          TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
-                                                      }).ToList();
+                                                  join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                                  where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
+                                                  && apm.IsActive == true
+                                                  select new DataContracts.Mapping.DC_ProductMappingLite
+                                                  {
+                                                      SupplierCode = SupplierCode.SupplierCode,
+                                                      SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                      MapId = apm.MapId,
+                                                      SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                      TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
+                                                  }).ToList();
                             }
                             scope.Complete();
                         }
@@ -1571,8 +1579,8 @@ namespace DAL
                         List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => u.MapId).ToList();
 
                         List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
-                                                 where !MappedIds.Contains(m)
-                                                 select m).ToList();
+                                                       where !MappedIds.Contains(m)
+                                                       select m).ToList();
 
                         if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                         {
@@ -1591,11 +1599,11 @@ namespace DAL
                             }
 
                             MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
                         }
                     }
 
-                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
                 }
                 else
                 {
@@ -3850,7 +3858,7 @@ namespace DAL
                                         objVisaInfoInew.VisaGeneralInformation = new List<VisaGeneralInformation>();
 
                                         VisaGeneralInformation objVisaGeneralInformationNew = new VisaGeneralInformation();
-                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null && 
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null &&
                                             VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"].GetType().Name.ToUpper() == "JOBJECT")
                                         {
 
@@ -3861,7 +3869,7 @@ namespace DAL
                                             {
                                                 objVisaGeneralInformationNew.GeneralInfo = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"];
                                             }
-                                           
+
                                         }
 
                                         objVisaInfoInew.VisaGeneralInformation.Add(objVisaGeneralInformationNew);
@@ -4123,7 +4131,7 @@ namespace DAL
                                                                 objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
                                                                                                          ["Information"]["DocumentsRequired"]);
                                                             }
-                                                        } 
+                                                        }
                                                     }
                                                 }
                                                 else
