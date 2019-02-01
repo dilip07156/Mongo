@@ -47,6 +47,14 @@ namespace MapperSvc
 
         }
 
+        public void UpdateHolidayMapping(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateHolidayMapping(LogId);
+            }
+
+        }
 
         public void LoadActivityDefinition()
         {
