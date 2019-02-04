@@ -4957,6 +4957,7 @@ namespace DAL
                     objHolidayModel.ProductFlavorID = Convert.ToString(HolidayJson["Holiday"]["ProductFlavorID"]);
                     objHolidayModel.ProductFlavorName = Convert.ToString(HolidayJson["Holiday"]["ProductFlavorName"]);
                     objHolidayModel.FlavorType = Convert.ToString(HolidayJson["Holiday"]["FlavorType"]);
+                    objHolidayModel.CreateUSer = Convert.ToString(HolidayJson["Holiday"]["CreateUser"]);
                     DateTime FlavourValidFrom;
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["FlavourValidFrom"])))
                         if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["FlavourValidFrom"]), out FlavourValidFrom))
