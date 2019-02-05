@@ -4852,7 +4852,7 @@ namespace DAL
 
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
-                    UpdateDistLogInfo(Logid, PushStatus.INSERT,0, 0,new Guid().ToString() , "HOLIDAY", "MAPPING");
+                    UpdateDistLogInfo(Logid, PushStatus.INSERT, 0, 0, new Guid().ToString(), "HOLIDAY", "MAPPING");
                     var Log = context.DistributionLayerRefresh_Log.Find(Logid);
                     if (Log != null)
                     {
@@ -4958,6 +4958,16 @@ namespace DAL
                     objHolidayModel.ProductFlavorName = Convert.ToString(HolidayJson["Holiday"]["ProductFlavorName"]);
                     objHolidayModel.FlavorType = Convert.ToString(HolidayJson["Holiday"]["FlavorType"]);
                     objHolidayModel.CreateUSer = Convert.ToString(HolidayJson["Holiday"]["CreateUser"]);
+                    if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["UserReviewStatus"])))
+                    {
+                        objHolidayModel.UserReviewStatus = Convert.ToString(HolidayJson["Holiday"]["UserReviewStatus"]);
+                    }
+                    else
+                    {
+                        objHolidayModel.UserReviewStatus = "Not Yet Reviewed";
+                    }
+                 
+                    objHolidayModel.IsActive = true;
                     DateTime FlavourValidFrom;
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["FlavourValidFrom"])))
                         if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["FlavourValidFrom"]), out FlavourValidFrom))
@@ -5047,21 +5057,24 @@ namespace DAL
                             int totalSubType = 0;
                             objHolidayModel.Interests = new List<HolidayTypes>();
                             List<SubType> lst = new List<SubType>();
+                            if (HolidayJson["Holiday"]["Interests"].ToList().Count != 0)
+                            {
 
-                            if (HolidayJson["Holiday"]["Interests"]["SubType"] != null)
-                                totalSubType = HolidayJson["Holiday"]["Interests"]["SubType"].ToList().Count;
-                            for (int j = 0; j < totalSubType; j++)
-                            {
-                                lst.Add(new SubType()
+                                if (HolidayJson["Holiday"]["Interests"]["SubType"] != null)
+                                    totalSubType = HolidayJson["Holiday"]["Interests"]["SubType"].ToList().Count;
+                                for (int j = 0; j < totalSubType; j++)
                                 {
-                                    Type = Convert.ToString(HolidayJson["Holiday"]["Interests"]["SubType"][j])
-                                });
+                                    lst.Add(new SubType()
+                                    {
+                                        Type = Convert.ToString(HolidayJson["Holiday"]["Interests"]["SubType"][j])
+                                    });
+                                }
+                                objHolidayModel.Interests.Add(new HolidayTypes()
+                                {
+                                    Type = Convert.ToString(HolidayJson["Holiday"]["Interests"]["Type"]),
+                                    SubType = lst
+                                }); 
                             }
-                            objHolidayModel.Interests.Add(new HolidayTypes()
-                            {
-                                Type = Convert.ToString(HolidayJson["Holiday"]["Interests"]["Type"]),
-                                SubType = lst
-                            });
                         }
                         else
                         {
@@ -5431,17 +5444,20 @@ namespace DAL
                         if (TypeOfTournotes.Name.ToUpper() != "JARRAY")
                         {
                             int order = 0;
-                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Order"]), out order))
+                            if (HolidayJson["Holiday"]["TourNotes"].ToList().Count != 0)
                             {
-                                // conversion successful
+                                if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Order"]), out order))
+                                {
+                                    // conversion successful
+                                }
+                                objHolidayModel.TourNotes.Add(new HolidayTermsConditions()
+                                {
+                                    Name = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Name"]),
+                                    Order = order,
+                                    Text = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Text"]),
+                                    ServiceType = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["ServiceType"]),
+                                }); 
                             }
-                            objHolidayModel.TourNotes.Add(new HolidayTermsConditions()
-                            {
-                                Name = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Name"]),
-                                Order = order,
-                                Text = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Text"]),
-                                ServiceType = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["ServiceType"]),
-                            });
                         }
                         else
                         {
@@ -7506,7 +7522,7 @@ namespace DAL
                                             {
                                                 TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxRate"]),
                                                 TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxType"]),
-                                                TaxAmount =TaxAmt
+                                                TaxAmount = TaxAmt
                                             });
                                         }
 
@@ -7849,7 +7865,7 @@ namespace DAL
 
                     counter++;
                     using (TLGX_Entities context = new TLGX_Entities())
-                    {                       
+                    {
                         var Log = context.DistributionLayerRefresh_Log.Find(Logid);
                         if (Log != null)
                         {

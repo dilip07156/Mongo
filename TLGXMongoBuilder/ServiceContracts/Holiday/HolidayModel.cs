@@ -66,6 +66,18 @@ namespace DataContracts.Holiday
         /// </summary>
         public DateTime? EditDate { get; set; }
         /// <summary>
+        /// is active or not
+        /// </summary>
+        public bool IsActive { get; set; }
+        /// <summary>
+        /// The user review status.
+        /// </summary>
+        public string UserReviewStatus { get; set; }
+        /// <summary>
+        /// The user Remarks if any
+        /// </summary>
+        public string UserRemarks { get; set; }
+        /// <summary>
         /// The user who edited Holiday.
         /// </summary>
         public string EditUser { get; set; }
