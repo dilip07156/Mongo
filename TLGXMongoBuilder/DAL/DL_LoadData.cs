@@ -2697,12 +2697,13 @@ namespace DAL
                         Success = false;
                     }
                     scope.Complete();
+                    scope.Dispose();
                 }
 
                 if (Success)
                 {
                     var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                    collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
+                    collection.ReplaceOne(filter, newActivity, new UpdateOptions { IsUpsert = true });
 
                     //Call to Generate message static method send Messages.
                     SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
@@ -2730,6 +2731,8 @@ namespace DAL
         /// <param name="suppliername"></param>
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
+            List<Activity_Flavour> ActivityList = new List<Activity_Flavour>();
+
             using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions()
             {
                 IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
@@ -2741,25 +2744,24 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
 
-                    List<Activity_Flavour> ActivityList;
+                    ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                                    join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                                    where a.CityCode != null && (spm.IsActive ?? false) == true
+                                    && spm.SupplierName == suppliername
+                                    select a).ToList();
 
-                    if (suppliername != string.Empty)
-                    {
-                        ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
-                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == suppliername
-                                        select a).ToList();
 
-                        int totalCount = ActivityList.Count;
-                        if (totalCount > 0)
-                        {
-                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
-                            LoadActivityData(ActivityList, log_id);
-                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
-                        }
-                    }
                 }
+                scope.Complete();
+                scope.Dispose();
+            }
+
+            int totalCount = ActivityList.Count;
+            if (totalCount > 0)
+            {
+                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
+                LoadActivityData(ActivityList, log_id);
+                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
             }
 
             //Remove Inactive or deleted Data
