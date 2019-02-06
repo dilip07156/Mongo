@@ -141,11 +141,27 @@ namespace MapperSvc
             }
         }
 
+        public void LoadCountryMapping(string LogId,string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCountryMapping(LogId, Supplier_ID);
+            }
+        }
+
         public void LoadCityMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.LoadCityMapping(LogId);
+            }
+        }
+
+        public void LoadCityMapping(string LogId, string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCityMapping(LogId, Supplier_ID);
             }
         }
 

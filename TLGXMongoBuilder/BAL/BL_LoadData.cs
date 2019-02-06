@@ -127,6 +127,17 @@ namespace BAL
             }
         }
 
+        public void LoadCountryMapping(string LogId, string SupplierID)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(SupplierID, out Guid Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCountryMapping(gLogId, Supplier_ID);
+                }
+            }
+        }
+
         public void LoadCityMapping(string LogId)
         {
             Guid gLogId;
@@ -135,6 +146,17 @@ namespace BAL
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
                     obj.LoadCityMapping(gLogId);
+                }
+            }
+        }
+
+        public void LoadCityMapping(string LogId, string SupplierID)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(SupplierID, out  Guid Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCityMapping(gLogId, Supplier_ID);
                 }
             }
         }
@@ -185,7 +207,7 @@ namespace BAL
                 obj.LoadActivityMappingLite();
             }
         }
-        
+
         public void LoadKeywords()
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
