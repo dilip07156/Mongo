@@ -31,6 +31,18 @@ namespace BAL
             }
         }
 
+        public void UpdateHolidayMapping(string logId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(logId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.UpdateHolidayMapping(gLogId);
+                }
+            }
+        }
+
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
