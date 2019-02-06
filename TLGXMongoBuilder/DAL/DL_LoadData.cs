@@ -3471,6 +3471,10 @@ namespace DAL
                 setNewStatus.Append("INSERT INTO DistributionLayerRefresh_Log(Id,Element,Type,Create_Date,Create_User,Status,Supplier_Id) VALUES(");
                 setNewStatus.Append("'" + LogId + "','" + Element + "','" + Type + "', GETDATE() " + ", '" + "MONGOPUSH" + "', '" + Status + "', '" + Supplier_Id + "');");
             }
+            else if (status == PushStatus.ERROR)
+            {
+                setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
+            }
             else
             {
                 setNewStatus.Append("UPDATE DistributionLayerRefresh_Log SET TotalCount = " + totalCount.ToString() + " , MongoPushCount = " + insertedCount.ToString() + ", Status ='" + Status + "',  Edit_Date = getDate(),  Edit_User='" + EditUser + "' WHERE Id= '" + LogId + "';");
@@ -3502,17 +3506,11 @@ namespace DAL
             {
                 int counter = 0;
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Running";
-                        Log.Edit_Date = DateTime.Now;
-                        Log.Edit_User = "MPUSH";
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.INSERT, 0, 0, Logid.ToString(), "VISA", "MAPPING");
+
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "VISA", "MAPPING");
+
+  
 
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("VisaMapping");
@@ -3526,18 +3524,11 @@ namespace DAL
                 project = project.Include("CallType");
                 project = project.Include("VisaDetail");
 
+                int totalCount = CollecionVisaCountries == null ? 0 : int.Parse(CollecionVisaCountries.CountDocuments(new BsonDocument()).ToString());
+
                 var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Edit_Date = DateTime.Now;
-                        Log.TotalCount = CollecionVisaCountries == null ? 0 : int.Parse(CollecionVisaCountries.CountDocuments(new BsonDocument()).ToString());
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");               
 
                 List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
 
@@ -4802,41 +4793,16 @@ namespace DAL
                     VisaMappingCollection.InsertOne(objVisaDefinition);
 
                     counter++;
-                    using (TLGX_Entities context = new TLGX_Entities())
-                    {
-                        var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                        if (Log != null)
-                        {
-                            Log.Edit_Date = DateTime.Now;
-                            Log.MongoPushCount = counter;
-                            context.SaveChanges();
-                        }
-                    }
+                    UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, counter, Logid.ToString(), "VISA", "MAPPING");
+
                 }
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.Edit_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.COMPLETED, totalCount, counter, Logid.ToString(), "VISA", "MAPPING");
+             
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Error";
-                        Log.Edit_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.COMPLETED, 0, 0, Logid.ToString(), "VISA", "MAPPING");
             }
         }
         #endregion
@@ -4850,18 +4816,9 @@ namespace DAL
             {
                 int counter = 0;
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    UpdateDistLogInfo(Logid, PushStatus.INSERT, 0, 0, new Guid().ToString(), "HOLIDAY", "MAPPING");
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Running";
-                        Log.Edit_Date = DateTime.Now;
-                        Log.Edit_User = "MPUSH";
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.INSERT, 0, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
+
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
 
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("HolidayMapping");
@@ -4883,16 +4840,7 @@ namespace DAL
 
                 var CollecionHolidayMappingsFiltered = CollecionHolidayDetail.Find(filter).Project(project).ToList();
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Edit_Date = DateTime.Now;
-                        Log.TotalCount = CollecionHolidayMappingsFiltered.Count;
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, CollecionHolidayMappingsFiltered.Count, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
 
                 List<HolidayModel> ListHolidayModels = new List<HolidayModel>();
 
@@ -4966,7 +4914,7 @@ namespace DAL
                     {
                         objHolidayModel.UserReviewStatus = "Not Yet Reviewed";
                     }
-                 
+
                     objHolidayModel.IsActive = true;
                     DateTime FlavourValidFrom;
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["FlavourValidFrom"])))
@@ -5073,7 +5021,7 @@ namespace DAL
                                 {
                                     Type = Convert.ToString(HolidayJson["Holiday"]["Interests"]["Type"]),
                                     SubType = lst
-                                }); 
+                                });
                             }
                         }
                         else
@@ -5456,7 +5404,7 @@ namespace DAL
                                     Order = order,
                                     Text = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["Text"]),
                                     ServiceType = Convert.ToString(HolidayJson["Holiday"]["TourNotes"]["ServiceType"]),
-                                }); 
+                                });
                             }
                         }
                         else
@@ -7864,43 +7812,17 @@ namespace DAL
                     HolidayMappingCollection.InsertOne(objHolidayModel);
 
                     counter++;
-                    using (TLGX_Entities context = new TLGX_Entities())
-                    {
-                        var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                        if (Log != null)
-                        {
-                            Log.Edit_Date = DateTime.Now;
-                            Log.MongoPushCount = counter;
-                            context.SaveChanges();
-                        }
-                    }
+                    UpdateDistLogInfo(Logid, PushStatus.RUNNNING, CollecionHolidayMappingsFiltered.Count, counter, Logid.ToString(), "HOLIDAY", "MAPPING");
                 }
 
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    UpdateDistLogInfo(Logid, PushStatus.COMPLETED, CollecionHolidayMappingsFiltered.Count, counter, null, "HOLIDAY", "MAPPING");
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        Log.Edit_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
-                }
+
+                UpdateDistLogInfo(Logid, PushStatus.COMPLETED, CollecionHolidayMappingsFiltered.Count, counter, null, "HOLIDAY", "MAPPING");
+
 
             }
             catch (Exception ex)
             {
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
-                    if (Log != null)
-                    {
-                        Log.Status = "Error";
-                        Log.Edit_Date = DateTime.Now;
-                        context.SaveChanges();
-                    }
-                }
+                UpdateDistLogInfo(Logid, PushStatus.ERROR,0 , 0, null, "HOLIDAY", "MAPPING");
             }
         }
         #endregion
