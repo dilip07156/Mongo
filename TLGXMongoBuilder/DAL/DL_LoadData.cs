@@ -13,6 +13,10 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Data;
 using DataContracts.Masters;
+using DataContracts.Visa;
+using System.Net.Http;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace DAL
 {
@@ -1479,71 +1483,77 @@ namespace DAL
 
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
-            bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
-            bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
-            bool Is_IX_SupplierCode_SystemCityCode_Exists = false;
-            bool Is_IX_MapId_Exists = false;
-
-            #region Index Management
-            var listOfindexes = collection.Indexes.List().ToList();
-
-            foreach (var index in listOfindexes)
-            {
-                Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
-                if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
-                {
-                    Is_IX_SupplierCode_SupplierProductCode_Exists = true;
-                }
-
-                if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
-                {
-                    Is_IX_SupplierCode_SystemProductCode_Exists = true;
-                }
-
-                if ((string)rss["key"]["MapId"] != null)
-                {
-                    Is_IX_MapId_Exists = true;
-                }
-            }
-
-            if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
-            {
-                IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode);
-                CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                collection.Indexes.CreateOneAsync(IndexModel);
-            }
-
-            if (!Is_IX_SupplierCode_SystemProductCode_Exists)
-            {
-                IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
-                CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                collection.Indexes.CreateOneAsync(IndexModel);
-            }
-
-            if (!Is_IX_SupplierCode_SystemCityCode_Exists)
-            {
-                IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
-                CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                collection.Indexes.CreateOneAsync(IndexModel);
-            }
-
-            if (!Is_IX_MapId_Exists)
-            {
-                IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
-                var keys = IndexBuilder.Ascending(_ => _.MapId);
-                CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
-                collection.Indexes.CreateOneAsync(IndexModel);
-            }
-
-            #endregion
 
             try
             {
                 if (ProdMapId == Guid.Empty)
                 {
+                    #region Index Management
+                    bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+                    bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+                    bool Is_IX_SupplierCode_SystemCityCode_Exists = false;
+                    bool Is_IX_MapId_Exists = false;
+
+                    var listOfindexes = collection.Indexes.List().ToList();
+
+                    foreach (var index in listOfindexes)
+                    {
+                        Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemCityCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SystemCityCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["MapId"] != null)
+                        {
+                            Is_IX_MapId_Exists = true;
+                        }
+                    }
+
+                    if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_SystemCityCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_MapId_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                        var keys = IndexBuilder.Ascending(_ => _.MapId);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    #endregion
+
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
 
                     List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
@@ -1559,7 +1569,7 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
 
-                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
                             {
                                 SupplierCode = s.Code.ToUpper(),
                                 Supplier_Id = s.Supplier_Id,
@@ -1630,13 +1640,12 @@ namespace DAL
                             scope.Complete();
                         }
 
-                        var mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => new { u.MapId }).ToList();
+                        List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                        List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => u.MapId).ToList();
 
-                        var MapIdsToBeDeleted = (from m in mapidsinmongo
-                                                 join d in productMapList on m.MapId equals d.MapId into gj
-                                                 from subpet in gj.DefaultIfEmpty()
-                                                 where subpet == null
-                                                 select m.MapId).ToList();
+                        List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                       where !MappedIds.Contains(m)
+                                                       select m).ToList();
 
                         if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                         {
@@ -1713,16 +1722,14 @@ namespace DAL
                     }
                     #endregion
                 }
-
-                collection = null;
-                _database = null;
-
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
-                throw ex;
             }
+
+            collection = null;
+            _database = null;
         }
 
         public void LoadProductMappingLite(Guid LogId, Guid ProdMapId)
@@ -1733,22 +1740,127 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMappingLite>("ProductMappingLite");
+
                 if (ProdMapId == Guid.Empty)
                 {
-                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
-                    //collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
-                    using (TLGX_Entities context = new TLGX_Entities())
+                    if (LogId == Guid.Empty)
                     {
-                        context.Configuration.AutoDetectChangesEnabled = false;
-                        context.Database.CommandTimeout = 0;
-                        //TotalCount
-                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
+                        LogId = Guid.NewGuid();
+                        UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                    }
 
-                        var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
-                        foreach (var SupplierCode in SupplierCodes)
+                    #region Index Management
+                    bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+                    bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+                    bool Is_IX_MapId_Exists = false;
+                    bool Is_IX_SupplierCode_Exists = false;
+
+                    var listOfindexes = collection.Indexes.List().ToList();
+
+                    foreach (var index in listOfindexes)
+                    {
+                        Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
                         {
-                            var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                            Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                        {
+                            Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["MapId"] != null)
+                        {
+                            Is_IX_MapId_Exists = true;
+                        }
+
+                        if ((string)rss["key"]["SupplierCode"] != null)
+                        {
+                            Is_IX_SupplierCode_Exists = true;
+                        }
+                    }
+
+                    if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_SupplierCode_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.SupplierCode);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    if (!Is_IX_MapId_Exists)
+                    {
+                        IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMappingLite>();
+                        var keys = IndexBuilder.Ascending(_ => _.MapId);
+                        CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMappingLite>(keys);
+                        collection.Indexes.CreateOneAsync(IndexModel);
+                    }
+
+                    #endregion
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                    List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions()
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                        Timeout = new TimeSpan(0, 2, 0)
+                    }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                            {
+                                SupplierCode = s.Code.ToUpper(),
+                                Supplier_Id = s.Supplier_Id,
+                                SupplierName = s.Name.ToUpper()
+                            }).ToList();
+
+                            TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
+                        }
+                        scope.Complete();
+                    }
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                    foreach (var SupplierCode in SupplierCodes)
+                    {
+                        List<DataContracts.Mapping.DC_ProductMappingLite> productMapList = new List<DataContracts.Mapping.DC_ProductMappingLite>();
+
+                        using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                        new System.Transactions.TransactionOptions()
+                        {
+                            IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                            Timeout = new TimeSpan(0, 2, 0)
+                        }))
+                        {
+                            using (TLGX_Entities context = new TLGX_Entities())
+                            {
+                                context.Configuration.AutoDetectChangesEnabled = false;
+                                context.Database.CommandTimeout = 0;
+
+                                productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
                                                   join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
                                                   where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
                                                   && apm.IsActive == true
@@ -1760,25 +1872,39 @@ namespace DAL
                                                       SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                                       TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                                   }).ToList();
-                            var res = collection.DeleteMany(x => x.SupplierCode == SupplierCode.SupplierCode);
-                            if (productMapList.Count() > 0)
+                            }
+                            scope.Complete();
+                        }
+
+                        List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                        List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => u.MapId).ToList();
+
+                        List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                       where !MappedIds.Contains(m)
+                                                       select m).ToList();
+
+                        if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                        {
+                            foreach (var MapId in MapIdsToBeDeleted)
                             {
-                                foreach (var prod in productMapList)
-                                {
-                                    collection.InsertOneAsync(prod);
-                                }
-                                #region To update CounterIn DistributionLog
-                                MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
-                                #endregion
+                                collection.DeleteMany(x => x.MapId == MapId);
                             }
                         }
-                        collection = null;
-                        _database = null;
 
-                        UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
+                        if (productMapList != null && productMapList.Count() > 0)
+                        {
+                            foreach (var product in productMapList)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, product.MapId);
+                                var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                            }
 
+                            MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                        }
                     }
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
                 }
                 else
                 {
@@ -1800,17 +1926,18 @@ namespace DAL
                                     }).FirstOrDefault();
                         if (prod != null)
                         {
-                            var res = collection.DeleteMany(x => x.MapId == prod.MapId);
-                            collection.InsertOneAsync(prod);
+                            var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, prod.MapId);
+                            collection.ReplaceOne(filter, prod, new UpdateOptions { IsUpsert = true });
                         }
                     }
                     #endregion
                 }
+                collection = null;
+                _database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
-                throw ex;
             }
         }
 
@@ -2398,7 +2525,6 @@ namespace DAL
             {
                 throw ex;
             }
-
         }
 
         public void LoadActivityDefinition(Guid Activity_Flavour_Id)
@@ -2410,19 +2536,14 @@ namespace DAL
                     context.Configuration.AutoDetectChangesEnabled = false;
                     context.Database.CommandTimeout = 0;
 
-                    _database = MongoDBHandler.mDatabase();
-
-                    //_database.DropCollection("ActivityDefinitions");
-                    var fromDate = DateTime.Now.Add(TimeSpan.FromDays(-1));
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-
                     List<Activity_Flavour> ActivityList;
 
                     if (Activity_Flavour_Id == Guid.Empty)
                     {
                         ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                         join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                                        join sup in context.Suppliers.AsNoTracking() on spm.Supplier_ID equals sup.Supplier_Id
+                                        where sup.StatusCode == "ACTIVE" && a.CityCode != null && (spm.IsActive ?? false) == true
                                         select a).ToList();
                     }
                     else
@@ -2434,6 +2555,30 @@ namespace DAL
                     if (ActivityList.Count > 0)
                     {
                         LoadActivityData(ActivityList);
+
+                        //Delete inactive records
+                        if (Activity_Flavour_Id == Guid.Empty)
+                        {
+                            _database = MongoDBHandler.mDatabase();
+                            var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+
+                            var MappedIds = ActivityList.Select(s => Convert.ToInt32(s.CommonProductNameSubType_Id)).ToList();
+                            var mapidsinmongo = collection.Find(x => true).Project(u => new { u.SystemActivityCode }).ToList();
+                            var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                     where !MappedIds.Contains(m.SystemActivityCode)
+                                                     select m).ToList();
+                            if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                            {
+                                foreach (var obj in MapIdsToBeDeleted)
+                                {
+                                    var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, obj.SystemActivityCode);
+                                    collection.DeleteMany(filter);
+
+                                    //Call to Generate message static method send Messages.
+                                    SendToKafka.SendMessage(obj.SystemActivityCode, "ACTIVITY", "DELETE");
+                                }
+                            }
+                        }
                     }
 
                 }
@@ -2451,393 +2596,434 @@ namespace DAL
         /// <param name="ActivityList"></param>
         public bool LoadActivityData(List<Activity_Flavour> ActivityList, string log_id = "")
         {
-            using (TLGX_Entities context = new TLGX_Entities())
-            {
-                context.Configuration.AutoDetectChangesEnabled = false;
-                context.Database.CommandTimeout = 0;
+            _database = MongoDBHandler.mDatabase();
+            var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+            int iCounter = 0;
+            int totalcount = ActivityList.Count();
 
-                _database = MongoDBHandler.mDatabase();
-                var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                int iCounter = 0;
-                int totalcount = ActivityList.Count();
-                foreach (var Activity in ActivityList)
+            foreach (var Activity in ActivityList)
+            {
+                bool Success = false;
+
+                DataContracts.Activity.ActivityDefinition newActivity = new DataContracts.Activity.ActivityDefinition();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions()
+                {
+                    IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                    Timeout = new TimeSpan(0, 2, 0)
+                }))
                 {
                     try
                     {
-                        //Update Status
-                        if (!string.IsNullOrWhiteSpace(log_id))
+                        using (TLGX_Entities context = new TLGX_Entities())
                         {
-                            if (iCounter % 100 == 0)
-                                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalcount, iCounter, string.Empty, string.Empty, string.Empty);
-                        }
-                        iCounter++;
-                        var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
-                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                 select a).ToList();
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
 
-                        var ActivityDesc = (from a in context.Activity_Descriptions.AsNoTracking()
-                                            where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                            select a).ToList();
 
-                        var ActivityInc = (from a in context.Activity_Inclusions.AsNoTracking()
-                                           where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                           select a).ToList();
+                            var ActivityClassAttr = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                                     where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                     select a).ToList();
 
-                        var ActivityIncDetails = (from a in context.Activity_InclusionDetails.AsNoTracking()
-                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                  select a).ToList();
+                            var ActivityDesc = (from a in context.Activity_Descriptions.AsNoTracking()
+                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                select a).ToList();
 
-                        var ActivityPolicy = (from a in context.Activity_Policy.AsNoTracking()
-                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                              select a).ToList();
-
-                        var ActivityMedia = (from a in context.Activity_Media.AsNoTracking()
-                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a).ToList();
-
-                        var ActivityReviews = (from a in context.Activity_ReviewsAndScores.AsNoTracking()
+                            var ActivityInc = (from a in context.Activity_Inclusions.AsNoTracking()
                                                where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                                select a).ToList();
 
-                        var ActivitySPM = (from a in context.Activity_SupplierProductMapping.AsNoTracking()
-                                           join s in context.Suppliers on a.Supplier_ID equals s.Supplier_Id
-                                           where a.Activity_ID == Activity.Activity_Flavour_Id
-                                           select new
-                                           {
-                                               SupplierName = s.Name,
-                                               SupplierCode = s.Code.ToLower(),
-                                               SuplierProductCode = a.SuplierProductCode.ToUpper(),
-                                               SupplierCountryCode = a.SupplierCountryCode,
-                                               SupplierCountryName = a.SupplierCountryName,
-                                               SupplierCityCode = a.SupplierCityCode,
-                                               SupplierCityName = a.SupplierCityName,
-                                               Currency = a.Currency,
-                                               TourType = a.SupplierTourType,
-                                               AreaAddress = a.Location
-                                           }).FirstOrDefault();
+                            var ActivityIncDetails = (from a in context.Activity_InclusionDetails.AsNoTracking()
+                                                      where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                      select a).ToList();
 
-                        var ActivityDeals = (from a in context.Activity_Deals.AsNoTracking()
-                                             where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                             select a).ToList();
+                            var ActivityPolicy = (from a in context.Activity_Policy.AsNoTracking()
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
 
-                        var ActivityPrices = (from a in context.Activity_Prices.AsNoTracking()
+                            var ActivityMedia = (from a in context.Activity_Media.AsNoTracking()
+                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                            var ActivityReviews = (from a in context.Activity_ReviewsAndScores.AsNoTracking()
+                                                   where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                   select a).ToList();
+
+                            var ActivitySPM = (from a in context.Activity_SupplierProductMapping.AsNoTracking()
+                                               join s in context.Suppliers on a.Supplier_ID equals s.Supplier_Id
+                                               where a.Activity_ID == Activity.Activity_Flavour_Id
+                                               select new
+                                               {
+                                                   SupplierName = s.Name,
+                                                   SupplierCode = s.Code.ToLower(),
+                                                   SuplierProductCode = a.SuplierProductCode.ToUpper(),
+                                                   SupplierCountryCode = a.SupplierCountryCode,
+                                                   SupplierCountryName = a.SupplierCountryName,
+                                                   SupplierCityCode = a.SupplierCityCode,
+                                                   SupplierCityName = a.SupplierCityName,
+                                                   Currency = a.Currency,
+                                                   TourType = a.SupplierTourType,
+                                                   AreaAddress = a.Location
+                                               }).FirstOrDefault();
+
+                            var ActivityDeals = (from a in context.Activity_Deals.AsNoTracking()
+                                                 where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                 select a).ToList();
+
+                            var ActivityPrices = (from a in context.Activity_Prices.AsNoTracking()
+                                                  where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                  select a).ToList();
+
+                            //var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
+                            //                     where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
+                            //                     select a).ToList();
+
+                            var ActivityFO = (from a in context.Activity_FlavourOptions.AsNoTracking()
                                               where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
                                               select a).ToList();
 
-                        //var ActivitySPMCA = (from a in context.Activity_SupplierProductMapping_CA
-                        //                     where a.Activity_SupplierProductMapping_CA_Id == Activity.Activity_Flavour_Id
-                        //                     select a).ToList();
+                            var ActivityFOAttribute = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
+                                                       where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
+                                                       && a.AttributeType == "ProductOption"
+                                                       select a).ToList();
 
-                        var ActivityFO = (from a in context.Activity_FlavourOptions.AsNoTracking()
-                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                          select a).ToList();
+                            var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
+                                               where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                               select a).ToList();
 
-                        var ActivityFOAttribute = (from a in context.Activity_ClassificationAttributes.AsNoTracking()
-                                                   where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id
-                                                   && a.AttributeType == "ProductOption"
-                                                   select a).ToList();
+                            var ActivityOD = (from a in context.Activity_DaysOfOperation.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              && (a.IsOperatingDays ?? true) == true
+                                              select a).ToList();
 
-                        var ActivityDOW = (from a in context.Activity_DaysOfWeek.AsNoTracking()
-                                           where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
-                                           select a).ToList();
+                            var ActivityCT = (from a in context.Activity_CategoriesType.AsNoTracking()
+                                              where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
+                                              && (a.IsActive ?? false) == true
+                                              select a).ToList();
 
-                        var ActivityOD = (from a in context.Activity_DaysOfOperation.AsNoTracking()
-                                          where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
-                                          && (a.IsOperatingDays ?? true) == true
-                                          select a).ToList();
-
-                        var ActivityCT = (from a in context.Activity_CategoriesType.AsNoTracking()
-                                          where a.Activity_Flavour_Id == Activity.Activity_Flavour_Id && a.SystemProductNameSubType_ID != null
-                                          && (a.IsActive ?? false) == true
-                                          select a).ToList();
-
-                        var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
-                                          where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
-                                          select a).ToList();
-
-                        //create new mongo object record
-                        var newActivity = new DataContracts.Activity.ActivityDefinition();
-
-                        //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
-
-                        newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
-
-                        newActivity.SupplierCompanyCode = ActivitySPM.SupplierCode;
-
-                        if (ActivitySPM.SupplierCode == "gta")
-                        {
-                            newActivity.SupplierCityDepartureCodes = context.Activity_SupplierCityDepartureCode.Where(w => w.CityCode == ActivitySPM.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                            foreach (var CT in ActivityCT)
                             {
-                                CityCode = s.CityCode,
-                                CityName = s.City,
-                                DepartureCode = s.DepartureCode,
-                                DepartureName = s.DepartureName,
-                                HotelCode = s.HotelCode,
-                                HotelName = s.Hotel
-                            }).ToList();
-                        }
-
-                        newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
-
-                        newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
-
-                        newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
-
-                        newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
-
-                        newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
-
-                        newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
-
-                        newActivity.Name = Activity.ProductName;
-
-                        newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
-
-                        newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
-
-                        newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
-
-                        newActivity.CountryName = Activity.Country;
-
-                        newActivity.CountryCode = Activity.CountryCode;
-
-                        newActivity.CityName = Activity.City;
-
-                        newActivity.CityCode = Activity.CityCode;
-
-                        newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).FirstOrDefault());
-
-                        newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Interests").Select(s => s.AttributeValue).ToArray());
-
-                        newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
-
-                        newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
-
-                        newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
-
-                        newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
-
-                        newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
-
-                        newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).ToArray());
-
-                        newActivity.Specials = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Specials").Select(s => s.AttributeValue).ToList());
-
-                        newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
-                        {
-                            Caption = s.Media_Caption,
-                            Description = s.Description,
-                            FullUrl = s.Media_URL,
-                            Height = s.Media_Height ?? 0,
-                            MediaType = s.Category,
-                            MediaSubType = s.SubCategory,
-                            SortOrder = (s.Media_Position ?? 0).ToString(),
-                            ThumbUrl = s.Media_URL,
-                            Width = s.Media_Width ?? 0
-                        }).ToList());
-
-                        //newActivity.Duration = new DataContracts.Activity.ActivityDuration
-                        //{
-                        //    Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
-                        //    Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
-                        //    Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
-                        //};
-
-                        newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
-
-                        newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Description, Date = s.Review_PostedDate.ToString(), Title = s.Review_Title }).ToList());
-
-                        newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
-                        {
-                            Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
-                            Area = Activity.Area,
-                            Latitude = Activity.Latitude,
-                            Location = Activity.Location,
-                            Longitude = Activity.Longitude
-                        };
-
-                        newActivity.TourGuideLanguages = (from a in ActivityInc
-                                                          join ad in ActivityIncDetails on a.Activity_Inclusions_Id equals ad.Activity_Inclusions_Id
-                                                          where a.IsInclusion ?? false == true
-                                                          select new DataContracts.Activity.TourGuideLanguages
-                                                          {
-                                                              Language = ad.GuideLanguage,
-                                                              LanguageID = ad.GuideLanguageCode
-                                                          }).ToList();
-
-                        if (ActivitySPM != null)
-                        {
-                            newActivity.SupplierDetails = new DataContracts.Activity.SupplierDetails
-                            {
-                                SupplierName = ActivitySPM.SupplierName,
-                                SupplierID = ActivitySPM.SupplierCode,
-                                TourActivityID = ActivitySPM.SuplierProductCode,
-                                CountryCode = ActivitySPM.SupplierCountryCode,
-                                CountryName = ActivitySPM.SupplierCountryName,
-                                CityCode = ActivitySPM.SupplierCityCode,
-                                CityName = ActivitySPM.SupplierCityName,
-                                PricingCurrency = ActivitySPM.Currency,
-                                AreaAddress = ActivitySPM.AreaAddress,
-                                TourType = ActivitySPM.TourType
-                            };
-                        }
-
-
-                        newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
-
-                        newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
-                        {
-                            OptionCode = s.Price_OptionCode,
-                            PriceFor = s.Price_For,
-                            Price = Convert.ToDouble(s.Price),
-                            PriceType = s.Price_Type,
-                            PriceBasis = s.PriceBasis,
-                            PriceId = s.PriceCode,
-                            SupplierCurrency = s.PriceCurrency,
-                            FromPax = s.FromPax,
-                            ToPax = s.ToPax,
-                            Market = s.Market,
-                            PersonType = s.PersonType,
-                            ValidFrom = s.Price_ValidFrom == null ? string.Empty : s.Price_ValidFrom.ToString(),
-                            ValidTo = s.Price_ValidTo == null ? string.Empty : s.Price_ValidTo.ToString(),
-                            PackageSupplier = s.PackageSupplier
-                        }).ToList();
-
-                        newActivity.ProductOptions = (from afo in ActivityFO
-                                                      select new DataContracts.Activity.ProductOptions
-                                                      {
-                                                          SystemActivityOptionCode = afo.TLGXActivityOptionCode,
-                                                          OptionCode = afo.Activity_OptionCode,
-                                                          ActivityType = afo.Activity_Type,
-                                                          DealText = afo.Activity_DealText,
-                                                          Options = afo.Activity_OptionName,
-                                                          Language = afo.Activity_Language,
-                                                          LanguageCode = afo.Activity_LanguageCode,
-                                                          Activity_FlavourOptions_Id = afo.Activity_FlavourOptions_Id
-                                                      }).ToList();
-
-                        foreach (var item in newActivity.ProductOptions)
-                        {
-                            var itemCA = (from a in ActivityFOAttribute where a.Activity_FlavourOptions_Id == item.Activity_FlavourOptions_Id select a).ToList();
-                            if (itemCA != null && itemCA.Count > 0)
-                            {
-                                item.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
-                                foreach (var itemCAI in itemCA)
+                                if (!string.IsNullOrWhiteSpace(CT.SystemProductCategorySubType))
                                 {
-                                    item.ClassificationAttrributes.Add(new DataContracts.Activity.ClassificationAttrributes
-                                    {
-                                        Group = itemCAI.AttributeSubType,
-                                        Type = itemCAI.AttributeType,
-                                        Value = itemCAI.AttributeValue
+                                    CT.SystemProductCategorySubType = CT.SystemProductCategorySubType.Split('-')[0].Trim();
+                                }
 
-                                    });
+                                if (!string.IsNullOrWhiteSpace(CT.SystemProductType))
+                                {
+                                    if (CT.SystemProductType.ToUpper() == "ice - Outdoor Activities".ToUpper())
+                                    {
+                                        CT.SystemProductType = "Outdoor Activities";
+                                    }
+                                    else if (CT.SystemProductType.ToUpper() == "Multi-day and Extended Tours".ToUpper())
+                                    {
+                                        CT.SystemProductType = CT.SystemProductType;
+                                    }
+                                    else
+                                    {
+                                        CT.SystemProductType = CT.SystemProductType.Split('-')[0].Trim();
+                                    }
                                 }
                             }
+
+                            var ActivityDP = (from a in context.Activity_DeparturePoints.AsNoTracking()
+                                              where a.Activity_Flavor_ID == Activity.Activity_Flavour_Id
+                                              select a).ToList();
+
+                            //newActivity.Activity_Flavour_Id = Activity.Activity_Flavour_Id.ToString();
+
+                            newActivity.SystemActivityCode = Convert.ToInt32(Activity.CommonProductNameSubType_Id);
+
+                            newActivity.SupplierCompanyCode = ActivitySPM.SupplierCode;
+
+                            if (ActivitySPM.SupplierCode == "gta")
+                            {
+                                newActivity.SupplierCityDepartureCodes = context.Activity_SupplierCityDepartureCode.Where(w => w.CityCode == ActivitySPM.SupplierCityCode).Select(s => new DataContracts.Activity.SupplierCityDepartureCode
+                                {
+                                    CityCode = s.CityCode,
+                                    CityName = s.City,
+                                    DepartureCode = s.DepartureCode,
+                                    DepartureName = s.DepartureName,
+                                    HotelCode = s.HotelCode,
+                                    HotelName = s.Hotel
+                                }).ToList();
+                            }
+
+                            newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
+
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
+
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
+
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
+
+                            newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
+
+                            newActivity.Name = Activity.ProductName;
+
+                            newActivity.Description = (ActivityDesc.Where(w => w.DescriptionType == "Long").Select(s => s.Description).FirstOrDefault());
+
+                            newActivity.DeparturePoint = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "DeparturePoint").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.ReturnDetails = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ReturnDetails").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.PhysicalIntensity = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PhysicalIntensity").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.Overview = (ActivityDesc.Where(w => w.DescriptionType == "Short").Select(s => s.Description).FirstOrDefault());
+
+                            newActivity.Recommended = (Activity.CompanyReccom ?? false).ToString();
+
+                            newActivity.CountryName = Activity.Country;
+
+                            newActivity.CountryCode = Activity.CountryCode;
+
+                            newActivity.CityName = Activity.City;
+
+                            newActivity.CityCode = Activity.CityCode;
+
+                            newActivity.StarRating = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Rating").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.NumberOfPassengers = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofPassengers").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.NumberOfReviews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofReviews").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.NumberOfLikes = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofLikes").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.NumberOfViews = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "NoofViews").Select(s => s.AttributeValue).FirstOrDefault());
+
+                            newActivity.ActivityInterests = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Interests").Select(s => s.AttributeValue).ToArray());
+
+                            newActivity.Inclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == true).Select(s => new DataContracts.Activity.Inclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+
+                            newActivity.Exclusions = (ActivityInc.Where(w => (w.IsInclusion ?? false) == false).Select(s => new DataContracts.Activity.Exclusions { Name = s.InclusionName, Description = s.InclusionDescription }).ToList());
+
+                            newActivity.Highlights = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Highlights").Select(s => s.AttributeValue).ToArray());
+
+                            newActivity.BookingPolicies = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType != "TermsAndConditions").Select(s => new DataContracts.Activity.ImportantInfoAndBookingPolicies { InfoType = s.AttributeSubType, InfoText = s.AttributeValue }).ToList());
+
+                            newActivity.TermsAndConditions = (ActivityClassAttr.Where(w => w.AttributeType == "Policies" && w.AttributeSubType == "TermsAndConditions").Select(s => s.AttributeValue).ToArray());
+
+                            newActivity.SuitableFor = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "SuitableFor").Select(s => s.AttributeValue).ToArray());
+
+                            newActivity.Specials = (ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Specials").Select(s => s.AttributeValue).ToList());
+
+                            newActivity.ActivityMedia = (ActivityMedia.Select(s => new DataContracts.Activity.Media
+                            {
+                                Caption = s.Media_Caption,
+                                Description = s.Description,
+                                FullUrl = s.Media_URL,
+                                Height = s.Media_Height ?? 0,
+                                MediaType = s.Category,
+                                MediaSubType = s.SubCategory,
+                                SortOrder = (s.Media_Position ?? 0).ToString(),
+                                ThumbUrl = s.Media_URL,
+                                Width = s.Media_Width ?? 0
+                            }).ToList());
+
+                            //newActivity.Duration = new DataContracts.Activity.ActivityDuration
+                            //{
+                            //    Hours = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Hours").Select(s => s.AttributeValue).FirstOrDefault()),
+                            //    Minutes = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Minutes").Select(s => s.AttributeValue).FirstOrDefault()),
+                            //    Text = (ActivityClassAttr.Where(w => w.AttributeType == "Duration" && w.AttributeSubType == "Text").Select(s => s.AttributeValue).FirstOrDefault())
+                            //};
+
+                            newActivity.ReviewScores = (ActivityReviews.Where(w => w.IsCustomerReview == false).Select(s => new DataContracts.Activity.ReviewScores { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type }).ToList());
+
+                            newActivity.CustomerReviews = (ActivityReviews.Where(w => w.IsCustomerReview == true).Select(s => new DataContracts.Activity.CustomerReviews { Score = s.Review_Score ?? 0, Source = s.Review_Source, Type = s.Review_Type, Author = s.Review_Author, Comment = s.Review_Description, Date = s.Review_PostedDate.ToString(), Title = s.Review_Title }).ToList());
+
+                            newActivity.ActivityLocation = new DataContracts.Activity.ActivityLocation
+                            {
+                                Address = Activity.Street + ", " + Activity.Street2 + ", " + Activity.Street3 + ", " + Activity.Street4 + ", " + Activity.Street5,
+                                Area = Activity.Area,
+                                Latitude = Activity.Latitude,
+                                Location = Activity.Location,
+                                Longitude = Activity.Longitude
+                            };
+
+                            newActivity.TourGuideLanguages = (from a in ActivityInc
+                                                              join ad in ActivityIncDetails on a.Activity_Inclusions_Id equals ad.Activity_Inclusions_Id
+                                                              where a.IsInclusion ?? false == true
+                                                              select new DataContracts.Activity.TourGuideLanguages
+                                                              {
+                                                                  Language = ad.GuideLanguage,
+                                                                  LanguageID = ad.GuideLanguageCode
+                                                              }).ToList();
+
+                            if (ActivitySPM != null)
+                            {
+                                newActivity.SupplierDetails = new DataContracts.Activity.SupplierDetails
+                                {
+                                    SupplierName = ActivitySPM.SupplierName,
+                                    SupplierID = ActivitySPM.SupplierCode,
+                                    TourActivityID = ActivitySPM.SuplierProductCode,
+                                    CountryCode = ActivitySPM.SupplierCountryCode,
+                                    CountryName = ActivitySPM.SupplierCountryName,
+                                    CityCode = ActivitySPM.SupplierCityCode,
+                                    CityName = ActivitySPM.SupplierCityName,
+                                    PricingCurrency = ActivitySPM.Currency,
+                                    AreaAddress = ActivitySPM.AreaAddress,
+                                    TourType = ActivitySPM.TourType
+                                };
+                            }
+
+
+                            newActivity.Deals = ActivityDeals.Select(s => new DataContracts.Activity.Deals { Currency = s.Deal_Currency, DealId = s.DealCode, DealPrice = s.Deal_Price, DealText = s.DealText, OfferTermsAndConditions = s.Deal_TnC }).ToList();
+
+                            newActivity.Prices = ActivityPrices.OrderBy(o => o.Price).Select(s => new DataContracts.Activity.Prices
+                            {
+                                OptionCode = s.Price_OptionCode,
+                                PriceFor = s.Price_For,
+                                Price = Convert.ToDouble(s.Price),
+                                PriceType = s.Price_Type,
+                                PriceBasis = s.PriceBasis,
+                                PriceId = s.PriceCode,
+                                SupplierCurrency = s.PriceCurrency,
+                                FromPax = s.FromPax,
+                                ToPax = s.ToPax,
+                                Market = s.Market,
+                                PersonType = s.PersonType,
+                                ValidFrom = s.Price_ValidFrom == null ? string.Empty : string.Format("{0:dd-MM-yyyy}", s.Price_ValidFrom),
+                                ValidTo = s.Price_ValidTo == null ? string.Empty : string.Format("{0:dd-MM-yyyy}", s.Price_ValidTo),
+                                PackageSupplier = s.PackageSupplier
+                            }).ToList();
+
+                            newActivity.ProductOptions = (from afo in ActivityFO
+                                                          select new DataContracts.Activity.ProductOptions
+                                                          {
+                                                              SystemActivityOptionCode = afo.TLGXActivityOptionCode,
+                                                              OptionCode = afo.Activity_OptionCode,
+                                                              ActivityType = afo.Activity_Type,
+                                                              DealText = afo.Activity_DealText,
+                                                              Options = afo.Activity_OptionName,
+                                                              Language = afo.Activity_Language,
+                                                              LanguageCode = afo.Activity_LanguageCode,
+                                                              Activity_FlavourOptions_Id = afo.Activity_FlavourOptions_Id
+                                                          }).ToList();
+
+                            foreach (var item in newActivity.ProductOptions)
+                            {
+                                var itemCA = (from a in ActivityFOAttribute where a.Activity_FlavourOptions_Id == item.Activity_FlavourOptions_Id select a).ToList();
+                                if (itemCA != null && itemCA.Count > 0)
+                                {
+                                    item.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
+                                    foreach (var itemCAI in itemCA)
+                                    {
+                                        item.ClassificationAttrributes.Add(new DataContracts.Activity.ClassificationAttrributes
+                                        {
+                                            Group = itemCAI.AttributeSubType,
+                                            Type = itemCAI.AttributeType,
+                                            Value = itemCAI.AttributeValue
+
+                                        });
+                                    }
+                                }
+                            }
+
+                            newActivity.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ThingsToCarry").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "RecommendedDuration").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Market").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "AdditionalInfo").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Notes").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Physicalntensity").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Advisory").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PackagePeriod").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "BestFor").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Itinerary").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+                            newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "TagWith").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
+
+                            newActivity.SystemMapping = new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty };//ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
+
+                            newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
+                                                         join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
+                                                         from ODljS in ODlj.DefaultIfEmpty()
+                                                         join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
+                                                         from DPljS in DPlj.DefaultIfEmpty()
+                                                         select new DataContracts.Activity.DaysOfWeek
+                                                         {
+                                                             OperatingFromDate = ODljS == null ? string.Empty : string.Format("{0:dd-MM-yyyy}", ODljS.FromDate),
+                                                             OperatingToDate = ODljS == null ? string.Empty : string.Format("{0:dd-MM-yyyy}", ODljS.ToDate),
+
+                                                             SupplierDuration = DOW.SupplierDuration ?? string.Empty,
+                                                             SupplierEndTime = DOW.SupplierEndTime ?? string.Empty,
+                                                             SupplierFrequency = DOW.SupplierFrequency ?? string.Empty,
+                                                             SupplierSession = DOW.SupplierSession ?? string.Empty,
+                                                             SupplierStartTime = DOW.SupplierStartTime ?? string.Empty,
+
+                                                             Session = DOW.Session ?? string.Empty,
+                                                             StartTime = DOW.StartTime ?? string.Empty,
+                                                             EndTime = DOW.EndTime ?? string.Empty,
+                                                             Duration = DOW.Duration ?? string.Empty,
+                                                             DurationType = DOW.DurationType ?? string.Empty,
+
+
+                                                             Sunday = DOW.Sun ?? false,
+                                                             Monday = DOW.Mon ?? false,
+                                                             Tuesday = DOW.Tues ?? false,
+                                                             Wednesday = DOW.Wed ?? false,
+                                                             Thursday = DOW.Thur ?? false,
+                                                             Friday = DOW.Fri ?? false,
+                                                             Saturday = DOW.Sat ?? false,
+
+                                                             DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
+                                                             DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint,
+                                                             DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
+
+                                                         }).ToList();
+
+                            //Activity TLGXDisplaySubType Setting
+                            newActivity.TLGXDisplaySubType = Activity.TLGXDisplaySubType;
+
+
+                            ActivityClassAttr = null;
+                            ActivityDesc = null;
+                            ActivityInc = null;
+                            ActivityIncDetails = null;
+                            ActivityPolicy = null;
+                            ActivityMedia = null;
+                            ActivityReviews = null;
+                            ActivitySPM = null;
+                            ActivityDeals = null;
+                            ActivityPrices = null;
+                            ActivityFOAttribute = null;
+                            //ActivitySPMCA = null;
+                            ActivityFO = null;
                         }
-
-                        newActivity.ClassificationAttrributes = new List<DataContracts.Activity.ClassificationAttrributes>();
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Internal").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "ThingsToCarry").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "RecommendedDuration").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Market").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "AdditionalInfo").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Notes").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Physicalntensity").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Advisory").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "PackagePeriod").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "BestFor").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "Itinerary").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-                        newActivity.ClassificationAttrributes.AddRange(ActivityClassAttr.Where(w => w.AttributeType == "Product" && w.AttributeSubType == "TagWith").Select(s => new DataContracts.Activity.ClassificationAttrributes { Group = s.AttributeSubType, Type = s.AttributeType, Value = s.AttributeValue }).ToList());
-
-                        newActivity.SystemMapping = new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty };//ActivitySPM.Select(s => new DataContracts.Activity.SystemMapping { SystemID = string.Empty, SystemName = string.Empty }).FirstOrDefault();
-
-                        newActivity.DaysOfTheWeek = (from DOW in ActivityDOW
-                                                     join OD in ActivityOD on DOW.Activity_DaysOfOperation_Id equals OD.Activity_DaysOfOperation_Id into ODlj
-                                                     from ODljS in ODlj.DefaultIfEmpty()
-                                                     join DP in ActivityDP on DOW.Activity_DaysOfWeek_ID equals DP.Activity_DaysOfWeek_ID into DPlj
-                                                     from DPljS in DPlj.DefaultIfEmpty()
-                                                     select new DataContracts.Activity.DaysOfWeek
-                                                     {
-                                                         OperatingFromDate = ODljS == null ? string.Empty : ODljS.FromDate.ToString(),
-                                                         OperatingToDate = ODljS == null ? string.Empty : ODljS.ToDate.ToString(),
-
-                                                         SupplierDuration = DOW.SupplierDuration ?? string.Empty,
-                                                         SupplierEndTime = DOW.SupplierEndTime ?? string.Empty,
-                                                         SupplierFrequency = DOW.SupplierFrequency ?? string.Empty,
-                                                         SupplierSession = DOW.SupplierSession ?? string.Empty,
-                                                         SupplierStartTime = DOW.SupplierStartTime ?? string.Empty,
-
-                                                         Session = DOW.Session ?? string.Empty,
-                                                         StartTime = DOW.StartTime ?? string.Empty,
-                                                         EndTime = DOW.EndTime ?? string.Empty,
-                                                         Duration = DOW.Duration ?? string.Empty,
-                                                         DurationType = DOW.DurationType ?? string.Empty,
-
-
-                                                         Sunday = DOW.Sun ?? false,
-                                                         Monday = DOW.Mon ?? false,
-                                                         Tuesday = DOW.Tues ?? false,
-                                                         Wednesday = DOW.Wed ?? false,
-                                                         Thursday = DOW.Thur ?? false,
-                                                         Friday = DOW.Fri ?? false,
-                                                         Saturday = DOW.Sat ?? false,
-
-                                                         DepartureCode = DPljS == null ? string.Empty : DPljS.DepartureCode,
-                                                         DeparturePoint = DPljS == null ? string.Empty : DPljS.DeparturePoint,
-                                                         DepartureDescription = DPljS == null ? string.Empty : DPljS.Description
-
-                                                     }).ToList();
-
-                        //Activity TLGXDisplaySubType Setting
-                        newActivity.TLGXDisplaySubType = Activity.TLGXDisplaySubType;
-
-                        var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                        collection.ReplaceOneAsync(filter, newActivity, new UpdateOptions { IsUpsert = true });
-
-                        //Call to Generate message static method send Messages.
-                        SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
-
-                        newActivity = null;
-                        ActivityClassAttr = null;
-                        ActivityDesc = null;
-                        ActivityInc = null;
-                        ActivityIncDetails = null;
-                        ActivityPolicy = null;
-                        ActivityMedia = null;
-                        ActivityReviews = null;
-                        ActivitySPM = null;
-                        ActivityDeals = null;
-                        ActivityPrices = null;
-                        ActivityFOAttribute = null;
-                        //ActivitySPMCA = null;
-                        ActivityFO = null;
-
-
+                        Success = true;
                     }
                     catch (Exception ex)
                     {
-                        continue;
+                        Success = false;
                     }
+                    scope.Complete();
+                    scope.Dispose();
                 }
-                collection = null;
-                _database = null;
-                return true;
 
+                if (Success)
+                {
+                    var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                    collection.ReplaceOne(filter, newActivity, new UpdateOptions { IsUpsert = true });
+
+                    //Call to Generate message static method send Messages.
+                    SendToKafka.SendMessage(newActivity, "ACTIVITY", "POST");
+
+                    newActivity = null;
+
+                    //Update Status
+                    if (!string.IsNullOrWhiteSpace(log_id))
+                    {
+                        if (iCounter % 100 == 0)
+                            UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalcount, iCounter, string.Empty, string.Empty, string.Empty);
+                    }
+                    iCounter++;
+                }
             }
+
+            collection = null;
+            _database = null;
+            return true;
         }
         #endregion
         /// <summary>
@@ -2846,37 +3032,46 @@ namespace DAL
         /// <param name="suppliername"></param>
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
-            using (TLGX_Entities context = new TLGX_Entities())
+            List<Activity_Flavour> ActivityList = new List<Activity_Flavour>();
+
+            using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew, new System.Transactions.TransactionOptions()
             {
-                context.Configuration.AutoDetectChangesEnabled = false;
-                context.Database.CommandTimeout = 0;
-
-                List<Activity_Flavour> ActivityList;
-
-                if (suppliername != string.Empty)
+                IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                Timeout = new TimeSpan(0, 2, 0)
+            }))
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
                 {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
+
                     ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
                                     join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
                                     where a.CityCode != null && (spm.IsActive ?? false) == true
                                     && spm.SupplierName == suppliername
                                     select a).ToList();
 
-                    int totalCount = ActivityList.Count;
-                    if (totalCount > 0)
-                    {
-                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
-                        LoadActivityData(ActivityList, log_id);
-                        UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
-                    }
+
                 }
-                //Remove Inactive or deleted Data
-                try
-                {
-                    RemoveActivityDefinitionBySupplier(suppliername);
-                }
-                catch (Exception)
-                {
-                }
+                scope.Complete();
+                scope.Dispose();
+            }
+
+            int totalCount = ActivityList.Count;
+            if (totalCount > 0)
+            {
+                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.RUNNNING, totalCount, 0, string.Empty, string.Empty, string.Empty);
+                LoadActivityData(ActivityList, log_id);
+                UpdateDistLogInfo(Guid.Parse(log_id), PushStatus.COMPLETED, totalCount, totalCount, string.Empty, string.Empty, string.Empty);
+            }
+
+            //Remove Inactive or deleted Data
+            try
+            {
+                RemoveActivityDefinitionBySupplier(suppliername);
+            }
+            catch (Exception)
+            {
             }
         }
 
@@ -2911,16 +3106,14 @@ namespace DAL
                         try
                         {
                             var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            if (filter != null)
-                                collection.DeleteOne(filter);
+                            collection.DeleteOne(filter);
+                            //Call to Generate message static method send Messages.
+                            SendToKafka.SendMessage(Activity.CommonProductNameSubType_Id, "ACTIVITY", "DELETE");
                         }
                         catch (Exception ex)
                         {
 
                         }
-
-
-
                     }
                 }
             }
@@ -3724,6 +3917,1353 @@ namespace DAL
             setNewStatus = null;
         }
 
+        #endregion
+
+        #region VisaDefinition
+
+        public void UpdateVisaDefinition(Guid Logid)
+        {
+            try
+            {
+                int counter = 0;
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Status = "Running";
+                        Log.Edit_Date = DateTime.Now;
+                        Log.Edit_User = "MPUSH";
+                        context.SaveChanges();
+                    }
+                }
+
+                _database = MongoDBHandler.mDatabase();
+                _database.DropCollection("VisaMapping");
+
+                var CollecionVisaCountries = _database.GetCollection<BsonDocument>("VisaCountryDetail");
+                var VisaMappingCollection = _database.GetCollection<VisaDefinition>("VisaMapping");
+
+                ProjectionDefinition<BsonDocument> project = Builders<BsonDocument>.Projection.Include("SupplierCode");
+                project = project.Exclude("_id");
+                project = project.Include("SupplierName");
+                project = project.Include("CallType");
+                project = project.Include("VisaDetail");
+
+                var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Edit_Date = DateTime.Now;
+                        Log.TotalCount = CollecionVisaCountries == null ? 0 : int.Parse(CollecionVisaCountries.CountDocuments(new BsonDocument()).ToString());
+                        context.SaveChanges();
+                    }
+                }
+
+                List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
+
+                //Transformation
+                foreach (var item in CollecionVisaCountriesFiltered)
+                {
+                    var JsonObject = item.ToJson();
+
+                    JObject VisaJson = JObject.Parse(JsonObject);
+
+                    VisaDefinition objVisaDefinition = new VisaDefinition();
+
+                    objVisaDefinition.SupplierCode = (string)VisaJson["SupplierCode"];
+                    objVisaDefinition.CallType = (string)VisaJson["CallType"];
+                    objVisaDefinition.SupplierName = (string)VisaJson["SupplierName"];
+                    var strVisaDetail = VisaJson["VisaDetail"].ToString();
+
+                    if (!string.IsNullOrEmpty(strVisaDetail))
+                    {
+                        objVisaDefinition.VisaDetail = new List<VisaDetail>();
+                        VisaDetail objVisaDetail = new VisaDetail();
+
+                        JObject JobjectVisaDetail = JObject.Parse(strVisaDetail);
+
+                        objVisaDetail.CountryCode = (string)VisaJson["VisaDetail"]["CountryCode"];
+                        objVisaDetail.CountryName = (string)VisaJson["VisaDetail"]["CountryName"];
+
+                        #region Visa
+                        objVisaDetail.Visa = new List<Visa>();
+
+                        Visa objVisa = new Visa();
+
+                        objVisa.AdditionalInfo = (string)VisaJson["VisaDetail"]["Visa"]["AdditionalInfo"];
+                        var totalVisaInformationNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"].ToList().Count;
+
+                        if (totalVisaInformationNodes > 0)
+                        {
+                            objVisa.VisaInformation = new List<VisaInformation>();
+                            for (int i = 0; i < totalVisaInformationNodes; i++)
+                            {
+                                VisaInformation objVisaInformationNew = new VisaInformation();
+                                objVisaInformationNew.TerritoryCity = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["TerritoryCity"];
+
+                                // fill CategoryForms Object
+                                objVisaInformationNew.CategoryForms = new CategoryForms();
+                                objVisaInformationNew.CategoryForms.CategoryForm = new List<CategoryForm>();
+                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"].ToList().Count > 0)
+                                {
+                                    var TypeOfCategoryForm = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"].GetType();
+                                    int TotalCategoryForms = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"].ToList().Count;
+                                    for (int c = 0; c < TotalCategoryForms; c++)
+                                    {
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"].GetType().Name.ToUpper() == "ARRAY")
+                                        {
+                                            var TypeOfCategoryCodeNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["CategoryCode"].GetType();
+
+                                            if (TypeOfCategoryCodeNode.Name.ToUpper() == "JARRAY")
+                                            {
+                                                CategoryForm objCategoryFormNew = new CategoryForm();
+                                                objCategoryFormNew.CategoryCode = new List<string>();
+                                                objCategoryFormNew.Form = new List<string>();
+                                                objCategoryFormNew.FormPath = new List<string>();
+                                                int TotalCategoryNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["CategoryCode"].ToList().Count;
+                                                for (int r = 0; r < TotalCategoryNodes; r++)
+                                                {
+                                                    objCategoryFormNew.CategoryCode.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["CategoryCode"][r]));
+                                                }
+                                                int TotalFormNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["Form"].ToList().Count;
+                                                for (int r = 0; r < TotalFormNodes; r++)
+                                                {
+                                                    objCategoryFormNew.Form.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["Form"][r]));
+                                                }
+                                                int TotalFormPathNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["FormPath"].ToList().Count;
+                                                for (int r = 0; r < TotalFormPathNodes; r++)
+                                                {
+                                                    objCategoryFormNew.FormPath.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["FormPath"][r]));
+                                                }
+                                                objVisaInformationNew.CategoryForms.CategoryForm.Add(objCategoryFormNew);
+                                            }
+                                            else
+                                            {  // It is a object containing single value
+                                                CategoryForm objCategoryFormNew = new CategoryForm();
+                                                objCategoryFormNew.CategoryCode = new List<string>();
+                                                objCategoryFormNew.Form = new List<string>();
+                                                objCategoryFormNew.FormPath = new List<string>();
+                                                objCategoryFormNew.CategoryCode.Add((string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["CategoryCode"]);
+                                                objCategoryFormNew.Form.Add((string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["Form"]);
+                                                objCategoryFormNew.FormPath.Add((string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryForms"]["CategoryForm"][c]["FormPath"]);
+                                                objVisaInformationNew.CategoryForms.CategoryForm.Add(objCategoryFormNew);
+                                            }
+                                        }
+                                        else
+                                        {
+
+                                        }
+
+                                    }
+                                }
+
+
+                                #region CategoryFees
+
+
+
+                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"].ToList().Count > 0)
+                                {
+                                    objVisaInformationNew.CategoryFees = new List<VisaCategoryFees>();
+                                    objVisaInformationNew.CategoryFees.Add(new VisaCategoryFees());
+                                    objVisaInformationNew.CategoryFees[0].Category = new List<List<VisaCategoryFee>>();
+
+
+
+                                    var TypeOfCategoryFees = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"].GetType();
+
+                                    if (TypeOfCategoryFees.Name.ToUpper() == "JARRAY")
+                                    {
+                                        int TotalCategoryFees = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"].ToList().Count;
+
+                                        for (int p = 0; p < TotalCategoryFees; p++)
+                                        {
+                                            var TypeOfCategoryFee = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"].GetType();
+                                            if (TypeOfCategoryFee.Name.ToUpper() == "JARRAY")
+                                            {
+                                                List<VisaCategoryFee> VisaCategoryfeeList = new List<VisaCategoryFee>();
+
+                                                int TotalCategoryFeesNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"].ToList().Count;
+                                                for (int g = 0; g < TotalCategoryFeesNode; g++)
+                                                {
+                                                    VisaCategoryfeeList.Add(new VisaCategoryFee
+                                                    {
+                                                        Category = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"][g]["Category"]),
+                                                        CategoryCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"][g]["CategoryCode"]),
+                                                        CategoryFeeAmountINR = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"][g]["CategoryFeeAmountINR"]),
+                                                        CategoryFeeAmountOther = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"][g]["CategoryFeeAmountOther"])
+                                                    });
+                                                }
+                                                objVisaInformationNew.CategoryFees[0].Category.Add(VisaCategoryfeeList);
+
+                                            }
+                                            else
+                                            {
+
+                                                List<VisaCategoryFee> VisaCategoryfeeList = new List<VisaCategoryFee>();
+                                                VisaCategoryfeeList.Add(new VisaCategoryFee
+                                                {
+                                                    Category = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"]["Category"]),
+                                                    CategoryCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"]["CategoryCode"]),
+                                                    CategoryFeeAmountINR = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"]["CategoryFeeAmountINR"]),
+                                                    CategoryFeeAmountOther = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"][p]["CategoryFee"]["CategoryFeeAmountOther"])
+                                                });
+
+                                                objVisaInformationNew.CategoryFees[0].Category.Add(VisaCategoryfeeList);
+
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"]["CategoryFee"].GetType().Name.ToUpper() != "JARRAY")
+                                        {// it is object
+                                            List<VisaCategoryFee> VisaCategoryfeeList = new List<VisaCategoryFee>();
+                                            VisaCategoryfeeList.Add(new VisaCategoryFee
+                                            {
+                                                Category = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"]["CategoryFee"]["Category"]),
+                                                CategoryCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"]["CategoryFee"]["CategoryCode"]),
+                                                CategoryFeeAmountINR = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"]["CategoryFee"]["CategoryFeeAmountINR"]),
+                                                CategoryFeeAmountOther = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["CategoryFees"]["CategoryFee"]["CategoryFeeAmountOther"])
+                                            });
+
+                                            objVisaInformationNew.CategoryFees[0].Category.Add(VisaCategoryfeeList);
+                                        }
+                                        else
+                                        {
+
+                                        }
+                                    }
+                                }
+
+                                #endregion
+
+
+
+
+                                // VisaInfo Object fill
+                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"].ToList().Count > 0)
+                                {
+                                    objVisaInformationNew.VisaInfo = new List<VisaInfo>();
+                                    VisaInfo objVisaInfoInew = new VisaInfo();
+                                    if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"].ToArray().Length > 0)
+                                    {
+                                        int TotalChildVisaNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"].ToArray().Length;
+                                        objVisaInfoInew.VisaInformation = new List<VisaInformationNode>();
+                                        objVisaInfoInew.VisaGeneralInformation = new List<VisaGeneralInformation>();
+
+                                        VisaGeneralInformation objVisaGeneralInformationNew = new VisaGeneralInformation();
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null &&
+                                            VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"].GetType().Name.ToUpper() == "JOBJECT")
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null)
+                                            {
+                                                objVisaGeneralInformationNew.GeneralInfo = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"];
+                                            }
+
+                                        }
+
+                                        objVisaInfoInew.VisaGeneralInformation.Add(objVisaGeneralInformationNew);
+
+                                        VisaInformationNode objVisaInformation2New = new VisaInformationNode();
+
+
+                                        var TypeOfInformation = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"].GetType();
+                                        if (TypeOfInformation.Name.ToUpper() == "JOBJECT")
+                                        {
+                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"] != null &&
+                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"] != null &&
+                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"].ToList().Count > 0)
+                                            {
+                                                objVisaInformation2New.Information = new Information();
+                                                int totalInformationLinks = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"].ToList().Count;
+                                                objVisaInformation2New.Information.InformationLink = new List<InformationLink>();
+
+                                                var TypeOfInformationLink = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"].GetType();
+                                                if (TypeOfInformationLink.Name.ToUpper() == "JOBJECT")
+                                                {
+                                                    InformationLink objInformationLinkNew = new InformationLink();
+
+                                                    objInformationLinkNew.href = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"]["href"];
+                                                    objInformationLinkNew.content = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"]["content"];
+                                                    objInformationLinkNew.target = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"]["target"];
+                                                    objVisaInformation2New.Information.InformationLink.Add(objInformationLinkNew);
+                                                }
+                                                else
+                                                {
+                                                    for (int l = 0; l < totalInformationLinks; l++)
+                                                    {
+                                                        InformationLink objInformationLinkNew = new InformationLink();
+
+                                                        objInformationLinkNew.href = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"][l]["href"];
+                                                        objInformationLinkNew.content = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"][l]["content"];
+                                                        objInformationLinkNew.target = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"][l]["target"];
+
+                                                        objVisaInformation2New.Information.InformationLink.Add(objInformationLinkNew);
+
+                                                    }
+                                                }
+
+                                            }
+                                        }
+                                        else
+                                        {
+                                            //its a jvalue.
+                                            objVisaInformation2New.Information = new Information();
+                                            //int totalInformationLinks = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["InformationLink"].ToList().Count;
+                                            objVisaInformation2New.Information.InformationLink = new List<InformationLink>();
+                                            InformationLink objInformationLinkNew = new InformationLink();
+                                            objInformationLinkNew.content = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"];
+                                            objVisaInformation2New.Information.InformationLink.Add(objInformationLinkNew);
+
+                                        }
+
+
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"].ToList().Count != 0
+                                            && VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"] != null)
+                                        {
+                                            var ContentType = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"].GetType();
+                                            if (ContentType.Name.ToUpper() == "JARRAY")
+                                            {
+                                                if (objVisaInformation2New.Information == null)
+                                                {
+                                                    objVisaInformation2New.Information = new Information();
+                                                }
+
+                                                objVisaInformation2New.Information.content = new List<string>();
+                                                int TotalContentRecords = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"].ToList().Count;
+                                                for (int t = 0; t < TotalContentRecords; t++)
+                                                {
+                                                    objVisaInformation2New.Information.content.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"][t]));
+                                                }
+
+                                            }
+                                            else
+                                            {
+                                                if (objVisaInformation2New.Information == null)
+                                                {
+                                                    objVisaInformation2New.Information = new Information();
+                                                }
+                                                objVisaInformation2New.Information.content = new List<string>();
+                                                int TotalContentRecords = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"].ToList().Count;
+                                                objVisaInformation2New.Information.content.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"]["content"]));
+                                            }
+                                        }
+
+                                        //else
+                                        //objVisaInformation2New.Information = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaInformation"]["Information"];
+
+
+                                        objVisaInfoInew.VisaInformation.Add(objVisaInformation2New);
+
+
+                                    }
+
+                                    #region categories
+
+                                    if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"] != null &&
+                                        VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"].ToList().Count > 0)
+                                    {
+                                        int totalCategoriesCount = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"].ToList().Count;
+                                        objVisaInformationNew.Categories = new List<VisaCategories>();
+                                        objVisaInformationNew.Categories.Add(new VisaCategories());
+                                        objVisaInformationNew.Categories[0].Category = new List<VisaCategoryDetail>();
+                                        var TypeOfCategory = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"].GetType();
+                                        if (TypeOfCategory.Name.ToUpper() == "JARRAY")
+                                        {
+                                            for (int m = 0; m < totalCategoriesCount; m++)
+                                            {
+                                                VisaCategoryDetail objVisaCategoryDetailNew = new VisaCategoryDetail();
+                                                objVisaCategoryDetailNew.CategoryInfo = new List<VisaCategoryInfo>();
+                                                objVisaCategoryDetailNew.CategoryInfo.Add(new VisaCategoryInfo());
+                                                objVisaCategoryDetailNew.CategoryInfo[0].Information = new List<VisaInformationChildNode>();
+                                                objVisaCategoryDetailNew.CategoryInfo[0].Information.Add(new VisaInformationChildNode());
+
+                                                objVisaCategoryDetailNew.CategoryCode = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryCode"];
+                                                objVisaCategoryDetailNew.Category = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["Category"];
+                                                // objVisaCategoryDetailNew.CategoryNotes = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"];
+
+
+
+                                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"] != null)
+                                                {
+                                                    var TypeOfCategoryNotes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"].GetType();
+                                                    if (TypeOfCategoryNotes.Name.ToUpper() == "JOBJECT")
+                                                    {
+                                                        objVisaCategoryDetailNew.CategoryNotes = new CategoryNotes();
+                                                        objVisaCategoryDetailNew.CategoryNotes.Notes = new List<string>();
+
+                                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"] != null &&
+                                                            VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"].ToList().Count > 0)
+                                                        {
+                                                            int TotalNotesTag = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"].ToList().Count;
+                                                            for (int y = 0; y < TotalNotesTag; y++)
+                                                            {
+                                                                objVisaCategoryDetailNew.CategoryNotes.Notes.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]
+                                                                                            ["CategoryNotes"][y]["Note"]));
+                                                            }
+
+                                                        }
+                                                    }
+                                                    else
+                                                    {     // Its Object
+                                                        objVisaCategoryDetailNew.CategoryNotes = new CategoryNotes();
+                                                        objVisaCategoryDetailNew.CategoryNotes.Notes = new List<string>();
+
+
+                                                        if (Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]) != "")
+                                                        {
+
+                                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"].ToList().Count == 0)
+                                                            {
+                                                                // read it from CategoryNotes Directly
+                                                                objVisaCategoryDetailNew.CategoryNotes.Notes.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]
+                                                                                       ["CategoryNotes"]));
+                                                            }
+                                                            else
+                                                            {
+                                                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"].GetType().Name.ToUpper() != "JARRAY" &&
+                                                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"] != null &&
+                                                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"].ToList().Count > 0)
+                                                                {
+                                                                    int TotalNotesTag = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"]["Note"].ToList().Count;
+                                                                    for (int b = 0; b < TotalNotesTag; b++)
+                                                                    {
+                                                                        objVisaCategoryDetailNew.CategoryNotes.Notes.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]
+                                                                                      ["CategoryNotes"]["Note"][b]));
+                                                                    }
+
+                                                                }
+                                                                else
+                                                                {
+                                                                    int TotalCategoryNotesNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"].ToList().Count;
+
+                                                                    for (int d = 0; d < TotalCategoryNotesNodes; d++)
+                                                                    {
+                                                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"][d] != null &&
+                                                                            VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryNotes"][d].ToList().Count > 0)
+                                                                        {
+                                                                            objVisaCategoryDetailNew.CategoryNotes.Notes.Add(Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]
+                                                                                           ["CategoryNotes"][d]));
+                                                                        }
+
+                                                                    }
+
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"] != null)
+                                                {
+
+                                                    var TypeOfCategoryRequirements = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"].GetType();
+                                                    if (TypeOfCategoryRequirements.Name.ToUpper() == "JARRAY")
+                                                    {
+                                                        objVisaCategoryDetailNew.CategoryRequirements = new List<VisaCategoryRequirements>();
+                                                        objVisaCategoryDetailNew.CategoryRequirements.Add(new VisaCategoryRequirements());
+                                                        objVisaCategoryDetailNew.CategoryRequirements[0].Requirements = new Requirements();
+
+                                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"] != null)
+                                                        {
+                                                            int totalRequirements = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"].ToList().Count;
+
+                                                            for (int q = 0; q < totalRequirements; q++)
+                                                            {
+                                                                objVisaCategoryDetailNew.CategoryRequirements[0].Requirements.Line = Convert.ToString(
+                                                                    VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"][q]["Requirements"]["Line"]);
+                                                            }
+                                                        }
+                                                    }
+                                                    else
+                                                    {
+                                                        objVisaCategoryDetailNew.CategoryRequirements = new List<VisaCategoryRequirements>();
+                                                        objVisaCategoryDetailNew.CategoryRequirements.Add(new VisaCategoryRequirements());
+                                                        objVisaCategoryDetailNew.CategoryRequirements[0].Requirements = new Requirements();
+
+                                                        if ((VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"] != null))
+                                                        {
+                                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"].ToList().Count > 0)
+                                                            {
+                                                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"]["Requirements"].ToList().Count > 0)
+                                                                {
+                                                                    objVisaCategoryDetailNew.CategoryRequirements[0].Requirements.Line = Convert.ToString(
+                                                                        VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryRequirements"]["Requirements"]["Line"]);
+                                                                }
+
+                                                            }
+                                                        }
+
+                                                    }
+                                                }
+
+
+                                                if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                     ["Information"] != null && VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                     ["Information"].GetType().Name.ToUpper() != "JARRAY")
+                                                {
+                                                    if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"].ToList().Count != 0)
+                                                    {
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].ProcessingTime = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                        ["Information"]["ProcessingTime"]);
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].VisaProcedure = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                       ["Information"]["VisaProcedure"]);
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                  ["Information"]["content"]);
+                                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"] != null)
+                                                        {
+                                                            var TypeOfDocumentRequiredNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]["Information"]["DocumentsRequired"].GetType();
+                                                            if (TypeOfDocumentRequiredNode.Name.ToUpper() == "JOBJECT")
+                                                            {
+
+                                                            }
+                                                            else
+                                                            {
+                                                                objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
+                                                                                                         ["Information"]["DocumentsRequired"]);
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else
+                                                { // It is Jarray
+
+
+                                                }
+
+                                                objVisaInformationNew.Categories[0].Category.Add(objVisaCategoryDetailNew);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            VisaCategoryDetail objVisaCategoryDetailNew = new VisaCategoryDetail();
+                                            // it is object
+
+                                            objVisaCategoryDetailNew.CategoryCode = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryCode"];
+                                            // Category is object here
+                                            var TypeOfCategoryNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["Category"].GetType();
+                                            if (TypeOfCategoryNode.Name.ToUpper() == "JOBJECT")
+                                            {
+
+                                            }
+                                            else
+                                            {
+                                                objVisaCategoryDetailNew.Category = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["Category"];
+                                                //objVisaCategoryDetailNew.CategoryNotes = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryNotes"];
+                                            }
+
+                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryNotes"] != null &&
+                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryNotes"].ToList().Count > 0)
+                                            {
+                                                var TypeOfCategoryNotesNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryNotes"].GetType();
+                                                if (TypeOfCategoryNotesNode.Name.ToUpper() == "JOBJECT")
+                                                {
+
+                                                }
+                                                else
+                                                {
+                                                    //objVisaCategoryDetailNew.CategoryNotes = new List<CategoryNotes>();
+                                                    //objVisaCategoryDetailNew.CategoryNotes.Add(new CategoryNotes());
+                                                    //objVisaCategoryDetailNew.CategoryNotes[0].Notes = new List<string>();
+                                                    //objVisaCategoryDetailNew.CategoryNotes[0].Notes.Add((string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryNotes"]);
+                                                }
+
+                                            }
+
+
+
+                                            #region CategoryInfo
+
+                                            objVisaCategoryDetailNew.CategoryInfo = new List<VisaCategoryInfo>();
+                                            objVisaCategoryDetailNew.CategoryInfo.Add(new VisaCategoryInfo());
+
+                                            objVisaCategoryDetailNew.CategoryInfo[0].Information = new List<VisaInformationChildNode>();
+
+                                            if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"] != null &&
+                                                VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"].GetType().Name.ToUpper() != "JARRAY")
+                                            {
+                                                objVisaCategoryDetailNew.CategoryInfo[0].Information.Add(new VisaInformationChildNode());
+                                                if (Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"]) != "{}" &&
+                                                    Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"]) != "")
+                                                {
+                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].ProcessingTime = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]
+                                                                                                                                          ["Information"]["ProcessingTime"]);
+                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].VisaProcedure = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]
+                                                                                                   ["Information"]["VisaProcedure"]);
+                                                    objVisaCategoryDetailNew.CategoryInfo[0].Information[0].content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]
+                                                                                                 ["Information"]["content"]);
+                                                    var TypeOfDocumentRequiredNode = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"]["DocumentsRequired"].GetType();
+                                                    if (TypeOfDocumentRequiredNode.Name.ToUpper() == "JOBJECT")
+                                                    {
+
+                                                    }
+                                                    else
+                                                    {
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]
+                                                                                                 ["Information"]["DocumentsRequired"]);
+                                                    }
+                                                }
+                                            }
+                                            else
+                                            {
+                                                int TotalInformationNodes = VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"].ToList().Count;
+                                                objVisaCategoryDetailNew.CategoryInfo[0].Information = new List<VisaInformationChildNode>();
+
+                                                for (int q = 0; q < TotalInformationNodes; q++)
+                                                {
+                                                    if (Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]) != "{}" &&
+                                                        Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]) != "")
+                                                    {
+
+
+                                                        objVisaCategoryDetailNew.CategoryInfo[0].Information.Add(new VisaInformationChildNode
+                                                        {
+                                                            ProcessingTime = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]["ProcessingTime"]),
+                                                            DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]["DocumentsRequired"]),
+                                                            VisaProcedure = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]["VisaProcedure"]),
+                                                            content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"]["CategoryInfo"]["Information"][q]["content"])
+                                                        });
+                                                    }
+                                                }
+
+
+                                            }
+
+
+
+                                            #endregion
+
+
+
+                                            objVisaInformationNew.Categories[0].Category.Add(objVisaCategoryDetailNew);
+                                        }
+
+
+
+
+                                    }
+
+                                    #endregion
+
+
+
+                                    objVisaInformationNew.VisaInfo.Add(objVisaInfoInew);
+                                }
+
+
+
+
+
+                                objVisa.VisaInformation.Add(objVisaInformationNew);
+                            }
+
+
+
+
+                        }
+
+
+                        #region Initialise collection
+                        objVisa.CountryCode = (string)JobjectVisaDetail["CountryCode"];
+                        objVisa.CountryDetails = new List<VisaCountryDetails>();
+                        objVisa.DiplomaticRepresentation = new List<VisaDiplomaticRepresentation>();
+                        objVisa.IndianEmbassy = new List<VisaIndianEmbassy>();
+                        objVisa.InternationalAdvisory = new List<VisaInternationalAdvisory>();
+                        objVisa.IntlHelpAddress = new VisaIntlHelpAddress();
+                        objVisa.IVSAdvisory = new List<VisaIVSAdvisory>();
+                        objVisa.ReciprocalVisaInfo = new List<ReciprocalVisaInfo>();
+                        objVisa.SAARCInfo = new List<VisaSAARCInfo>();
+                        #endregion
+
+
+                        #region ReciprocalInfo
+                        if (VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"] != null &&
+                            VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"].ToList().Count > 0)
+                        {
+                            objVisa.ReciprocalVisaInfo.Add(new ReciprocalVisaInfo());
+                            objVisa.ReciprocalVisaInfo[0].Description = new List<VisaDescription>();
+                            objVisa.ReciprocalVisaInfo[0].Description.Add(new VisaDescription());
+                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo = new List<ReciprocalVisaInfoChildNode>();
+                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo.Add(new ReciprocalVisaInfoChildNode());
+                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink = new List<VisaInformationLink>();
+                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].content = new List<string>();
+                            var ContentType = VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["content"].GetType();
+                            if (ContentType.Name.ToUpper() == "JARRAY")
+                            {
+                                if (VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["content"] != null)
+                                {
+                                    int totalContentRecords = VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["content"].ToList().Count;
+                                    for (int p = 0; p < totalContentRecords; p++)
+                                    {
+                                        objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].content.Add((string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]
+                                                                                 ["content"][p]);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].content.Add((string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["content"]);
+                            }
+
+                            if (VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"].ToList().Count > 0)
+                            {
+                                objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink = new List<VisaInformationLink>();
+                                objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Add(new VisaInformationLink());
+                                objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[0].content = new List<string>();
+
+                                var InformationLinkType = VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"].GetType();
+                                if (InformationLinkType.Name.ToUpper() == "JARRAY")
+                                {
+                                    if (VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"] != null)
+                                    {
+                                        int TotalInformationLinks = VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"].ToList().Count;
+                                        for (int t = 0; t < TotalInformationLinks; t++)
+                                        {
+                                            VisaInformationLink objVisaInformationLinkNew = new VisaInformationLink();
+                                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[t].content = new List<string>();
+                                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[t].content.Add((string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"][t]["content"]);
+                                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[t].href = (string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"][t]["href"];
+                                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[t].target = (string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"][t]["target"];
+
+                                            objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Add(objVisaInformationLinkNew);
+
+
+                                        }
+                                    }
+                                    if (objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Last().content == null)
+                                    {
+                                        objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Remove(objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Last());
+                                    }
+                                }
+                                else
+                                {
+                                    objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Add(new VisaInformationLink());
+                                    objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[0].content.Add((string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"]["content"]);
+                                    objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[0].href = (string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"]["href"];
+                                    objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink[0].target = (string)VisaJson["VisaDetail"]["Visa"]["ReciprocalVisaInfo"]["Description"]["ReciprocalVisaInfo"]["InformationLink"]["target"];
+
+                                    if (objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Last().content == null)
+                                    {
+                                        objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Remove(objVisa.ReciprocalVisaInfo[0].Description[0].ReciprocalVisaInfo[0].InformationLink.Last());
+                                    }
+
+                                }
+
+
+                            }
+
+                        }
+                        #endregion
+
+                        #region InternationalAdvisory
+
+                        if (VisaJson["VisaDetail"]["Visa"]["InternationalAdvisory"] != null && VisaJson["VisaDetail"]["Visa"]["InternationalAdvisory"].ToList().Count > 0)
+                        {
+                            objVisa.InternationalAdvisory.Add(new VisaInternationalAdvisory());
+                            objVisa.InternationalAdvisory[0].Description = new List<VisaDescriptionInnerNode>();
+                            objVisa.InternationalAdvisory[0].Description.Add(new VisaDescriptionInnerNode());
+                            objVisa.InternationalAdvisory[0].Description[0].VisaInternationalAdvisory = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["InternationalAdvisory"]["Description"]["InternationalAdvisory"]);
+
+
+                        }
+
+
+                        #endregion
+
+                        #region IVSAdvisory
+
+                        if (VisaJson["VisaDetail"]["Visa"]["IVSAdvisory"] != null && VisaJson["VisaDetail"]["Visa"]["IVSAdvisory"].ToList().Count > 0)
+                        {
+                            VisaIVSAdvisory objVisaIVSAdvisoryNew = new VisaIVSAdvisory();
+                            objVisaIVSAdvisoryNew.Description = new List<VisaDescriptionNode>();
+                            objVisaIVSAdvisoryNew.Description.Add(new VisaDescriptionNode());
+                            objVisaIVSAdvisoryNew.Description[0].Heading = new List<VisaHeading>();
+                            objVisaIVSAdvisoryNew.Description[0].Heading.Add(new VisaHeading
+                            {
+                                content = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IVSAdvisory"]["Description"]["Heading"]["content"])
+                            });
+
+                            objVisa.IVSAdvisory.Add(objVisaIVSAdvisoryNew);
+
+                        }
+
+                        #endregion
+
+
+                        #region IndianEmbassy
+
+                        if (VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"] != null && VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"].ToList().Count > 0)
+                        {
+                            if (VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"] != null && VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"].ToList().Count > 0)
+                            {
+                                var ContentType = VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"].GetType();
+                                if (ContentType.Name.ToUpper() == "JARRAY")
+                                {
+                                    int TotalOffices = VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"].ToList().Count;
+                                    objVisa.IndianEmbassy.Add(new VisaIndianEmbassy
+                                    {
+                                        Office = new List<VisaOffice>()
+                                    });
+                                    for (int r = 0; r < TotalOffices; r++)
+                                    {
+                                        objVisa.IndianEmbassy[0].Office.Add(new VisaOffice
+                                        {
+                                            Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Address"]),
+                                            City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["City"]),
+                                            Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Country"]),
+                                            Email = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Email"]),
+                                            Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Fax"]),
+                                            Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Name"]),
+                                            Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Phone"]),
+                                            PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["PinCode"]),
+                                            SystemCityCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["SystemCityCode"]),
+                                            SystemCityName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["SystemCityName"]),
+                                            SystemCountryCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["SystemCountryCode"]),
+                                            SystemCountryName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["SystemCountryName"]),
+                                            URL = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["URL"]),
+                                            Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"][r]["Website"])
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    objVisa.IndianEmbassy.Add(new VisaIndianEmbassy
+                                    {
+                                        Office = new List<VisaOffice>()
+                                    });
+
+                                    objVisa.IndianEmbassy[0].Office.Add(new VisaOffice
+                                    {
+                                        Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Address"]),
+                                        City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["City"]),
+                                        Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Country"]),
+                                        Email = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Email"]),
+                                        Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Fax"]),
+                                        Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Name"]),
+                                        Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Phone"]),
+                                        PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["PinCode"]),
+                                        SystemCityCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["SystemCityCode"]),
+                                        SystemCityName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["SystemCityName"]),
+                                        SystemCountryCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["SystemCountryCode"]),
+                                        SystemCountryName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["SystemCountryName"]),
+                                        URL = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["URL"]),
+                                        Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IndianEmbassy"]["Office"]["Website"])
+                                    });
+                                }
+
+                            }
+
+                        }
+
+                        #endregion
+
+                        #region DiplomaticRepresentation
+
+                        if (VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"] != null && VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"].ToList().Count > 0)
+                        {
+                            if (VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"].ToList().Count > 0)
+                            {
+                                objVisa.DiplomaticRepresentation.Add(new VisaDiplomaticRepresentation());
+                                objVisa.DiplomaticRepresentation[0].Offices = new List<VisaOffices>();
+                                objVisa.DiplomaticRepresentation[0].Offices.Add(new VisaOffices());
+                                objVisa.DiplomaticRepresentation[0].Offices[0].Office = new List<VisaOfficeNode>();
+
+
+                                var TypeOfDiplomaticOffice = VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"].GetType();
+                                if (TypeOfDiplomaticOffice.Name.ToUpper() == "JARRAY")
+                                {
+                                    if (VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"] != null)
+                                    {
+                                        int TotalDiplomaticOffices = VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"].ToList().Count;
+
+                                        for (int cnt = 0; cnt < TotalDiplomaticOffices; cnt++)
+                                        {
+                                            VisaOfficeNode objVisaOffice2New = new VisaOfficeNode()
+                                            {
+                                                Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Address"]),
+                                                City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["City"]),
+                                                CollectionTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["CollectionTimings"]),
+                                                Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Country"]),
+                                                Email = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Email"]),
+                                                Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Fax"]),
+                                                Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Name"]),
+                                                Notes = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Notes"]),
+                                                Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Phone"]),
+                                                PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["PinCode"]),
+                                                PublicTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["PublicTimings"]),
+                                                Telephone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Telephone"]),
+                                                Timings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Timings"]),
+                                                VisaTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Timings"]),
+                                                Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"][cnt]["Website"])
+                                            };
+
+                                            objVisa.DiplomaticRepresentation[0].Offices[0].Office.Add(objVisaOffice2New);
+                                        }
+                                    }
+
+                                }
+                                else
+                                {
+                                    // It is Object 
+                                    objVisa.DiplomaticRepresentation[0].Offices[0].Office.Add(new VisaOfficeNode
+                                    {
+                                        Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Address"]),
+                                        City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["City"]),
+                                        CollectionTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["CollectionTimings"]),
+                                        Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Country"]),
+                                        Email = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Email"]),
+                                        Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Fax"]),
+                                        Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Name"]),
+                                        Notes = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Notes"]),
+                                        Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Phone"]),
+                                        PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["PinCode"]),
+                                        PublicTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["PublicTimings"]),
+                                        Telephone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Telephone"]),
+                                        Timings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Timings"]),
+                                        VisaTimings = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Timings"]),
+                                        Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["DiplomaticRepresentation"]["Offices"]["Office"]["Website"])
+                                    });
+                                }
+
+                            }
+
+                        }
+                        #endregion
+
+                        #region SAARCInfo
+
+                        if (VisaJson["VisaDetail"]["Visa"]["SAARCInfo"] != null && VisaJson["VisaDetail"]["Visa"]["SAARCInfo"].ToList().Count > 0)
+                        {
+                            if (VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"] != null && VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"].ToList().Count > 0)
+                            {
+                                objVisa.SAARCInfo.Add(new VisaSAARCInfo());
+                                objVisa.SAARCInfo[0].CountryOffices = new List<VisaCountryOffices>();
+                                objVisa.SAARCInfo[0].CountryOffices.Add(new VisaCountryOffices());
+                                objVisa.SAARCInfo[0].CountryOffices[0].CountryOffice = new List<VisaCountryOffice>();
+
+
+
+
+                                var TypeCountryOffice = VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"].GetType();
+                                if (TypeCountryOffice.Name.ToUpper() == "JARRAY")
+                                {
+                                    if (VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"] != null)
+                                    {
+                                        int TotalCountryOffices = VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"].ToList().Count;
+
+                                        for (int Cnt = 0; Cnt < TotalCountryOffices; Cnt++)
+                                        {
+                                            objVisa.SAARCInfo[0].CountryOffices[0].CountryOffice.Add(new VisaCountryOffice
+                                            {
+                                                Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["Address"]),
+                                                City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["City"]),
+                                                CountryID = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["CountryID"]),
+                                                County = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["County"]),
+                                                Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["Fax"]),
+                                                Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["Name"]),
+                                                PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["PinCode"]),
+                                                Telephone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["Telephone"]),
+                                                VisaRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["VisaRequired"]),
+                                                Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["Website"]),
+                                                WhereToApply = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"][Cnt]["WhereToApply"])
+                                            });
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    objVisa.SAARCInfo[0].CountryOffices[0].CountryOffice.Add(new VisaCountryOffice
+                                    {
+                                        Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["Address"]),
+                                        City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["City"]),
+                                        CountryID = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["CountryID"]),
+                                        County = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["County"]),
+                                        Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["Fax"]),
+                                        Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["Name"]),
+                                        PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["PinCode"]),
+                                        Telephone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["Telephone"]),
+                                        VisaRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["VisaRequired"]),
+                                        Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["Website"]),
+                                        WhereToApply = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["SAARCInfo"]["CountryOffices"]["CountryOffic"]["WhereToApply"])
+                                    });
+
+                                }
+
+                            }
+                        }
+                        #endregion
+
+                        #region IntlHelpAddress
+
+                        if (VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"] != null && VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"].ToList().Count > 0)
+                        {
+                            if (VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"] != null && VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"].ToList().Count > 0)
+                            {
+                                objVisa.IntlHelpAddress.HelpAddress = new List<VisaHelpAddress>();
+
+
+                                var TypeOfHelpAddress = VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"].GetType();
+                                if (TypeOfHelpAddress.Name.ToUpper() == "JARRAY")
+                                {
+                                    int TotalHelpAddress = VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"].ToList().Count;
+                                    for (int f = 0; f < TotalHelpAddress; f++)
+                                    {
+                                        objVisa.IntlHelpAddress.HelpAddress.Add(new VisaHelpAddress
+                                        {
+                                            Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Address"]),
+                                            City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["City"]),
+                                            Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Country"]),
+                                            Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Fax"]),
+                                            Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Name"]),
+                                            Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Phone"]),
+                                            PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["PinCode"]),
+                                            URL = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["URL"]),
+                                            Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"][f]["Website"])
+                                        });
+                                    }
+
+                                }
+                                else
+                                {// it is object
+
+                                    objVisa.IntlHelpAddress.HelpAddress.Add(new VisaHelpAddress
+                                    {
+                                        Address = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Address"]),
+                                        City = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["City"]),
+                                        Country = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Country"]),
+                                        Fax = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Fax"]),
+                                        Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Name"]),
+                                        Phone = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Phone"]),
+                                        PinCode = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["PinCode"]),
+                                        URL = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["URL"]),
+                                        Website = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["IntlHelpAddress"]["HelpAddress"]["Website"])
+                                    });
+                                }
+
+
+                            }
+                        }
+                        #endregion
+
+                        #region CountryDetails
+
+                        if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"] != null && VisaJson["VisaDetail"]["Visa"]["CountryDetails"].ToList().Count > 0)
+                        {
+                            if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"] != null && VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"].ToList().Count > 0)
+                            {
+                                var TypeOfGeneralInfo = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"].GetType();
+                                if (TypeOfGeneralInfo.Name.ToUpper() == "JARRAY")
+                                {
+                                    objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                    objVisa.CountryDetails[0].GeneralInfo = new List<VisaGeneralInfo>();
+
+                                    int TotalGeneralInfos = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"].ToList().Count;
+                                    for (int e = 0; e < TotalGeneralInfos; e++)
+                                    {
+                                        objVisa.CountryDetails[0].GeneralInfo.Add(new VisaGeneralInfo()
+                                        {
+                                            Area = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Area"]),
+                                            Capital = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Capital"]),
+                                            Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Code"]),
+                                            Currency = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Currency"]),
+                                            Flag = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Flag"]),
+                                            Languages = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Languages"]),
+                                            LargeMap = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["LargeMap"]),
+                                            Location = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Location"]),
+                                            NationalDay = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["NationalDay"]),
+                                            Population = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Population"]),
+                                            SmallMap = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["SmallMap"]),
+                                            Time = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["Time"]),
+                                            WorldFactBook = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"][e]["WorldFactBook"])
+                                        });
+                                    }
+                                }
+                                else
+                                {
+                                    objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                    objVisa.CountryDetails[0].GeneralInfo = new List<VisaGeneralInfo>();
+                                    objVisa.CountryDetails[0].GeneralInfo.Add(new VisaGeneralInfo()
+                                    {
+                                        Area = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Area"]),
+                                        Capital = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Capital"]),
+                                        Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Code"]),
+                                        Currency = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Currency"]),
+                                        Flag = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Flag"]),
+                                        Languages = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Languages"]),
+                                        LargeMap = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["LargeMap"]),
+                                        Location = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Location"]),
+                                        NationalDay = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["NationalDay"]),
+                                        Population = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Population"]),
+                                        SmallMap = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["SmallMap"]),
+                                        Time = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["Time"]),
+                                        WorldFactBook = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["GeneralInfo"]["WorldFactBook"])
+                                    });
+                                }
+
+                            }
+
+
+
+                            if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"].ToList().Count > 0)
+                            {
+                                if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"].ToList().Count > 0)
+                                {
+                                    var TypeOfAirport = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"].GetType();
+                                    if (TypeOfAirport.Name.ToUpper() == "JARRAY")
+                                    {
+                                        if (objVisa.CountryDetails.Count == 0)
+                                        {
+                                            objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                        }
+                                        if (objVisa.CountryDetails[0].Airports == null)
+                                        {
+                                            objVisa.CountryDetails[0].Airports = new List<VisaAirports>();
+                                        }
+
+                                        int TotalAirports = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"].ToList().Count;
+
+                                        objVisa.CountryDetails[0].Airports = new List<VisaAirports>();
+                                        objVisa.CountryDetails[0].Airports.Add(new VisaAirports());
+                                        objVisa.CountryDetails[0].Airports[0].Airport = new List<VisaAirport>();
+
+                                        for (int u = 0; u < TotalAirports; u++)
+                                        {
+                                            objVisa.CountryDetails[0].Airports[0].Airport.Add(new VisaAirport()
+                                            {
+                                                Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"][u]["Type"]),
+                                                Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"][u]["Code"]),
+                                                Type = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"][u]["Name"])
+                                            });
+                                        }
+
+                                    }
+                                    else
+                                    {  // It is object
+                                        if (objVisa.CountryDetails.Count == 0)
+                                        {
+                                            objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                        }
+                                        if (objVisa.CountryDetails[0].Airports == null)
+                                        {
+                                            objVisa.CountryDetails[0].Airports = new List<VisaAirports>();
+                                        }
+                                        objVisa.CountryDetails[0].Airports = new List<VisaAirports>();
+                                        objVisa.CountryDetails[0].Airports.Add(new VisaAirports());
+                                        objVisa.CountryDetails[0].Airports[0].Airport = new List<VisaAirport>();
+                                        objVisa.CountryDetails[0].Airports[0].Airport.Add(new VisaAirport()
+                                        {
+                                            Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"]["Type"]),
+                                            Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"]["Code"]),
+                                            Type = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airports"]["Airport"]["Name"])
+                                        });
+                                    }
+
+                                }
+                            }
+
+
+                            if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"].ToList().Count > 0)
+                            {
+                                if (objVisa.CountryDetails.Count == 0)
+                                {
+                                    objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                }
+                                objVisa.CountryDetails[0].CountryName = new List<VisaCountryName>();
+
+
+                                var TypeOfCounytryName = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"].GetType();
+                                if (TypeOfCounytryName.Name.ToUpper() == "JARRAY")
+                                {
+                                    int TotalCountries = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"].ToList().Count;
+                                    for (int y = 0; y < TotalCountries; y++)
+                                    {
+                                        objVisa.CountryDetails[0].CountryName.Add(new VisaCountryName()
+                                        {
+                                            Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"][y]["Name"])
+                                        });
+                                    }
+                                }
+                                else
+                                { // It is object
+
+                                    objVisa.CountryDetails[0].CountryName.Add(new VisaCountryName()
+                                    {
+                                        Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["CountryName"]["Name"])
+                                    });
+                                }
+                            }
+
+
+                            if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"].ToList().Count > 0)
+                            {
+                                if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"].ToList().Count > 0)
+                                {
+                                    if (objVisa.CountryDetails.Count == 0)
+                                    {
+                                        objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                    }
+
+                                    var TypeOfAirlines = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"].GetType();
+                                    if (TypeOfAirlines.Name.ToUpper() == "JARRAY")
+                                    {
+                                        objVisa.CountryDetails[0].Airlines = new List<VisaAirlines>();
+                                        objVisa.CountryDetails[0].Airlines.Add(new VisaAirlines());
+                                        objVisa.CountryDetails[0].Airlines[0].Airline = new List<VisaAirline>();
+
+                                        int TotalAirlines = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"].ToList().Count;
+
+                                        for (int f = 0; f < TotalAirlines; f++)
+                                        {
+                                            objVisa.CountryDetails[0].Airlines[0].Airline.Add(new VisaAirline()
+                                            {
+                                                Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"][f]["Code"]),
+                                                Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"][f]["Name"])
+                                            });
+                                        }
+                                    }
+                                    else
+                                    { // It is Object
+                                        objVisa.CountryDetails[0].Airlines = new List<VisaAirlines>();
+                                        objVisa.CountryDetails[0].Airlines.Add(new VisaAirlines());
+                                        objVisa.CountryDetails[0].Airlines[0].Airline = new List<VisaAirline>();
+
+                                        objVisa.CountryDetails[0].Airlines[0].Airline.Add(new VisaAirline()
+                                        {
+                                            Code = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"]["Code"]),
+                                            Name = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Airlines"]["Airline"]["Name"])
+                                        });
+                                    }
+
+                                }
+                            }
+
+                            if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"] != null &&
+                                VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"].ToList().Count > 0)
+                            {
+                                if (VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"] != null &&
+                                    VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"].ToList().Count > 0)
+                                {
+                                    var TypeOfHoliday = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"].GetType();
+
+                                    if (objVisa.CountryDetails.Count == 0)
+                                    {
+                                        objVisa.CountryDetails.Add(new VisaCountryDetails());
+                                    }
+                                    objVisa.CountryDetails[0].Holidays = new VisaHolidays();
+                                    objVisa.CountryDetails[0].Holidays.Holiday = new List<VisaHoliday>();
+
+
+                                    if (TypeOfHoliday.Name.ToUpper() == "JARRAY")
+                                    {
+                                        int TotalHolidayRecords = VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"].ToList().Count;
+
+                                        for (int count = 0; count < TotalHolidayRecords; count++)
+                                        {
+                                            objVisa.CountryDetails[0].Holidays.Holiday.Add(new VisaHoliday()
+                                            {
+                                                HolidayName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"][count]["HolidayName"]),
+                                                Year = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"][count]["Year"]),
+                                                Date = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"][count]["Date"]),
+                                                Month = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"][count]["Month"])
+                                            });
+                                        }
+                                    }
+                                    else
+                                    { // it is object
+                                        objVisa.CountryDetails[0].Holidays.Holiday.Add(new VisaHoliday()
+                                        {
+                                            HolidayName = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"]["HolidayName"]),
+                                            Year = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"]["Year"]),
+                                            Date = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"]["Date"]),
+                                            Month = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["CountryDetails"]["Holidays"]["Holiday"]["Month"])
+                                        });
+
+                                    }
+
+                                }
+                            }
+
+                        }
+                        #endregion
+
+                        objVisaDetail.Visa.Add(objVisa);
+
+                        #endregion
+
+                        objVisaDefinition.VisaDetail.Add(objVisaDetail);
+                    }
+
+                    //Upsert here
+                    //var filter = Builders<VisaDefinition>.Filter.ElemMatch(c => c.VisaDetail.First().CountryCode.ToUpper(), objVisaDefinition.VisaDetail.First().CountryCode.ToUpper());
+                    //VisaMappingCollection.ReplaceOne(filter, objVisaDefinition, new UpdateOptions { IsUpsert = true });
+
+                    //var filter1 = Builders<VisaDefinition>.Filter.Eq("VisaDetail.CountryCode", objVisaDefinition.VisaDetail.First().CountryCode);
+                    //var update1 = Builders<VisaDefinition>.Update.Set(v => v.VisaDetail, objVisaDefinition.VisaDetail);
+                    //VisaMappingCollection.UpdateOne(filter1, update1);
+
+                    //var filter = Builders<VisaDefinition>.Filter.Eq(c => c.VisaDetail.First().CountryCode.ToUpper(), objVisaDefinition.VisaDetail.First().CountryCode.ToUpper());
+                    //VisaMappingCollection.ReplaceOne(filter, objVisaDefinition, new UpdateOptions { IsUpsert = true });
+                    //ListVisaDefinitions.Add(objVisaDefinition);
+
+                    VisaMappingCollection.InsertOne(objVisaDefinition);
+
+                    counter++;
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                        if (Log != null)
+                        {
+                            Log.Edit_Date = DateTime.Now;
+                            Log.MongoPushCount = counter;
+                            context.SaveChanges();
+                        }
+                    }
+                }
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Status = "Completed";
+                        Log.Edit_Date = DateTime.Now;
+                        context.SaveChanges();
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var Log = context.DistributionLayerRefresh_Log.Find(Logid);
+                    if (Log != null)
+                    {
+                        Log.Status = "Error";
+                        Log.Edit_Date = DateTime.Now;
+                        context.SaveChanges();
+                    }
+                }
+            }
+        }
         #endregion
 
         #region Load Room Type Mapping

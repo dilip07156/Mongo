@@ -19,6 +19,18 @@ namespace BAL
                 obj.LoadActivityDefinition(Guid.Empty);
             }
         }
+        public void UpdateVisaDefinition(string logId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(logId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.UpdateVisaDefinition(gLogId);
+                }
+            }
+        }
+
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
