@@ -12,13 +12,7 @@ namespace DataContracts.Holiday
     /// Structure for Holiday Model
     /// </summary>
     public class HolidayModel
-    {
-        /// <summary>
-        /// Unique Id for each Tour.
-        /// </summary>
-        [Required]
-        public string Id { get; set; }
-
+    {        
         /// <summary>
         /// Unique Supplier Holiday Id for each Tour.
         /// </summary>

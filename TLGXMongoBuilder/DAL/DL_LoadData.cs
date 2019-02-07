@@ -4977,15 +4977,10 @@ namespace DAL
                     JObject HolidayJson = JObject.Parse(JsonObject);
 
                     HolidayModel objHolidayModel = new HolidayModel();
-
-                    objHolidayModel.Id = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
+                   
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
-                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
-                    int NakshatraHolidayId;
-                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["NakshatraHolidayId"]), out NakshatraHolidayId))
-                    {
-                        objHolidayModel.NakshatraHolidayId = Convert.ToString(NakshatraHolidayId);
-                    }
+                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);                   
+                    objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
                     DateTime EffectiveFromDate;
