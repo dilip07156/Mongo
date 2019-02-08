@@ -296,11 +296,25 @@ namespace DataContracts.Holiday
         /// </summary>
         public List<PreTourStructure> PostTour { get; set; }
 
+        /// <summary>
+        /// Holds list of PackagePrice
+        /// </summary>
         public List<PackagePrice> PackagePrice { get; set; }
 
+        /// <summary>
+        /// Holds list of PreTourPrice
+        /// </summary>
         public List<PreTourPrice> PreTourPrice { get; set; }
 
+        /// <summary>
+        /// Holds list of PostTourPrice
+        /// </summary>
         public List<PreTourPrice> PostTourPrice { get; set; }
+
+        /// <summary>
+        /// Holds list of ClassificationAttributes
+        /// </summary>
+        public List<ClassificationAttributes> ClassificationAttributes { get; set; }
 
 
         ///// <summary>
