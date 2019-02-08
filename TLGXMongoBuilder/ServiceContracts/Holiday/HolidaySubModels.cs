@@ -1815,4 +1815,25 @@ namespace DataContracts.Holiday
     }
 
     #endregion Holiday.ReviewSummary
+
+    #region ClassificationAttributes 
+    /// <summary>
+    /// Structure for classification attributes
+    /// </summary>
+    public class ClassificationAttributes
+    {
+        /// <summary>
+        /// ClassificationAttributes Attribute type 
+        /// </summary>
+        public string AttributeType { get; set; }
+        /// <summary>
+        /// Classification Attribute sub type 
+        /// </summary>
+        public string AttributeSubType { get; set; }
+        /// <summary>
+        /// Classification Attribute Value
+        /// </summary>
+        public string AttributeValue { get; set; }
+    }
+    #endregion
 }

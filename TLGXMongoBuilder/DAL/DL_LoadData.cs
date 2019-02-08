@@ -4977,7 +4977,8 @@ namespace DAL
                     JObject HolidayJson = JObject.Parse(JsonObject);
 
                     HolidayModel objHolidayModel = new HolidayModel();
-                   
+
+                    objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
                     objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);                   
                     objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
