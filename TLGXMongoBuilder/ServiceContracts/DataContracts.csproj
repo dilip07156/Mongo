@@ -108,6 +108,7 @@
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -120,11 +121,14 @@
     <Compile Include="Activity\ActivityMasters.cs" />
     <Compile Include="AuthenticateContract.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Masters\DC_AccomodationCompanyVersion.cs" />
     <Compile Include="DC_SupplierEntity.cs" />
     <Compile Include="Dc_SupplierEntitySingleValue.cs" />
     <Compile Include="DC_SupplierProductValues.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />
+    <Compile Include="Holiday\HolidayModel.cs" />
+    <Compile Include="Holiday\HolidaySubModels.cs" />
     <Compile Include="HotelDescription.cs" />
     <Compile Include="HotelSearchContracts.cs" />
     <Compile Include="Mapping\DC_CityMapping.cs" />
@@ -135,6 +139,7 @@
     <Compile Include="Mapping\DC_ProductMappingLite.cs" />
     <Compile Include="Mapping\DC_RoomTypeMapping.cs" />
     <Compile Include="Masters\DC_Accommodation.cs" />
+    <Compile Include="Masters\DC_AccomodationRoomInfo.cs" />
     <Compile Include="Masters\DC_City.cs" />
     <Compile Include="Masters\DC_Country.cs" />
     <Compile Include="Masters\DC_Keywords.cs" />

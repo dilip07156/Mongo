@@ -47,6 +47,14 @@ namespace MapperSvc
 
         }
 
+        public void UpdateHolidayMapping(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateHolidayMapping(LogId);
+            }
+
+        }
 
         public void LoadActivityDefinition()
         {
@@ -308,6 +316,15 @@ namespace MapperSvc
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.LoadMasterAccommodation(LogId, Accommodation_Id);
+            }
+        }
+
+
+        public void LoadMasterAccommodationRoomInfo(string LogId, string Accommodation_Id)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadMasterAccommodationRoomInfo(LogId, Accommodation_Id);
             }
         }
     }

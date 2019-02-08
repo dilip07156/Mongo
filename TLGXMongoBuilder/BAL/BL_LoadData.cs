@@ -31,6 +31,18 @@ namespace BAL
             }
         }
 
+        public void UpdateHolidayMapping(string logId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(logId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.UpdateHolidayMapping(gLogId);
+                }
+            }
+        }
+
         public void LoadActivityDefinitionBySupplier(string log_id, string suppliername)
         {
             using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
@@ -364,6 +376,17 @@ namespace BAL
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
                     obj.LoadMasterAccommodation(gLogId, gAccommodation_Id);
+                }
+            }
+        }
+
+        public void LoadMasterAccommodationRoomInfo(string LogId, string Accommodation_Id)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(Accommodation_Id, out Guid gAccommodation_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadMasterAccommodationRoomInfo(gLogId, gAccommodation_Id);
                 }
             }
         }

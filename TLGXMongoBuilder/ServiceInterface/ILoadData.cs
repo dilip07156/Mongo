@@ -32,6 +32,11 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/HolidayMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void UpdateHolidayMapping(string LogId);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ActivityDefinitionBySupplier/{LogId}/{suppliername}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadActivityDefinitionBySupplier(string LogId, string suppliername);
 
@@ -187,5 +192,13 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/MasterAccommodation/{LogId}/{Accommodation_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadMasterAccommodation(string LogId, string Accommodation_Id);
+
+        /// <summary>
+        /// Load Master AccommodationRoomInfo Data to MongoDB
+        /// </summary>
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))] 
+        [WebGet(UriTemplate = "Load/MasterAccommodationRoomInfo/{LogId}/{Accommodation_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadMasterAccommodationRoomInfo(string LogId, string Accommodation_Id);
     }
 }
