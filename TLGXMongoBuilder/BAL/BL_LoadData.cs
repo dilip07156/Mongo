@@ -187,6 +187,21 @@ namespace BAL
             }
         }
 
+        public void LoadProductMappingBySupplier(string LogId, string SupplierID)
+        {
+            Guid gLogId;
+            Guid Supplier_ID;
+
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(SupplierID, out Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMappingBySupplier(gLogId, Supplier_ID);
+                }
+            }
+        }
+
+        
         public void LoadProductMappingLite(string LogId, string ProdMapId)
         {
             Guid gLogId;
@@ -199,6 +214,20 @@ namespace BAL
                 }
             }
         }
+
+        public void LoadProductMappingLiteBySupplier(string LogId, string SupplierID)
+        {
+            Guid gLogId;
+            Guid Supplier_ID;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(SupplierID, out Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMappingLiteBySupplier(gLogId, Supplier_ID);
+                }
+            }
+        }
+        
         #endregion
         public void LoadActivityMapping(string LogId)
         {

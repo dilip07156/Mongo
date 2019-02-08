@@ -17,6 +17,7 @@ using DataContracts.Visa;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using DataContracts.Mapping;
 
 namespace DAL
 {
@@ -999,76 +1000,82 @@ namespace DAL
                 bool Is_IX_SupplierCode_CountryCode_Exists = false;
                 bool Is_IX_MapId_Exists = false;
 
+
                 _database = MongoDBHandler.mDatabase();
-                var collection = _database.GetCollection<DataContracts.Mapping.DC_CountryMapping>("CountryMapping");
+                var collection = _database.GetCollection<DC_CountryMapping>("CountryMapping");
 
-
-                using (TLGX_Entities context = new TLGX_Entities())
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
                 {
-                    var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
-                                      join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
-                                      join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
-                                      where cm.Status == "MAPPED" && cm.Supplier_Id == Supplier_ID
-                                      select new DataContracts.Mapping.DC_CountryMapping
-                                      {
-                                          SupplierName = s.Name.Trim().ToUpper(),
-                                          SupplierCode = s.Code.Trim().ToUpper(),
-                                          CountryCode = c.Code.Trim().ToUpper(),
-                                          CountryName = c.Name.Trim().ToUpper(),
-                                          SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
-                                          SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
-                                          MapId = cm.MapID ?? 0
-                                      }).ToList();
-
-                    if (MappedData != null && MappedData.Count > 0)
+                    using (TLGX_Entities context = new TLGX_Entities())
                     {
-                        foreach (var country in MappedData)
+                        var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                          join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
+                                          join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
+                                          where cm.Status == "MAPPED" && cm.Supplier_Id == Supplier_ID
+                                          select new DC_CountryMapping
+                                          {
+                                              SupplierName = s.Name.Trim().ToUpper(),
+                                              SupplierCode = s.Code.Trim().ToUpper(),
+                                              CountryCode = c.Code.Trim().ToUpper(),
+                                              CountryName = c.Name.Trim().ToUpper(),
+                                              SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                              SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
+                                              MapId = cm.MapID ?? 0
+                                          }).ToList();
+
+                        if (MappedData != null && MappedData.Count > 0)
                         {
-                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, country.MapId) &
-                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, country.SupplierCode);
-
-                            collection.ReplaceOne(filter, country, new UpdateOptions { IsUpsert = true });
+                            foreach (var mapped in MappedData)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, mapped.MapId) &
+                                    Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, mapped.SupplierCode);
+                                collection.ReplaceOne(filter, mapped, new UpdateOptions { IsUpsert = true });
+                            }
                         }
-                    }
 
-                    var NotMappedData = (from cm in context.m_CountryMapping.AsNoTracking()
-                                         where cm.Status != "MAPPED" && cm.Supplier_Id == Supplier_ID
-                                         select new DataContracts.Mapping.DC_CountryMapping
-                                         {
-                                             MapId = cm.MapID ?? 0
-                                         }).ToList();
+                        var NotMappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                             where cm.Status != "MAPPED" && cm.Supplier_Id == Supplier_ID
+                                             select new DataContracts.Mapping.DC_CountryMapping { MapId = cm.MapID ?? 0 }).ToList();
 
-                    if (NotMappedData != null && NotMappedData.Count > 0)
-                    {
-                        foreach (var country in NotMappedData)
+                        if (NotMappedData != null && NotMappedData.Count > 0)
                         {
-                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, country.MapId) &
-                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, country.SupplierCode);
-                            collection.DeleteOne(filter);
+                            foreach (var country in NotMappedData)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, country.MapId);
+                                collection.DeleteOne(filter);
+                            }
                         }
-                    }
 
-                    var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+                        var Log = context.DistributionLayerRefresh_Log.Find(LogId);
 
-                    if (Log != null)
-                    {
-                        Log.Status = "Completed";
-                        context.SaveChanges();
+                        if (Log != null)
+                        {
+                            Log.Status = "Completed";
+                            context.SaveChanges();
+                        }
                     }
                 }
 
                 #region Index Management
-
                 var listOfindexes = collection.Indexes.List().ToList();
-
                 foreach (var index in listOfindexes)
                 {
                     Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
-                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCountryCode"] != null) { Is_IX_SupplierCode_SupplierCountryCode_Exists = true; }
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierCountryCode_Exists = true;
+                    }
 
-                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CountryCode"] != null) { Is_IX_SupplierCode_CountryCode_Exists = true; }
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_CountryCode_Exists = true;
+                    }
 
-                    if ((string)rss["key"]["MapId"] != null) { Is_IX_MapId_Exists = true; }
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
                 }
 
                 if (!Is_IX_SupplierCode_SupplierCountryCode_Exists)
@@ -1097,14 +1104,15 @@ namespace DAL
 
                 #endregion
 
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED);
+
                 collection = null;
                 _database = null;
-
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                throw ex;
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, 0, 0, Supplier_ID.ToString(), "Country", "Mapping");
             }
         }
 
@@ -1198,11 +1206,7 @@ namespace DAL
                         context.Database.CommandTimeout = 0;
 
                         SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
-                        {
-                            SupplierCode = s.Code.ToUpper(),
-                            Supplier_Id = s.Supplier_Id,
-                            SupplierName = s.Name.ToUpper()
-                        }).ToList();
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).ToList();
 
                         TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED").Count();
                     }
@@ -1288,19 +1292,20 @@ namespace DAL
             }
         }
 
-
         public void LoadCityMapping(Guid LogId, Guid Supplier_ID)
         {
+            bool Is_IX_SupplierCode_SupplierCityCode_Exists = false;
+            bool Is_IX_SupplierCode_CityCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
+            bool Is_IX_CityCode_Exists = false;
+            int TotalRecords = 0;
+            int TotalProcessed = 0;
+
             try
             {
                 UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
 
-                bool Is_IX_SupplierCode_SupplierCityCode_Exists = false;
-                bool Is_IX_SupplierCode_CityCode_Exists = false;
-                bool Is_IX_MapId_Exists = false;
-                bool Is_IX_CityCode_Exists = false;
-                int TotalRecords = 0;
-                int TotalProcessed = 0;
+
 
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
@@ -1368,24 +1373,16 @@ namespace DAL
                 DC_Supplier_ShortVersion supplier = new DC_Supplier_ShortVersion();
 
                 using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
-                    new System.Transactions.TransactionOptions()
-                    {
-                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
-                        Timeout = new TimeSpan(0, 2, 0)
-                    }))
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
                 {
                     using (TLGX_Entities context = new TLGX_Entities())
                     {
                         context.Database.CommandTimeout = 0;
 
                         supplier = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
-                        {
-                            SupplierCode = s.Code.ToUpper(),
-                            Supplier_Id = s.Supplier_Id,
-                            SupplierName = s.Name.ToUpper()
-                        }).FirstOrDefault();
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).FirstOrDefault();
 
-                        TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED").Count();
+                        TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED" && w.Supplier_Id == Supplier_ID).Count();
                     }
                     scope.Complete();
                 }
@@ -1394,24 +1391,20 @@ namespace DAL
 
                 if (supplier != null)
                 {
-
-                    List<DataContracts.Mapping.DC_CityMapping> CityListMapped = new List<DataContracts.Mapping.DC_CityMapping>();
+                    List<DC_CityMapping> CityListMapped = new List<DC_CityMapping>();
 
                     using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
-                    new System.Transactions.TransactionOptions()
-                    {
-                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
-                        Timeout = new TimeSpan(0, 2, 0)
-                    }))
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
                     {
                         using (TLGX_Entities context = new TLGX_Entities())
                         {
                             context.Database.CommandTimeout = 0;
+
                             CityListMapped = (from cm in context.m_CityMapping.AsNoTracking()
                                               join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
                                               join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
                                               where cm.Supplier_Id == supplier.Supplier_Id && cm.Status == "MAPPED"
-                                              select new DataContracts.Mapping.DC_CityMapping
+                                              select new DC_CityMapping
                                               {
                                                   CityName = (city.Name ?? string.Empty).ToUpper(),
                                                   CityCode = (city.Code ?? string.Empty).ToUpper(),
@@ -1425,21 +1418,23 @@ namespace DAL
                                                   SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
                                                   MapId = cm.MapID ?? 0
                                               }).ToList();
-
                         }
                         scope.Complete();
                     }
 
                     var MappedIds = CityListMapped.Select(s => s.MapId).ToList();
+
                     var mapidsinmongo = collection.Find(x => x.SupplierCode == supplier.SupplierCode).Project(u => new { u.MapId }).ToList();
+
                     var MapIdsToBeDeleted = (from m in mapidsinmongo
                                              where !MappedIds.Contains(m.MapId)
                                              select m).ToList();
+
                     if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                     {
                         foreach (var city in MapIdsToBeDeleted)
                         {
-                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
+                            var filter = Builders<DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
                             collection.DeleteMany(filter);
                         }
                     }
@@ -1447,7 +1442,7 @@ namespace DAL
                     {
                         foreach (var city in CityListMapped)
                         {
-                            var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
+                            var filter = Builders<DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId) & Builders<DC_CityMapping>.Filter.Eq(c => c.SupplierCode, city.SupplierCode);
                             collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
                         }
                     }
@@ -1466,8 +1461,9 @@ namespace DAL
                     UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
                 }
             }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            catch (FaultException<ErrorNotifier> ex)
             {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalRecords, TotalProcessed, Supplier_ID.ToString(), "City", "Mapping");
                 throw ex;
             }
         }
@@ -1479,7 +1475,7 @@ namespace DAL
         public void LoadProductMapping(Guid LogId, Guid ProdMapId)
         {
             _database = MongoDBHandler.mDatabase();
-            var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
+            var collection = _database.GetCollection<DC_ProductMapping>("ProductMapping");
 
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
@@ -1955,11 +1951,396 @@ namespace DAL
                     }
                 }
             }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            catch (FaultException<ErrorNotifier> ex)
             {
                 throw ex;
             }
 
+        }
+
+        public void LoadProductMappingBySupplier(Guid LogId, Guid Supplier_ID)
+        {
+            _database = MongoDBHandler.mDatabase();
+            var collection = _database.GetCollection<DC_ProductMapping>("ProductMapping");
+            DC_Supplier_ShortVersion SupplierCodes = new DC_Supplier_ShortVersion();
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+
+            try
+            {
+                #region Index Management
+
+                bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+                bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+                bool Is_IX_SupplierCode_SystemCityCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemCityCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemCityCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemCityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
+                #region Fetch Supplier Details 
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID &&
+                        (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        {
+                            SupplierCode = s.Code.ToUpper(),
+                            Supplier_Id = s.Supplier_Id,
+                            SupplierName = s.Name.ToUpper()
+                        }).FirstOrDefault();
+
+                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.Supplier_Id == Supplier_ID && w.IsActive == true).Count();
+                    }
+                    scope.Complete();
+                }
+                #endregion
+
+                if (SupplierCodes != null)
+                {
+                    #region Fetch Mapping Data
+
+                    List<DC_ProductMapping> productMapList = new List<DC_ProductMapping>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+                            productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+
+                                              join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
+                                              from citymaster in LJCityMaster.DefaultIfEmpty()
+
+                                              join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                              from countrymaster in LJCountryMaster.DefaultIfEmpty()
+
+                                              join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                              from acco in LJAcco.DefaultIfEmpty()
+                                              where apm.Supplier_Id == SupplierCodes.Supplier_Id && apm.IsActive == true
+                                              select new DC_ProductMapping
+                                              {
+                                                  SupplierCode = SupplierCodes.SupplierCode,
+                                                  SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                  SupplierCountryCode = apm.CountryCode.ToUpper(),
+                                                  SupplierCountryName = apm.CountryName.ToUpper(),
+                                                  SupplierCityCode = apm.CityCode.ToUpper(),
+                                                  SupplierCityName = apm.CityName.ToUpper(),
+                                                  SupplierProductName = apm.ProductName.ToUpper(),
+                                                  MappingStatus = apm.Status.ToUpper(),
+                                                  MapId = apm.MapId,
+
+                                                  SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
+                                                  SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
+                                                  SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+                                                  TlgxMdmHotelId = (acco == null ? string.Empty : acco.TLGXAccoId.ToUpper()),
+
+                                                  SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
+                                                  SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
+
+                                              }).ToList();
+                        }
+                        scope.Complete();
+                    }
+
+                    List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                    #endregion
+
+                    #region Mongo Delete
+
+                    List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCodes.SupplierCode).Project(u => u.MapId).ToList();
+
+                    List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                   where !MappedIds.Contains(m)
+                                                   select m).ToList();
+
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var MapId in MapIdsToBeDeleted)
+                        {
+                            var filter = Builders<DC_ProductMapping>.Filter.Eq(c => c.MapId, MapId);
+                            collection.DeleteMany(filter);
+                        }
+                    }
+
+                    #endregion
+
+                    #region Mongo Add/Update
+
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DC_ProductMapping>.Filter.Eq(c => c.MapId, product.MapId);
+                            collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                    }
+
+                    #endregion
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount, Supplier_ID.ToString());
+                }
+            }
+            catch (FaultException<ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount, Supplier_ID.ToString());
+            }
+
+            collection = null;
+            _database = null;
+        }
+
+        public void LoadProductMappingLiteBySupplier(Guid LogId, Guid Supplier_ID)
+        {
+            #region Params
+
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+            bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+            bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
+            bool Is_IX_SupplierCode_Exists = false;
+
+            #endregion
+
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DC_ProductMappingLite>("ProductMappingLite");
+
+                if (LogId == Guid.Empty)
+                {
+                    LogId = Guid.NewGuid();
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                }
+
+                #region Index Management
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    JObject rss = JObject.Parse(index.ToJson());
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null) { Is_IX_SupplierCode_SupplierProductCode_Exists = true; }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null) { Is_IX_SupplierCode_SystemProductCode_Exists = true; }
+
+                    if ((string)rss["key"]["MapId"] != null) { Is_IX_MapId_Exists = true; }
+
+                    if ((string)rss["key"]["SupplierCode"] != null) { Is_IX_SupplierCode_Exists = true; }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                #region Fetch Supplier Additional Details
+
+                DC_Supplier_ShortVersion SupplierCodes = new DC_Supplier_ShortVersion();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID &&
+                        (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).FirstOrDefault();
+
+                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.Supplier_Id == Supplier_ID && (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
+                    }
+                    scope.Complete();
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                #endregion
+
+                if (SupplierCodes != null)
+                {
+                    #region Fetch APM Lite Details
+                    List<DC_ProductMappingLite> productMapList = new List<DC_ProductMappingLite>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+                            productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                                              join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                              where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCodes.Supplier_Id
+                                              && apm.IsActive == true
+                                              select new DC_ProductMappingLite
+                                              {
+                                                  SupplierCode = SupplierCodes.SupplierCode,
+                                                  SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                  MapId = apm.MapId,
+                                                  SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                  TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
+                                              }).ToList();
+                        }
+                        scope.Complete();
+                    }
+
+                    List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                    #endregion
+
+                    #region Mongo Delete
+
+                    List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCodes.SupplierCode).Project(u => u.MapId).ToList();
+
+                    List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                   where !MappedIds.Contains(m)
+                                                   select m).ToList();
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var MapId in MapIdsToBeDeleted) { collection.DeleteMany(x => x.MapId == MapId); }
+                    }
+
+                    #endregion
+
+                    #region Mongo Upserts
+
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DC_ProductMappingLite>.Filter.Eq(c => c.MapId, product.MapId);
+                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                    }
+
+                    #endregion
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+                }
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<ErrorNotifier> ex) { UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount); }
         }
 
         #endregion
