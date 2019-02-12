@@ -1834,6 +1834,11 @@ namespace DataContracts.Holiday
         /// Classification Attribute Value
         /// </summary>
         public string AttributeValue { get; set; }
+        /// <summary>
+        /// Classification Attribute is active or not
+        /// </summary>
+        public bool IsActive { get; set; }
+
     }
     #endregion
 }

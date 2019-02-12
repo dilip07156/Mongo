@@ -4927,7 +4927,7 @@ namespace DAL
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                UpdateDistLogInfo(Logid, PushStatus.COMPLETED, 0, 0, Logid.ToString(), "VISA", "MAPPING");
+                UpdateDistLogInfo(Logid, PushStatus.ERROR, 0, 0, Logid.ToString(), "VISA", "MAPPING");
             }
         }
         #endregion
@@ -4946,7 +4946,7 @@ namespace DAL
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
 
                 _database = MongoDBHandler.mDatabase();
-                _database.DropCollection("HolidayMapping");
+               // _database.DropCollection("HolidayMapping");
 
                 var CollecionHolidayDetail = _database.GetCollection<BsonDocument>("HolidayDetail");
                 var HolidayMappingCollection = _database.GetCollection<HolidayModel>("HolidayMapping");
@@ -7930,8 +7930,11 @@ namespace DAL
 
                     #endregion
 
-                    HolidayMappingCollection.InsertOne(objHolidayModel);
-
+                   // HolidayMappingCollection.InsertOne(objHolidayModel);
+                    var filter1 = Builders<HolidayModel>.Filter.Eq(c => c.SupplierProductCode, objHolidayModel.SupplierProductCode);
+                    filter1 = filter1 & Builders<HolidayModel>.Filter.Eq(c => c.SupplierName, objHolidayModel.SupplierName);
+                    HolidayMappingCollection.ReplaceOneAsync(filter1, objHolidayModel, new UpdateOptions { IsUpsert = true });
+                   
                     counter++;
                     UpdateDistLogInfo(Logid, PushStatus.RUNNNING, CollecionHolidayMappingsFiltered.Count, counter, Logid.ToString(), "HOLIDAY", "MAPPING");
                 }
