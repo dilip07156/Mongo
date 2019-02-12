@@ -485,6 +485,39 @@ namespace DAL
                     {
                         foreach (var acco in _AccoList)
                         {
+                            /* Need write CompanyVersion Function */
+                            List<DC_AccomodationCompanyVersions> lstCompanyVersion = GetAccommodationCompanyVersion(acco.Accommodation_Id);
+                            lstCompanyVersion.ForEach(x =>
+                            {
+                                RemoveDiacritics(x.CommonProductId);
+                                RemoveDiacritics(x.CompanyProductId);
+                                RemoveDiacritics(x.CompanyId);
+                                RemoveDiacritics(x.CompanyName);
+                                RemoveDiacritics(x.ProductName);
+                                RemoveDiacritics(x.ProductDisplayName);
+                                RemoveDiacritics(x.StarRating);
+                                RemoveDiacritics(x.CompanyRating);
+                                RemoveDiacritics(x.ProductCatSubType);
+                                RemoveDiacritics(x.Brand);
+                                RemoveDiacritics(x.Chain);
+                                RemoveDiacritics(x.HouseNumber);
+                                RemoveDiacritics(x.Street);
+                                RemoveDiacritics(x.Street2);
+                                RemoveDiacritics(x.Street3);
+                                RemoveDiacritics(x.Street4);
+                                RemoveDiacritics(x.Street5);
+                                RemoveDiacritics(x.Zone);
+                                RemoveDiacritics(x.PostalCode);
+                                RemoveDiacritics(x.Country);
+                                RemoveDiacritics(x.State);
+                                RemoveDiacritics(x.City);
+                                RemoveDiacritics(x.Area);
+                                RemoveDiacritics(x.Location);
+                                RemoveDiacritics(x.Latitude);
+                                RemoveDiacritics(x.Longitude);
+                                RemoveDiacritics(x.TLGXAccoId);
+                            }
+                            );
 
                             DataContracts.Masters.DC_Accomodation Accodata = new DataContracts.Masters.DC_Accomodation()
                             {
@@ -519,7 +552,8 @@ namespace DAL
                                 Fax = RemoveDiacritics(acco.Fax),
                                 WebSiteURL = RemoveDiacritics(acco.WebSiteURL),
                                 Telephone = RemoveDiacritics(acco.Telephone),
-                                CodeStatus = RemoveDiacritics(acco.CodeStatus)
+                                CodeStatus = RemoveDiacritics(acco.CodeStatus),
+                                AccomodationCompanyVersions = lstCompanyVersion
                             };
 
 
@@ -536,6 +570,7 @@ namespace DAL
                 }
 
                 //Local Function To Get Master Accommodation Data
+                #region Get Master Accommodation Data Local Function
                 List<DataContracts.Masters.DC_Accomodation> GetAccommodationMaster_InBatches(int batchSize, int batchNo, Guid gAccommodation_Id)
                 {
                     List<DataContracts.Masters.DC_Accomodation> _AccoListResultMain = new List<DataContracts.Masters.DC_Accomodation>();
@@ -547,7 +582,7 @@ namespace DAL
                         StringBuilder sbSelectAccoMaster = new StringBuilder();
 
                         sbSelectAccoMaster.Append(@"  
-                                                select ACC.CompanyHotelID as CommonHotelId,ACC.HotelName ,MCM.Code CountryCode,MCM.Name CountryName,CM.Code CityCode,MST.StateCode, MST.StateName,
+                                                select  ACC.Accommodation_Id  as Accommodation_Id, ACC.CompanyHotelID as CommonHotelId,ACC.HotelName ,MCM.Code CountryCode,MCM.Name CountryName,CM.Code CityCode,MST.StateCode, MST.StateName,
                                                 Cm.Name CityName,ACC.StreetName ,ACC.StreetNumber,ACC.Street3 ,ACC.Street4 ,ACC.Street5 ,ACC.PostalCode ,ACC.Town,
                                                 ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
                                                 ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress, ACC.HotelRating as HotelStarRating,
@@ -580,6 +615,42 @@ namespace DAL
                     catch (Exception ex) { }
                     return _AccoListResultMain;
                 }
+                #endregion
+
+
+
+                //Location Function to get Accommodation Master Version Data
+                #region Get Accommodation Master Version Data
+
+                List<DataContracts.Masters.DC_AccomodationCompanyVersions> GetAccommodationCompanyVersion(Guid gAccommodation_Id)
+                {
+                    List<DataContracts.Masters.DC_AccomodationCompanyVersions> _AccoListResultMain = new List<DataContracts.Masters.DC_AccomodationCompanyVersions>();
+                    try
+                    {
+
+
+                        #region AccoMasterQuery
+                        StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                        sbSelectAccoMaster.Append(@"  
+                                                Select CommonProductId,CompanyProductId,CompanyId,CompanyName,ProductName,ProductDisplayName,StarRating,CompanyRating,ProductCatSubType,
+                                                Brand,Chain,HouseNumber,Street,Street2,Street3,Street4,Street5,Zone,PostalCode,Country,
+                                                State,City,Area,Location,Latitude,Longitude,TLGXAccoId from Accommodation_CompanyVersion with(nolock)  ");
+                        sbSelectAccoMaster.AppendLine(" WHERE Accommodation_Id = '" + gAccommodation_Id + "';");
+
+
+                        #endregion
+
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_AccomodationCompanyVersions>(sbSelectAccoMaster.ToString()).ToList();
+                        }
+                    }
+                    catch (Exception ex) { }
+                    return _AccoListResultMain;
+                }
+                #endregion
 
                 if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
                 {
@@ -595,6 +666,201 @@ namespace DAL
                 throw ex;
             }
         }
+        public void LoadMasterAccommodationRoomInfo(Guid LogId, Guid Accommodation_Id)
+        {
+            if ((Accommodation_Id == Guid.Empty && LogId == Guid.Empty) || (Accommodation_Id != Guid.Empty && LogId != Guid.Empty))
+            {
+                return;
+            }
+
+            int BatchSize = 1000;
+            int TotalCount = 0;
+            int Counter = 0;
+            int NoOfBatch = 0;
+
+            if (Accommodation_Id != Guid.Empty && LogId == Guid.Empty)
+            {
+                BatchSize = 1;
+                TotalCount = 1;
+                NoOfBatch = 1;
+            }
+
+            try
+            {
+                List<DataContracts.Masters.DC_AccomodationRoomInfo> _AccoRoomList = new List<DataContracts.Masters.DC_AccomodationRoomInfo>();
+
+                if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, Counter, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        try
+                        {
+                            TotalCount = context.Accommodations.AsNoTracking().Where(w => w.IsActive == true).Count();
+                        }
+                        catch (Exception ex) { }
+                    }
+
+                    NoOfBatch = TotalCount / BatchSize;
+                    int mod = TotalCount % BatchSize;
+                    if (mod > 0)
+                    {
+                        NoOfBatch = NoOfBatch + 1;
+                    }
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+                }
+
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Masters.DC_AccomodationRoomInfo>("AccommodationRoomInfoMaster");
+
+                for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                {
+                    _AccoRoomList = GetAccommodationRoomInfoMaster_InBatches(BatchSize, BatchNo, Accommodation_Id);
+                    if (_AccoRoomList.Count > 0)
+                    {
+                        foreach (var accoRoom in _AccoRoomList)
+                        {
+                            /* Need write CompanyVersion Function */
+                            List<DC_AccomodationRoomInfoCompanyVersion> lstRoomInfoCompanyVersion = GetAccommodationRoomInfoCompanyVersion(accoRoom.Accommodation_RoomInfo_Id);
+                            lstRoomInfoCompanyVersion.ForEach(x =>
+                            {
+                                RemoveDiacritics(x.RoomView);
+                                RemoveDiacritics(x.RoomName);
+                                RemoveDiacritics(x.CompanyId);
+                                RemoveDiacritics(x.CompanyName);
+                                RemoveDiacritics(x.RoomCategory);
+                                RemoveDiacritics(x.CompanyRoomCategory);
+                                RemoveDiacritics(x.RoomDescription);
+                                RemoveDiacritics(x.TLGXAccoId);
+                                RemoveDiacritics(x.TLGXAccoRoomID);
+                            }
+                            );
+
+                            DataContracts.Masters.DC_AccomodationRoomInfo AccoRoomdata = new DataContracts.Masters.DC_AccomodationRoomInfo()
+                            {
+                                CommonRoomId = accoRoom.CommonRoomId,
+                                CommonHotelId = (accoRoom.CommonHotelId.HasValue ? accoRoom.CommonHotelId.Value : accoRoom.CommonHotelId),
+                                RoomView = RemoveDiacritics(accoRoom.RoomView),
+                                NoOfRooms = (accoRoom.NoOfRooms.HasValue ? accoRoom.NoOfRooms.Value : accoRoom.NoOfRooms),
+                                RoomName = RemoveDiacritics(accoRoom.RoomName),
+                                Smoking = RemoveDiacritics(accoRoom.Smoking),
+                                BathRoomType = RemoveDiacritics(accoRoom.BathRoomType),
+                                BedType = RemoveDiacritics(accoRoom.BedType),
+                                CompanyRoomCategory = RemoveDiacritics(accoRoom.CompanyRoomCategory),
+                                RoomCategory = RemoveDiacritics(accoRoom.RoomCategory),
+                                AccomodationRoomInfoCompanyVersions = lstRoomInfoCompanyVersion
+                            };
+
+
+                            var filter = Builders<DataContracts.Masters.DC_AccomodationRoomInfo>.Filter.Eq(c => c.CommonRoomId, accoRoom.CommonRoomId);
+                            collection.ReplaceOneAsync(filter, AccoRoomdata, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
+                        {
+                            Counter = (BatchNo * BatchSize) + _AccoRoomList.Count;
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+                        }
+                    }
+                }
+
+                //Local Function To Get Master Accommodation Data
+                #region Get Master Accommodation RoomInfo Data Local Function
+                List<DataContracts.Masters.DC_AccomodationRoomInfo> GetAccommodationRoomInfoMaster_InBatches(int batchSize, int batchNo, Guid gAccommodation_Id)
+                {
+                    List<DataContracts.Masters.DC_AccomodationRoomInfo> _AccoListResultMain = new List<DataContracts.Masters.DC_AccomodationRoomInfo>();
+                    try
+                    {
+                        int skip = batchNo * batchSize;
+
+                        #region AccoRoomInfoMasterQuery
+                        StringBuilder sbSelectAccoRoomInfoMaster = new StringBuilder();
+
+                        sbSelectAccoRoomInfoMaster.Append(@"  
+                                              select ARI.Accommodation_RoomInfo_Id, ACC.CompanyHotelID as CommonHotelId,ARI .CommonRoomId,ARI.RoomView,ARI.NoOfRooms,ARI.RoomName,ARI.Smoking,ARI.BathRoomType,ARI.BedType,ARI.CompanyRoomCategory,ARI.RoomCategory,ARI.Category from Accommodation_RoomInfo ARI with(nolock) 
+                                               join Accommodation ACC on ARI.Accommodation_Id = ACC.Accommodation_Id  ");
+
+                        if (gAccommodation_Id == Guid.Empty)
+                        {
+                            sbSelectAccoRoomInfoMaster.AppendLine(" ORDER BY ARI.Legacy_Htl_Id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY;");
+                        }
+                        else
+                        {
+                            sbSelectAccoRoomInfoMaster.AppendLine(" WHERE ACC.Accommodation_Id = '" + gAccommodation_Id + "';");
+                        }
+
+                        #endregion
+
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_AccomodationRoomInfo>(sbSelectAccoRoomInfoMaster.ToString()).ToList();
+                        }
+                    }
+                    catch (Exception ex) { }
+                    return _AccoListResultMain;
+                }
+                #endregion
+
+
+
+                //Location Function to get Accommodation Master Version Data
+                #region Get Accommodation Master Room Info  Version Data
+
+                List<DataContracts.Masters.DC_AccomodationRoomInfoCompanyVersion> GetAccommodationRoomInfoCompanyVersion(Guid Accommodation_RoomInfo_Id)
+                {
+                    List<DataContracts.Masters.DC_AccomodationRoomInfoCompanyVersion> _AccoRoomInfoVersionListResultMain = new List<DataContracts.Masters.DC_AccomodationRoomInfoCompanyVersion>();
+                    try
+                    {
+
+
+                        #region AccoRoomInfoVersionMasterQuery
+                        StringBuilder sbSelectAccoRoomVersionMaster = new StringBuilder();
+
+                        sbSelectAccoRoomVersionMaster.Append(@"  
+                                                SELECT ARICV.RoomCategory,ARICV.RoomName,ARICV.CompanyRoomCategory,ARICV.RoomDescription,ARICV.RoomView,ARICV.BedType,ARICV.Smoking,ARICV.TlgxAccoId,ARICV.TlgxAccoRoomId,ACV.CompanyId, ACV.CompanyName
+                                                from Accommodation_RoomInfo_CompanyVersion ARICV  with(nolock) Join 
+                                                Accommodation_CompanyVersion ACV with(nolock) on ARICV.Accommodation_CompanyVersion_Id = ACV.Accommodation_CompanyVersion_Id
+
+");
+                        sbSelectAccoRoomVersionMaster.AppendLine(" where ARICV.Accommodation_RoomInfo_Id = '" + Accommodation_RoomInfo_Id + "';");
+
+
+                        #endregion
+
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+                            _AccoRoomInfoVersionListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_AccomodationRoomInfoCompanyVersion>(sbSelectAccoRoomVersionMaster.ToString()).ToList();
+                        }
+                    }
+                    catch (Exception ex) { }
+                    return _AccoRoomInfoVersionListResultMain;
+                }
+                #endregion
+
+                if (Accommodation_Id == Guid.Empty && LogId != Guid.Empty)
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+                }
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalCount, Counter, Guid.Empty.ToString(), "ACCOMMODATIONROOMINFO", "MASTER");
+                throw ex;
+            }
+        }
+
+
+
 
         public static String RemoveDiacritics(string s)
         {
@@ -1928,39 +2194,39 @@ namespace DAL
         {
             try
             {
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    context.Database.CommandTimeout = 0;
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
-                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
-                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "viator"
-                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
-                    int iTotalCount = ActivityList.Count();
-                    int iCounter = 0;
-                    foreach (var Activity in ActivityList)
-                    {
-                        try
-                        {
-                            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
-                            var InterestType = string.Join(",", InterestTypeArray);
-                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
-                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+                //using (TLGX_Entities context = new TLGX_Entities())
+                //{
+                //    _database = MongoDBHandler.mDatabase();
+                //    context.Database.CommandTimeout = 0;
+                //    context.Configuration.AutoDetectChangesEnabled = false;
+                //    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                //    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                //    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                //                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                //                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                //                        && spm.SupplierName == "viator"
+                //                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                //    int iTotalCount = ActivityList.Count();
+                //    int iCounter = 0;
+                //    foreach (var Activity in ActivityList)
+                //    {
+                //        try
+                //        {
+                //            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
+                //            var InterestType = string.Join(",", InterestTypeArray);
+                //            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                //            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
+                //            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
 
-                            iCounter++;
+                //            iCounter++;
 
-                        }
-                        catch (Exception e)
-                        {
-                            continue;
-                        }
-                    }
-                }
+                //        }
+                //        catch (Exception e)
+                //        {
+                //            continue;
+                //        }
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -2450,13 +2716,22 @@ namespace DAL
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
-                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
+                            newActivity.Categories = (from act in ActivityCT
+                                                      select new DataContracts.Activity.ActivityCategory
+                                                      {
+                                                          Category = act.SystemProductCategorySubType,
+                                                          InterestType = act.SystemInterestType,
+                                                          SubType = act.SystemProductNameSubType,
+                                                          Type = act.SystemProductType
+                                                      }).ToList();
 
-                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
+                            //newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
-                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+                            //newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
-                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
+                            //newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+
+                            //newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
 
                             newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
