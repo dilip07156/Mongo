@@ -3910,7 +3910,7 @@ namespace DAL
 
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "VISA", "MAPPING");
 
-  
+
 
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("VisaMapping");
@@ -3928,7 +3928,7 @@ namespace DAL
 
                 var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
 
-                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");               
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");
 
                 List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
 
@@ -5198,7 +5198,7 @@ namespace DAL
                 }
 
                 UpdateDistLogInfo(Logid, PushStatus.COMPLETED, totalCount, counter, Logid.ToString(), "VISA", "MAPPING");
-             
+
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -5221,7 +5221,26 @@ namespace DAL
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
 
                 _database = MongoDBHandler.mDatabase();
-               // _database.DropCollection("HolidayMapping");
+                // _database.DropCollection("HolidayMapping");
+
+                IMongoCollection<HolidayModel> collectionHolidayModel = _database.GetCollection<HolidayModel>("HolidayMapping");
+
+                var searchResult = collectionHolidayModel.Find(s => true).Project(u => new
+                {
+                    u.NakshatraHolidayId,
+                    u.ClassificationAttributes,
+                    u.SupplierProductCode,
+                    u.SupplierName,
+                    u.TypeOfHoliday,
+                    u.TravelFrequency,
+                    u.PaceOfHoliday,
+                    u.Rating,
+                    u.ComfortLevel,
+                    u.StayType,
+                    u.Interests,
+                    u.TravellerType,
+                    u.Collections
+                }).ToList();
 
                 var CollecionHolidayDetail = _database.GetCollection<BsonDocument>("HolidayDetail");
                 var HolidayMappingCollection = _database.GetCollection<HolidayModel>("HolidayMapping");
@@ -5255,7 +5274,7 @@ namespace DAL
 
                     objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
-                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);                   
+                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
                     objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
@@ -8205,11 +8224,35 @@ namespace DAL
 
                     #endregion
 
-                   // HolidayMappingCollection.InsertOne(objHolidayModel);
+                    #region Update
+
+                    var ObjHolidayMapping = searchResult.Where(x => x.SupplierName.ToLower() == objHolidayModel.SupplierName.ToLower() && x.SupplierProductCode == objHolidayModel.SupplierProductCode).ToList().FirstOrDefault();
+                    if (ObjHolidayMapping != null)
+                    {// it means its a old record so assign Nakid and classificationattributes to our model.
+                        objHolidayModel.NakshatraHolidayId = ObjHolidayMapping.NakshatraHolidayId;
+                        objHolidayModel.TypeOfHoliday = ObjHolidayMapping.TypeOfHoliday;
+                        objHolidayModel.TravelFrequency = ObjHolidayMapping.TravelFrequency;
+                        objHolidayModel.PaceOfHoliday = ObjHolidayMapping.PaceOfHoliday;
+                        objHolidayModel.Rating = ObjHolidayMapping.Rating;
+                        objHolidayModel.ComfortLevel = ObjHolidayMapping.ComfortLevel;
+                        objHolidayModel.StayType = ObjHolidayMapping.StayType;
+                        objHolidayModel.Interests = ObjHolidayMapping.Interests;
+                        objHolidayModel.TravellerType = ObjHolidayMapping.TravellerType;
+                        objHolidayModel.Collections = ObjHolidayMapping.Collections;
+
+                        if (ObjHolidayMapping.ClassificationAttributes != null && ObjHolidayMapping.ClassificationAttributes.Count > 0)
+                        {
+                            objHolidayModel.ClassificationAttributes = ObjHolidayMapping.ClassificationAttributes;
+                        }
+                    }
+
+                    #endregion
+
+                    // HolidayMappingCollection.InsertOne(objHolidayModel);
                     var filter1 = Builders<HolidayModel>.Filter.Eq(c => c.SupplierProductCode, objHolidayModel.SupplierProductCode);
                     filter1 = filter1 & Builders<HolidayModel>.Filter.Eq(c => c.SupplierName, objHolidayModel.SupplierName);
                     HolidayMappingCollection.ReplaceOneAsync(filter1, objHolidayModel, new UpdateOptions { IsUpsert = true });
-                   
+
                     counter++;
                     UpdateDistLogInfo(Logid, PushStatus.RUNNNING, CollecionHolidayMappingsFiltered.Count, counter, Logid.ToString(), "HOLIDAY", "MAPPING");
                 }
@@ -8221,7 +8264,7 @@ namespace DAL
             }
             catch (Exception ex)
             {
-                UpdateDistLogInfo(Logid, PushStatus.ERROR,0 , 0, null, "HOLIDAY", "MAPPING");
+                UpdateDistLogInfo(Logid, PushStatus.ERROR, 0, 0, null, "HOLIDAY", "MAPPING");
             }
         }
         #endregion
