@@ -2716,22 +2716,22 @@ namespace DAL
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
-                            newActivity.Categories = (from act in ActivityCT
-                                                      select new DataContracts.Activity.ActivityCategory
-                                                      {
-                                                          Category = act.SystemProductCategorySubType,
-                                                          InterestType = act.SystemInterestType,
-                                                          SubType = act.SystemProductNameSubType,
-                                                          Type = act.SystemProductType
-                                                      }).ToList();
+                            newActivity.CategoryGroup = (from act in ActivityCT
+                                                         select new DataContracts.Activity.ActivityCategory
+                                                         {
+                                                             Category = act.SystemProductCategorySubType,
+                                                             InterestType = act.SystemInterestType,
+                                                             SubType = act.SystemProductNameSubType,
+                                                             Type = act.SystemProductType
+                                                         }).ToList();
 
-                            //newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
-                            //newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
-                            //newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
 
-                            //newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
 
                             newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
@@ -3910,7 +3910,7 @@ namespace DAL
 
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "VISA", "MAPPING");
 
-  
+
 
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("VisaMapping");
@@ -3928,7 +3928,7 @@ namespace DAL
 
                 var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
 
-                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");               
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");
 
                 List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
 
@@ -5198,7 +5198,7 @@ namespace DAL
                 }
 
                 UpdateDistLogInfo(Logid, PushStatus.COMPLETED, totalCount, counter, Logid.ToString(), "VISA", "MAPPING");
-             
+
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -5255,7 +5255,7 @@ namespace DAL
 
                     objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
-                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);                   
+                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
                     objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
@@ -8218,7 +8218,7 @@ namespace DAL
             }
             catch (Exception ex)
             {
-                UpdateDistLogInfo(Logid, PushStatus.ERROR,0 , 0, null, "HOLIDAY", "MAPPING");
+                UpdateDistLogInfo(Logid, PushStatus.ERROR, 0, 0, null, "HOLIDAY", "MAPPING");
             }
         }
         #endregion
