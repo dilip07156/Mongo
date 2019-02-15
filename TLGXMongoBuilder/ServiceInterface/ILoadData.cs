@@ -95,6 +95,11 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "LoadBySupplier/CountryMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCountryMappingBySupplier(string LogId,string Supplier_ID);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/CityMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadCityMapping(string LogId);
 
@@ -107,6 +112,11 @@ namespace ServiceContracts
 
         #endregion
 
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "LoadBySupplier/CityMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCityMappingBySupplier(string LogId, string Supplier_ID);
+
         #region Product Mapping Push
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -117,6 +127,16 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ProductMappingLite/{LogId}/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadProductMappingLite(string LogId ,string MapId);
+
+        [OperationContract]
+        [FaultContract(typeof(ErrorNotifier))]
+        [WebGet(UriTemplate = "LoadBySupplier/ProductMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadProductMappingBySupplier(string LogId, string Supplier_ID);
+
+        [OperationContract]
+        [FaultContract(typeof(ErrorNotifier))]
+        [WebGet(UriTemplate = "LoadBySupplier/ProductMappingLite/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadProductMappingLiteBySupplier(string LogId, string Supplier_ID);
         #endregion
 
         [OperationContract]
