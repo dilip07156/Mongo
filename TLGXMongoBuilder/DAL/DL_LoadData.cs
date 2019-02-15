@@ -2307,39 +2307,39 @@ namespace DAL
         {
             try
             {
-                using (TLGX_Entities context = new TLGX_Entities())
-                {
-                    _database = MongoDBHandler.mDatabase();
-                    context.Database.CommandTimeout = 0;
-                    context.Configuration.AutoDetectChangesEnabled = false;
-                    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
-                    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
-                    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
-                                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
-                                        where a.CityCode != null && (spm.IsActive ?? false) == true
-                                        && spm.SupplierName == "viator"
-                                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
-                    int iTotalCount = ActivityList.Count();
-                    int iCounter = 0;
-                    foreach (var Activity in ActivityList)
-                    {
-                        try
-                        {
-                            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
-                            var InterestType = string.Join(",", InterestTypeArray);
-                            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
-                            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
-                            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
+                //using (TLGX_Entities context = new TLGX_Entities())
+                //{
+                //    _database = MongoDBHandler.mDatabase();
+                //    context.Database.CommandTimeout = 0;
+                //    context.Configuration.AutoDetectChangesEnabled = false;
+                //    var collection = _database.GetCollection<DataContracts.Activity.ActivityDefinition>("ActivityDefinitions");
+                //    //var ActivityList = (from a in context.Activity_Flavour select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                //    var ActivityList = (from a in context.Activity_Flavour.AsNoTracking()
+                //                        join spm in context.Activity_SupplierProductMapping.AsNoTracking() on a.Activity_Flavour_Id equals spm.Activity_ID
+                //                        where a.CityCode != null && (spm.IsActive ?? false) == true
+                //                        && spm.SupplierName == "viator"
+                //                        select new { Activity_Flavour_Id = a.Activity_Flavour_Id, CommonProductNameSubType_Id = a.CommonProductNameSubType_Id }).ToList();
+                //    int iTotalCount = ActivityList.Count();
+                //    int iCounter = 0;
+                //    foreach (var Activity in ActivityList)
+                //    {
+                //        try
+                //        {
+                //            var InterestTypeArray = (context.Activity_CategoriesType.Where(w => w.Activity_Flavour_Id == Activity.Activity_Flavour_Id)).Select(s => s.SystemInterestType).Distinct().ToArray();
+                //            var InterestType = string.Join(",", InterestTypeArray);
+                //            var filter = Builders<DataContracts.Activity.ActivityDefinition>.Filter.Eq(c => c.SystemActivityCode, Convert.ToInt32(Activity.CommonProductNameSubType_Id));
+                //            var UpdateData = Builders<DataContracts.Activity.ActivityDefinition>.Update.Set(x => x.InterestType, InterestType);
+                //            var updateResult = collection.FindOneAndUpdate(filter, UpdateData);
 
-                            iCounter++;
+                //            iCounter++;
 
-                        }
-                        catch (Exception e)
-                        {
-                            continue;
-                        }
-                    }
-                }
+                //        }
+                //        catch (Exception e)
+                //        {
+                //            continue;
+                //        }
+                //    }
+                //}
             }
             catch (Exception ex)
             {
@@ -2828,6 +2828,15 @@ namespace DAL
                             }
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
+
+                            newActivity.CategoryGroup = (from act in ActivityCT
+                                                         select new DataContracts.Activity.ActivityCategory
+                                                         {
+                                                             Category = act.SystemProductCategorySubType,
+                                                             InterestType = act.SystemInterestType,
+                                                             SubType = act.SystemProductNameSubType,
+                                                             Type = act.SystemProductType
+                                                         }).ToList();
 
                             newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
