@@ -2716,22 +2716,22 @@ namespace DAL
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
-                            newActivity.Categories = (from act in ActivityCT
-                                                      select new DataContracts.Activity.ActivityCategory
-                                                      {
-                                                          Category = act.SystemProductCategorySubType,
-                                                          InterestType = act.SystemInterestType,
-                                                          SubType = act.SystemProductNameSubType,
-                                                          Type = act.SystemProductType
-                                                      }).ToList();
+                            newActivity.CategoryGroup = (from act in ActivityCT
+                                                         select new DataContracts.Activity.ActivityCategory
+                                                         {
+                                                             Category = act.SystemProductCategorySubType,
+                                                             InterestType = act.SystemInterestType,
+                                                             SubType = act.SystemProductNameSubType,
+                                                             Type = act.SystemProductType
+                                                         }).ToList();
 
-                            //newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
-                            //newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
-                            //newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
 
-                            //newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
 
                             newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
