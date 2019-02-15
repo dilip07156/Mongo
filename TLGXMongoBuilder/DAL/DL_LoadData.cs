@@ -5382,31 +5382,58 @@ namespace DAL
                     }
                     #endregion
 
-                    #region TravelType
-                    //if (HolidayJson["Holiday"]["TravelType"] != null)
-                    //{
-                    //    var TypeOfTravelType = HolidayJson["Holiday"]["TravelType"].GetType();
-                    //    if (TypeOfTravelType.GetType().Name.ToUpper() != "JARRAY")
-                    //    {
-                    //        int totalSubType = 0;
-                    //        objHolidayModel.TravellerType = new List<HolidayTypes>();
-                    //        List<SubType> lst = new List<SubType>();
-                    //        if (HolidayJson["Holiday"]["TravelType"]["SubType"] != null)
-                    //            totalSubType = HolidayJson["Holiday"]["TravelType"]["SubType"].ToList().Count;
-                    //        for (int j = 0; j < totalSubType; j++)
-                    //        {
-                    //            lst.Add(new SubType()
-                    //            {
-                    //                Type = Convert.ToString(HolidayJson["Holiday"]["TravelType"]["SubType"][j])
-                    //            });
-                    //        }
-                    //        objHolidayModel.TravellerType.Add(new HolidayTypes()
-                    //        {
-                    //            Type = Convert.ToString(HolidayJson["Holiday"]["TravelType"]["Type"]),
-                    //            SubType = lst
-                    //        });
-                    //    }
-                    //}
+                    #region TravellerType
+
+                    if (HolidayJson["Holiday"]["TravellerType"] != null)
+                    {
+
+                        var TypeOfTravellerType = HolidayJson["Holiday"]["TravellerType"].GetType();
+                        if (TypeOfTravellerType.Name.ToUpper() != "JARRAY")
+                        {
+                            int totalSubType = 0;
+                            objHolidayModel.TravellerType = new List<HolidayTypes>();
+                            List<SubType> lst = new List<SubType>();
+                            if (HolidayJson["Holiday"]["TravellerType"].ToList().Count != 0)
+                            {
+
+                                if (HolidayJson["Holiday"]["TravellerType"]["SubType"] != null)
+                                    totalSubType = HolidayJson["Holiday"]["TravellerType"]["SubType"].ToList().Count;
+                                for (int j = 0; j < totalSubType; j++)
+                                {
+                                    lst.Add(new SubType()
+                                    {
+                                        Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"]["SubType"][j])
+                                    });
+                                }
+                                objHolidayModel.TravellerType.Add(new HolidayTypes()
+                                {
+                                    Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"]["Type"]),
+                                    SubType = lst
+                                });
+                            }
+                        }
+                        else
+                        {
+                            objHolidayModel.TravellerType = new List<HolidayTypes>();
+
+                            int TotalTravellerType = HolidayJson["Holiday"]["TravellerType"].ToList().Count;
+                            for (int k = 0; k < TotalTravellerType; k++)
+                            {
+                                HolidayTypes objHolidayTypes = new HolidayTypes();
+                                objHolidayTypes.SubType = new List<SubType>();
+                                objHolidayTypes.Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"][k]["Type"]);
+                                if (HolidayJson["Holiday"]["TravellerType"][k]["SubType"] != null && HolidayJson["Holiday"]["TravellerType"][k]["SubType"].ToList().Count > 0)
+                                {
+                                    int TotalSubTypes = HolidayJson["Holiday"]["TravellerType"][k]["SubType"].ToList().Count;
+                                    for (int p = 0; p < TotalSubTypes; p++)
+                                    {
+                                        objHolidayTypes.SubType.Add(new SubType() { Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"][k]["SubType"][p]) });
+                                    }
+                                }
+                                objHolidayModel.TravellerType.Add(objHolidayTypes);
+                            }
+                        }
+                    }
                     #endregion
 
                     #region Interests
@@ -5558,13 +5585,57 @@ namespace DAL
                     #endregion
 
                     #region ComfortLevel
-                    if (HolidayJson["Holiday"]["ComfortLevel"] != null)
+                    if (HolidayJson["Holiday"]["ComfortLevel"].ToList().Count > 0)
                     {
-                        objHolidayModel.ComfortLevel = new List<string>();
+                        
                         int totalComfortLevel = HolidayJson["Holiday"]["ComfortLevel"].ToList().Count;
-                        for (int f = 0; f < totalComfortLevel; f++)
+                        
+                        objHolidayModel.ComfortLevel = new List<ComfortLevel>();
+                        var TypeOfComfortLevel = HolidayJson["Holiday"]["ComfortLevel"].GetType();
+                        if (TypeOfComfortLevel.Name.ToUpper() != "JARRAY")
+                        { 
+                            // It is a single object
+                            objHolidayModel.ComfortLevel.Add(new ComfortLevel()
+                            {
+                                Level = Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"]["Level"]),
+                            });
+                        }
+                        else
                         {
-                            objHolidayModel.ComfortLevel.Add(Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"][f]));
+                            for (int f = 0; f < totalComfortLevel; f++)
+                            {
+                                objHolidayModel.ComfortLevel.Add(new ComfortLevel()
+                                {
+                                    Level = Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"][f]["Level"])
+                                });
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region PaceOfHoliday
+                    if (HolidayJson["Holiday"]["PaceOfHoliday"].ToList().Count > 0)
+                    {
+                        int totalPaceOfHoliday = HolidayJson["Holiday"]["PaceOfHoliday"].ToList().Count;
+                        objHolidayModel.PaceOfHoliday = new List<PaceOfHoliday>();
+                        var TypeOfPaceOfHoliday = HolidayJson["Holiday"]["PaceOfHoliday"].GetType();
+                        if (TypeOfPaceOfHoliday.Name.ToUpper() != "JARRAY")
+                        {
+                            // It is a single object
+                            objHolidayModel.PaceOfHoliday.Add(new PaceOfHoliday()
+                            {
+                                Pace = Convert.ToString(HolidayJson["Holiday"]["PaceOfHoliday"]["Pace"]),
+                            });
+                        }
+                        else
+                        {
+                            for (int f = 0; f < totalPaceOfHoliday; f++)
+                            {
+                                objHolidayModel.PaceOfHoliday.Add(new PaceOfHoliday()
+                                {
+                                    Pace = Convert.ToString(HolidayJson["Holiday"]["PaceOfHoliday"][f]["Pace"])
+                                });
+                            }
                         }
                     }
                     #endregion

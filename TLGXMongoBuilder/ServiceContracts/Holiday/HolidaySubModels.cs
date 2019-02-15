@@ -64,10 +64,15 @@ namespace DataContracts.Holiday
     }
     #endregion
 
-
+    /// <summary>
+    /// Structure for Pace of Holiday
+    /// </summary>
     public class PaceOfHoliday
     {
-        public string Type { get; set; }
+        /// <summary>
+        /// Pace value 
+        /// </summary>
+        public string Pace { get; set; }
     }
 
     #region Holiday.Interests & Holiday.TravellerType
@@ -92,6 +97,19 @@ namespace DataContracts.Holiday
         ///   contain Price text
         /// </summary>
         public string PriceText { get; set; }
+    }
+    #endregion
+
+    #region Holiday.ComfortLevel
+    /// <summary>
+    /// Structure for Comfort Level
+    /// </summary>
+    public class ComfortLevel
+    {
+        /// <summary>
+        /// Level of comfort 
+        /// </summary>
+        public string Level { get; set; }
     }
     #endregion
 
