@@ -162,6 +162,19 @@ namespace BAL
             }
         }
 
+        public void LoadObjectMapping(string Entity, string EntityMappingID)
+        {
+            Guid gEntityMapping_ID;
+            if (Guid.TryParse(EntityMappingID, out gEntityMapping_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    if (Entity.ToUpper() == "COUNTRY") { obj.LoadCountryMappingByUI(gEntityMapping_ID); }
+
+                }
+            }
+        }
+
         public void LoadCityMapping(string LogId)
         {
             Guid gLogId;

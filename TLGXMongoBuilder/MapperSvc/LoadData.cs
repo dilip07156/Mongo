@@ -159,6 +159,14 @@ namespace MapperSvc
             }
         }
 
+        public void LoadObjectMapping(string Entity, string EntityMappingID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadObjectMapping(Entity, EntityMappingID);
+            }
+        }
+
         public void LoadCountryMappingBySupplier(string LogId,string Supplier_ID)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())

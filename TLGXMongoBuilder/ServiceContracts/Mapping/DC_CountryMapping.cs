@@ -40,7 +40,10 @@ namespace DataContracts.Mapping
 
         [DataMember]
         public string SupplierCountryName { get; set; }
-        
+
+        [DataMember]
+        public string Status { get; set; }
+
         [DataMember]
         public int MapId { get; set; }
 

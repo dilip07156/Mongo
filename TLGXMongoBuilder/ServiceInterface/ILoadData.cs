@@ -103,6 +103,15 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Load/CityMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadCityMapping(string LogId);
 
+        #region MPUSH By UI
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "LoadByObject/EntityMapping/{Entity}/{EntityMappingID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadObjectMapping(string Entity,string EntityMappingID);
+
+        #endregion
+
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "LoadBySupplier/CityMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
