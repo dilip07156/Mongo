@@ -1440,6 +1440,119 @@ namespace DAL
 
         #endregion
 
+        #region UI Level MPUSH
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="CountryMapping_ID"></param>
+        public void LoadCountryMappingByUI(Guid CountryMapping_ID)
+        {
+            try
+            {
+                bool Is_IX_SupplierCode_SupplierCountryCode_Exists = false;
+                bool Is_IX_SupplierCode_CountryCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+
+                _database = MongoDBHandler.mDatabase();
+
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_CountryMapping>("CountryMapping");
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                      join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
+                                      join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
+                                      where cm.CountryMapping_Id == CountryMapping_ID
+                                      select new DataContracts.Mapping.DC_CountryMapping
+                                      {
+                                          SupplierName = s.Name.Trim().ToUpper(),
+                                          SupplierCode = s.Code.Trim().ToUpper(),
+                                          CountryCode = c.Code.Trim().ToUpper(),
+                                          CountryName = c.Name.Trim().ToUpper(),
+                                          Status = cm.Status.Trim().ToUpper(),
+                                          SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                          SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
+                                          MapId = cm.MapID ?? 0
+                                      }).FirstOrDefault();
+
+                    if (MappedData != null)
+                    {
+                        if (MappedData.Status.Trim().ToUpper() == "MAPPED")
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, MappedData.MapId) &
+                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, MappedData.SupplierCode);
+                            collection.ReplaceOne(filter, MappedData, new UpdateOptions { IsUpsert = true });
+                        }
+                        else if (MappedData.Status.Trim().ToUpper() != "MAPPED")
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, MappedData.MapId) &
+                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, MappedData.SupplierCode);
+                            collection.DeleteOne(filter);
+                        }
+                    }
+                }
+
+                #region Index Management
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierCountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_CountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierCountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_CountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.CountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
+        #endregion
+
         #region Product Mapping Push
 
         public void LoadProductMapping(Guid LogId, Guid ProdMapId)
@@ -2716,22 +2829,22 @@ namespace DAL
 
                             newActivity.SupplierProductCode = ActivitySPM.SuplierProductCode;//Activity.CompanyProductNameSubType_Id;
 
-                            newActivity.Categories = (from act in ActivityCT
-                                                      select new DataContracts.Activity.ActivityCategory
-                                                      {
-                                                          Category = act.SystemProductCategorySubType,
-                                                          InterestType = act.SystemInterestType,
-                                                          SubType = act.SystemProductNameSubType,
-                                                          Type = act.SystemProductType
-                                                      }).ToList();
+                            newActivity.CategoryGroup = (from act in ActivityCT
+                                                         select new DataContracts.Activity.ActivityCategory
+                                                         {
+                                                             Category = act.SystemProductCategorySubType,
+                                                             InterestType = act.SystemInterestType,
+                                                             SubType = act.SystemProductNameSubType,
+                                                             Type = act.SystemProductType
+                                                         }).ToList();
 
-                            //newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
+                            newActivity.InterestType = string.Join(",", ActivityCT.Select(s => s.SystemInterestType).Distinct());
 
-                            //newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
+                            newActivity.Category = string.Join(",", ActivityCT.Select(s => s.SystemProductCategorySubType).Distinct());
 
-                            //newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
+                            newActivity.Type = string.Join(",", ActivityCT.Select(s => s.SystemProductType).Distinct());
 
-                            //newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
+                            newActivity.SubType = string.Join(",", ActivityCT.Select(s => s.SystemProductNameSubType).Distinct());
 
                             newActivity.ProductSubTypeId = ActivityCT.Select(s => s.SystemProductNameSubType_ID.ToString().ToUpper()).ToList();
 
@@ -3910,7 +4023,7 @@ namespace DAL
 
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "VISA", "MAPPING");
 
-  
+
 
                 _database = MongoDBHandler.mDatabase();
                 _database.DropCollection("VisaMapping");
@@ -3928,7 +4041,7 @@ namespace DAL
 
                 var CollecionVisaCountriesFiltered = CollecionVisaCountries.Find(s => true).Project(project).ToList();
 
-                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");               
+                UpdateDistLogInfo(Logid, PushStatus.RUNNNING, totalCount, 0, Logid.ToString(), "VISA", "MAPPING");
 
                 List<VisaDefinition> ListVisaDefinitions = new List<VisaDefinition>();
 
@@ -5198,7 +5311,7 @@ namespace DAL
                 }
 
                 UpdateDistLogInfo(Logid, PushStatus.COMPLETED, totalCount, counter, Logid.ToString(), "VISA", "MAPPING");
-             
+
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -5255,7 +5368,7 @@ namespace DAL
 
                     objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
-                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);                   
+                    objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
                     objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
@@ -8218,7 +8331,7 @@ namespace DAL
             }
             catch (Exception ex)
             {
-                UpdateDistLogInfo(Logid, PushStatus.ERROR,0 , 0, null, "HOLIDAY", "MAPPING");
+                UpdateDistLogInfo(Logid, PushStatus.ERROR, 0, 0, null, "HOLIDAY", "MAPPING");
             }
         }
         #endregion
