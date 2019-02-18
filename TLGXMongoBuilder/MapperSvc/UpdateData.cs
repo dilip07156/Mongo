@@ -170,6 +170,14 @@ namespace MapperSvc
                 BL.Delete_CityMaster_ByCode(Code);
             }
         }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Upsert_CityMaster_ByCode(Code);
+            }
+        }
         #endregion
 
         #region Supplier Master

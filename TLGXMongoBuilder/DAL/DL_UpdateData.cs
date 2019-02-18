@@ -551,6 +551,52 @@ namespace DAL
                 throw ex;
             }
         }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            try
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var City = (from city in context.m_CityMaster
+                                join country in context.m_CountryMaster on city.Country_Id equals country.Country_Id
+                                where city.Code == Code
+                                select new
+                                {
+                                    CountryName = country.Name,
+                                    CountryCode = country.Code ?? string.Empty,
+                                    CityName = city.Name,
+                                    CityCode = city.Code ?? string.Empty,
+                                    StateName = city.StateName ?? string.Empty,
+                                    StateCode = city.StateCode ?? string.Empty
+                                }).FirstOrDefault();
+
+                    if (City != null)
+                    {
+                        var document = new BsonDocument
+                        {
+                            { "CityName", City.CityName},
+                            { "CityCode", City.CityCode },
+                            { "StateName", City.StateName },
+                            { "StateCode", City.StateCode },
+                            { "CountryCode", City.CountryCode },
+                            { "CountryName", City.CountryName },
+                        };
+                        _database = MongoDBHandler.mDatabase();
+                        var collection = _database.GetCollection<BsonDocument>("CityMaster");
+                        var filter = Builders<BsonDocument>.Filter.Eq("CityCode", Code);
+                        var result = collection.ReplaceOne(filter, document, new UpdateOptions { IsUpsert = true });
+                        filter = null;
+                        collection = null;
+                        _database = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         #endregion
 
         #region Supplier Master

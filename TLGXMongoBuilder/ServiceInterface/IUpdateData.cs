@@ -115,6 +115,11 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Delete/CityMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void Delete_CityMaster_ByCode(string Code);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Upsert/CityMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_CityMaster_ByCode(string Code);
         #endregion
 
         #region Supplier Master

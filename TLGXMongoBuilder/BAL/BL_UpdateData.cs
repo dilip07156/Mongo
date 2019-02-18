@@ -166,6 +166,14 @@ namespace BAL
                 DL.Delete_CityMaster_ByCode(Code);
             }
         }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Upsert_CityMaster_ByCode(Code);
+            }
+        }
         #endregion
 
         #region Supplier Master
