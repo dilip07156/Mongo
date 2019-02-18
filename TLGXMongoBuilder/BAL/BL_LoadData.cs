@@ -151,6 +151,17 @@ namespace BAL
             }
         }
 
+        public void LoadCountryMapping(string LogId, string SupplierID)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(SupplierID, out Guid Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCountryMapping(gLogId, Supplier_ID);
+                }
+            }
+        }
+
         public void LoadObjectMapping(string Entity, string EntityMappingID)
         {
             Guid gEntityMapping_ID;
@@ -176,6 +187,17 @@ namespace BAL
             }
         }
 
+        public void LoadCityMapping(string LogId, string SupplierID)
+        {
+            if (Guid.TryParse(LogId, out Guid gLogId) && Guid.TryParse(SupplierID, out  Guid Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCityMapping(gLogId, Supplier_ID);
+                }
+            }
+        }
+
         #region Product Mapping Push
         public void LoadProductMapping(string LogId, string ProdMapId)
         {
@@ -190,6 +212,21 @@ namespace BAL
             }
         }
 
+        public void LoadProductMappingBySupplier(string LogId, string SupplierID)
+        {
+            Guid gLogId;
+            Guid Supplier_ID;
+
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(SupplierID, out Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMappingBySupplier(gLogId, Supplier_ID);
+                }
+            }
+        }
+
+        
         public void LoadProductMappingLite(string LogId, string ProdMapId)
         {
             Guid gLogId;
@@ -202,6 +239,20 @@ namespace BAL
                 }
             }
         }
+
+        public void LoadProductMappingLiteBySupplier(string LogId, string SupplierID)
+        {
+            Guid gLogId;
+            Guid Supplier_ID;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(SupplierID, out Supplier_ID))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadProductMappingLiteBySupplier(gLogId, Supplier_ID);
+                }
+            }
+        }
+        
         #endregion
         public void LoadActivityMapping(string LogId)
         {
