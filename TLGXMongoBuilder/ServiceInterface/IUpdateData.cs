@@ -91,8 +91,8 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/CountryMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_CountryMaster_ByCode(string Code);
+        [WebGet(UriTemplate = "Update/CountryMaster/Code/{Code}/{OldCode}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Update_CountryMaster_ByCode(string Code, string OldCode);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]

@@ -396,23 +396,61 @@ namespace DAL
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code,string OldCode)
         {
             try
             {
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
+                    /*
                     var CountryName = (from c in context.m_CountryMaster
                                        where c.Code == Code
                                        select c.Name).FirstOrDefault();
+
+                    _database = MongoDBHandler.mDatabase();
+                    var collection1 = _database.GetCollection<BsonDocument>("CountryMaster");
+                    var filter1 = Builders<BsonDocument>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                    var result1 = collection1.Find(filter1).FirstOrDefault();
+
+                    //For insert Country Name and Country Code
+                    if(result1 == null)
+                    {
+                        Insert_CountryMaster_ByCode(Code);
+
+                        filter1 = null;
+                        collection1 = null;
+                        _database = null;
+                        return;
+                    }
+
                     if (CountryName != null)
                     {
                         _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<BsonDocument>("CountryMaster");
-                        var filter = Builders<BsonDocument>.Filter.Eq("CountryCode", Code);
-                        var update = Builders<BsonDocument>.Update.Set("CountryName", CountryName);
+                        var filter = Builders<BsonDocument>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                        var update = Builders<BsonDocument>.Update.Set("CountryName", CountryName.ToUpper()).Set("CountryCode", Code.ToUpper());
                         var result = collection.UpdateOne(filter, update);
                         update = null;
+                        filter = null;
+                        collection = null;
+                        _database = null;
+                    }
+
+                    */
+                    var CountryName = (from c in context.m_CountryMaster
+                                       where c.Code == Code
+                                       select new DataContracts.Masters.DC_Country
+                                       {
+                                           CountryName = c.Name.Trim().ToUpper(),
+                                           CountryCode = c.Code.Trim().ToUpper(),
+                                       }).FirstOrDefault();                                       
+                    
+                    if (CountryName != null)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        var collection = _database.GetCollection<DataContracts.Masters.DC_Country>("CountryMaster");
+                        var filter = Builders<DataContracts.Masters.DC_Country>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                        collection.ReplaceOne(filter, CountryName, new UpdateOptions { IsUpsert = true });                        
                         filter = null;
                         collection = null;
                         _database = null;
