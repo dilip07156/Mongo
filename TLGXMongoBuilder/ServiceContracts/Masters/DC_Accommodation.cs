@@ -121,6 +121,8 @@ namespace DataContracts.Masters
         [DataMember]
         public System.Guid Accommodation_Id { get; set; }
 
+        [DataMember]
+        public string Interest { get; set; }
     }
 
 }

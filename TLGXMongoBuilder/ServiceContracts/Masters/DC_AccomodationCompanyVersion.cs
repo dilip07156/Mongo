@@ -99,5 +99,9 @@ namespace DataContracts.Masters
 
         [DataMember]
         public string TLGXAccoId { get; set; }
+
+        [DataMember]
+        public string Interest { get; set; }
+        
     }
 }
