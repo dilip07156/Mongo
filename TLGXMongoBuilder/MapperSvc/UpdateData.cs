@@ -129,11 +129,11 @@ namespace MapperSvc
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Update_CountryMaster_ByCode(Code);
+                BL.Update_CountryMaster_ByCode(Code,OldCode);
             }
         }
 
