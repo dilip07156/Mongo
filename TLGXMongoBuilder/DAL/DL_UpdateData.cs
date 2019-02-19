@@ -713,7 +713,7 @@ namespace DAL
                         var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName)
                             .Set("SupplierOwner", Supplier.SupplierOwner)
                             .Set("SupplierType", Supplier.SupplierType);
-                        var result = collection.UpdateOne(filter, update);
+                        var result = collection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
                         update = null;
                         filter = null;
                         collection = null;
