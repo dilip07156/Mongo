@@ -397,7 +397,7 @@ namespace DAL
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code,string OldCode)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             try
             {
@@ -444,14 +444,14 @@ namespace DAL
                                        {
                                            CountryName = c.Name.Trim().ToUpper(),
                                            CountryCode = c.Code.Trim().ToUpper(),
-                                       }).FirstOrDefault();                                       
-                    
+                                       }).FirstOrDefault();
+
                     if (CountryName != null)
                     {
                         _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<DataContracts.Masters.DC_Country>("CountryMaster");
                         var filter = Builders<DataContracts.Masters.DC_Country>.Filter.Eq("CountryCode", OldCode.ToUpper());
-                        collection.ReplaceOne(filter, CountryName, new UpdateOptions { IsUpsert = true });                        
+                        collection.ReplaceOne(filter, CountryName, new UpdateOptions { IsUpsert = true });
                         filter = null;
                         collection = null;
                         _database = null;
@@ -710,7 +710,7 @@ namespace DAL
                         var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName)
                             .Set("SupplierOwner", Supplier.SupplierOwner)
                             .Set("SupplierType", Supplier.SupplierType);
-                        var result = collection.UpdateOne(filter, update);
+                        var result = collection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
                         update = null;
                         filter = null;
                         collection = null;
