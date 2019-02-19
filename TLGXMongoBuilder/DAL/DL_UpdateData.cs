@@ -200,19 +200,19 @@ namespace DAL
                                    join city in context.m_CityMaster on cm.City_Id equals city.City_Id
                                    join country in context.m_CountryMaster on cm.Country_Id equals country.Country_Id
                                    join supplier in context.Suppliers on cm.Supplier_Id equals supplier.Supplier_Id
-                                   where (cm.Status ?? string.Empty) != "UNMAPPED" && cm.MapID == id
+                                   where (cm.Status ?? string.Empty) == "MAPPED" && cm.MapID == id
                                    select new DataContracts.Mapping.DC_CityMapping
                                    {
-                                       CityName = (city.Name ?? string.Empty),
-                                       CityCode = (city.Code ?? string.Empty),
-                                       SupplierCityCode = (cm.CityCode ?? string.Empty),
-                                       SupplierCityName = (cm.CityName ?? string.Empty),
-                                       SupplierName = supplier.Name,
-                                       SupplierCode = supplier.Code,
-                                       CountryCode = country.Code,
-                                       CountryName = country.Name,
-                                       SupplierCountryName = (cm.CountryName ?? string.Empty),
-                                       SupplierCountryCode = (cm.CountryCode ?? string.Empty),
+                                       CityName = (city.Name ?? string.Empty).ToUpper(),
+                                       CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                       SupplierCityCode = (supplier.Code.ToUpper() == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
+                                       SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                       SupplierName = supplier.Name.ToUpper(),
+                                       SupplierCode = supplier.Code.ToUpper(),
+                                       CountryCode = country.Code.ToUpper(),
+                                       CountryName = country.Name.ToUpper(),
+                                       SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                       SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
                                        MapId = cm.MapID ?? 0
                                    }).FirstOrDefault();
 
