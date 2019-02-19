@@ -664,10 +664,10 @@ namespace DAL
 
                         var document = new BsonDocument
                         {
-                            { "SupplierName", Supplier.SupplierName },
-                            { "SupplierCode", Supplier.SupplierCode },
-                            { "SupplierOwner", Supplier.SupplierOwner },
-                            { "SupplierType", Supplier.SupplierType }
+                            { "SupplierName", (Supplier.SupplierName ?? string.Empty).ToUpper() },
+                            { "SupplierCode", (Supplier.SupplierCode ?? string.Empty).ToUpper() },
+                            { "SupplierOwner", (Supplier.SupplierOwner ?? string.Empty).ToUpper() },
+                            { "SupplierType", (Supplier.SupplierType ?? string.Empty).ToUpper() }
                         };
 
                         collection.InsertOne(document);
@@ -697,8 +697,8 @@ namespace DAL
                                     {
                                         SupplierName = s.Name.ToUpper(),
                                         SupplierCode = s.Code.ToUpper(),
-                                        SupplierType = s.SupplierType.ToUpper() ?? string.Empty,
-                                        SupplierOwner = s.SupplierOwner.ToUpper() ?? string.Empty
+                                        SupplierType = (s.SupplierType ?? string.Empty).ToUpper(),
+                                        SupplierOwner = (s.SupplierOwner ?? string.Empty).ToUpper()
                                     }).FirstOrDefault();
 
 
@@ -706,8 +706,8 @@ namespace DAL
                     {
                         _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<BsonDocument>("Supplier");
-                        var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code.ToUpper());
-                        var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName.ToUpper())
+                        var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code);
+                        var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName)
                             .Set("SupplierOwner", Supplier.SupplierOwner)
                             .Set("SupplierType", Supplier.SupplierType);
                         var result = collection.UpdateOne(filter, update);
