@@ -1418,10 +1418,15 @@ namespace DAL
                         {
                             var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
                             collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
+                            TotalProcessed++;
+                            if(TotalProcessed % 100 == 0)
+                            {
+                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
+                            }
                         }
                     }
 
-                    TotalProcessed += MappedIds.Count();
+                    //TotalProcessed += MappedIds.Count();
 
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
                 }
