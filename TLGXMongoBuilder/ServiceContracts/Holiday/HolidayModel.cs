@@ -210,7 +210,7 @@ namespace DataContracts.Holiday
         /// <summary>
         /// Comfort level of the holiday.
         /// </summary>
-        public List<string> ComfortLevel { get; set; }
+        public List<ComfortLevel> ComfortLevel { get; set; }
         /// <summary>
         /// Is this Holiday recommended.
         /// </summary>

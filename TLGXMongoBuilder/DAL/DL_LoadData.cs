@@ -17,6 +17,7 @@ using DataContracts.Visa;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using DataContracts.Mapping;
 using DataContracts.Holiday;
 
 namespace DAL
@@ -1258,6 +1259,130 @@ namespace DAL
             }
         }
 
+        public void LoadCountryMapping(Guid LogId, Guid Supplier_ID)
+        {
+            try
+            {
+                bool Is_IX_SupplierCode_SupplierCountryCode_Exists = false;
+                bool Is_IX_SupplierCode_CountryCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+
+
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DC_CountryMapping>("CountryMapping");
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                          join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
+                                          join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
+                                          where cm.Status == "MAPPED" && cm.Supplier_Id == Supplier_ID
+                                          select new DC_CountryMapping
+                                          {
+                                              SupplierName = s.Name.Trim().ToUpper(),
+                                              SupplierCode = s.Code.Trim().ToUpper(),
+                                              CountryCode = c.Code.Trim().ToUpper(),
+                                              CountryName = c.Name.Trim().ToUpper(),
+                                              SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                              SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
+                                              MapId = cm.MapID ?? 0
+                                          }).ToList();
+
+                        if (MappedData != null && MappedData.Count > 0)
+                        {
+                            foreach (var mapped in MappedData)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, mapped.MapId) &
+                                    Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, mapped.SupplierCode);
+                                collection.ReplaceOne(filter, mapped, new UpdateOptions { IsUpsert = true });
+                            }
+                        }
+
+                        var NotMappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                             where cm.Status != "MAPPED" && cm.Supplier_Id == Supplier_ID
+                                             select new DataContracts.Mapping.DC_CountryMapping { MapId = cm.MapID ?? 0 }).ToList();
+
+                        if (NotMappedData != null && NotMappedData.Count > 0)
+                        {
+                            foreach (var country in NotMappedData)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, country.MapId);
+                                collection.DeleteOne(filter);
+                            }
+                        }
+
+                        var Log = context.DistributionLayerRefresh_Log.Find(LogId);
+
+                        if (Log != null)
+                        {
+                            Log.Status = "Completed";
+                            context.SaveChanges();
+                        }
+                    }
+                }
+
+                #region Index Management
+                var listOfindexes = collection.Indexes.List().ToList();
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierCountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_CountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierCountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_CountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.CountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED);
+
+                collection = null;
+                _database = null;
+
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, 0, 0, Supplier_ID.ToString(), "Country", "Mapping");
+            }
+        }
+
         public void LoadCityMapping(Guid LogId)
         {
             try
@@ -1348,11 +1473,7 @@ namespace DAL
                         context.Database.CommandTimeout = 0;
 
                         SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
-                        {
-                            SupplierCode = s.Code.ToUpper(),
-                            Supplier_Id = s.Supplier_Id,
-                            SupplierName = s.Name.ToUpper()
-                        }).ToList();
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).ToList();
 
                         TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED").Count();
                     }
@@ -1443,6 +1564,295 @@ namespace DAL
             }
         }
 
+        public void LoadCityMapping(Guid LogId, Guid Supplier_ID)
+        {
+            bool Is_IX_SupplierCode_SupplierCityCode_Exists = false;
+            bool Is_IX_SupplierCode_CityCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
+            bool Is_IX_CityCode_Exists = false;
+            int TotalRecords = 0;
+            int TotalProcessed = 0;
+
+            try
+            {
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
+
+
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
+
+                #region Index Management
+                var listOfindexes = collection.Indexes.List().ToList();
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCityCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierCityCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CityCode"] != null)
+                    {
+                        Is_IX_SupplierCode_CityCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["CityCode"] != null)
+                    {
+                        Is_IX_CityCode_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierCityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_CityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.CityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_CityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CityMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.CityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CityMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CityMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                DC_Supplier_ShortVersion supplier = new DC_Supplier_ShortVersion();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        supplier = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID && (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).FirstOrDefault();
+
+                        TotalRecords = context.m_CityMapping.Where(w => w.Status == "MAPPED" && w.Supplier_Id == Supplier_ID).Count();
+                    }
+                    scope.Complete();
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, 0, string.Empty, "City", "Mapping");
+
+                if (supplier != null)
+                {
+                    List<DC_CityMapping> CityListMapped = new List<DC_CityMapping>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Database.CommandTimeout = 0;
+
+                            CityListMapped = (from cm in context.m_CityMapping.AsNoTracking()
+                                              join city in context.m_CityMaster.AsNoTracking() on cm.City_Id equals city.City_Id
+                                              join country in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals country.Country_Id
+                                              where cm.Supplier_Id == supplier.Supplier_Id && cm.Status == "MAPPED"
+                                              select new DC_CityMapping
+                                              {
+                                                  CityName = (city.Name ?? string.Empty).ToUpper(),
+                                                  CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                                  SupplierCityCode = (supplier.SupplierCode == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
+                                                  SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                                  SupplierName = supplier.SupplierName,
+                                                  SupplierCode = supplier.SupplierCode,
+                                                  CountryCode = country.Code.ToUpper(),
+                                                  CountryName = country.Name.ToUpper(),
+                                                  SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                                  SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
+                                                  MapId = cm.MapID ?? 0
+                                              }).ToList();
+                        }
+                        scope.Complete();
+                    }
+
+                    var MappedIds = CityListMapped.Select(s => s.MapId).ToList();
+
+                    var mapidsinmongo = collection.Find(x => x.SupplierCode == supplier.SupplierCode).Project(u => new { u.MapId }).ToList();
+
+                    var MapIdsToBeDeleted = (from m in mapidsinmongo
+                                             where !MappedIds.Contains(m.MapId)
+                                             select m).ToList();
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var city in MapIdsToBeDeleted)
+                        {
+                            var filter = Builders<DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
+                            collection.DeleteMany(filter);
+                        }
+                    }
+                    if (CityListMapped != null && CityListMapped.Count > 0)
+                    {
+                        foreach (var city in CityListMapped)
+                        {
+                            var filter = Builders<DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId) & Builders<DC_CityMapping>.Filter.Eq(c => c.SupplierCode, city.SupplierCode);
+                            collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
+                        }
+                    }
+
+                    TotalProcessed += MappedIds.Count();
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
+
+                    collection = null;
+                    _database = null;
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
+                }
+            }
+            catch (FaultException<ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalRecords, TotalProcessed, Supplier_ID.ToString(), "City", "Mapping");
+                throw ex;
+            }
+        }
+
+        #endregion
+
+        #region UI Level MPUSH
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="CountryMapping_ID"></param>
+        public void LoadCountryMappingByUI(Guid CountryMapping_ID)
+        {
+            try
+            {
+                bool Is_IX_SupplierCode_SupplierCountryCode_Exists = false;
+                bool Is_IX_SupplierCode_CountryCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+
+                _database = MongoDBHandler.mDatabase();
+
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_CountryMapping>("CountryMapping");
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var MappedData = (from cm in context.m_CountryMapping.AsNoTracking()
+                                      join c in context.m_CountryMaster.AsNoTracking() on cm.Country_Id equals c.Country_Id
+                                      join s in context.Suppliers.AsNoTracking() on cm.Supplier_Id equals s.Supplier_Id
+                                      where cm.CountryMapping_Id == CountryMapping_ID
+                                      select new DataContracts.Mapping.DC_CountryMapping
+                                      {
+                                          SupplierName = s.Name.Trim().ToUpper(),
+                                          SupplierCode = s.Code.Trim().ToUpper(),
+                                          CountryCode = c.Code.Trim().ToUpper(),
+                                          CountryName = c.Name.Trim().ToUpper(),
+                                          Status = cm.Status.Trim().ToUpper(),
+                                          SupplierCountryName = (cm.CountryName ?? string.Empty).Trim().ToUpper(),
+                                          SupplierCountryCode = (cm.CountryCode ?? string.Empty).Trim().ToUpper(),
+                                          MapId = cm.MapID ?? 0
+                                      }).FirstOrDefault();
+
+                    if (MappedData != null)
+                    {
+                        if (MappedData.Status.Trim().ToUpper() == "MAPPED")
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, MappedData.MapId) &
+                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, MappedData.SupplierCode);
+                            collection.ReplaceOne(filter, MappedData, new UpdateOptions { IsUpsert = true });
+                        }
+                        else if (MappedData.Status.Trim().ToUpper() != "MAPPED")
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.MapId, MappedData.MapId) &
+                                Builders<DataContracts.Mapping.DC_CountryMapping>.Filter.Eq(c => c.SupplierCode, MappedData.SupplierCode);
+                            collection.DeleteOne(filter);
+                        }
+                    }
+                }
+
+                #region Index Management
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierCountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierCountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["CountryCode"] != null)
+                    {
+                        Is_IX_SupplierCode_CountryCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierCountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_CountryCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.CountryCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_CountryMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_CountryMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_CountryMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<ErrorNotifier> ex)
+            {
+                throw ex;
+            }
+        }
+
         #endregion
 
         #region Product Mapping Push
@@ -1450,7 +1860,7 @@ namespace DAL
         public void LoadProductMapping(Guid LogId, Guid ProdMapId)
         {
             _database = MongoDBHandler.mDatabase();
-            var collection = _database.GetCollection<DataContracts.Mapping.DC_ProductMapping>("ProductMapping");
+            var collection = _database.GetCollection<DC_ProductMapping>("ProductMapping");
 
             int TotalAPMCount = 0;
             int MongoInsertedCount = 0;
@@ -1926,11 +2336,396 @@ namespace DAL
                     }
                 }
             }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            catch (FaultException<ErrorNotifier> ex)
             {
                 throw ex;
             }
 
+        }
+
+        public void LoadProductMappingBySupplier(Guid LogId, Guid Supplier_ID)
+        {
+            _database = MongoDBHandler.mDatabase();
+            var collection = _database.GetCollection<DC_ProductMapping>("ProductMapping");
+            DC_Supplier_ShortVersion SupplierCodes = new DC_Supplier_ShortVersion();
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+
+            try
+            {
+                #region Index Management
+
+                bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+                bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+                bool Is_IX_SupplierCode_SystemCityCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemCityCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemCityCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemCityCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemCityCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ProductMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DataContracts.Mapping.DC_ProductMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ProductMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING);
+
+                #region Fetch Supplier Details 
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID &&
+                        (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        {
+                            SupplierCode = s.Code.ToUpper(),
+                            Supplier_Id = s.Supplier_Id,
+                            SupplierName = s.Name.ToUpper()
+                        }).FirstOrDefault();
+
+                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.Supplier_Id == Supplier_ID && w.IsActive == true).Count();
+                    }
+                    scope.Complete();
+                }
+                #endregion
+
+                if (SupplierCodes != null)
+                {
+                    #region Fetch Mapping Data
+
+                    List<DC_ProductMapping> productMapList = new List<DC_ProductMapping>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+                            productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+
+                                              join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
+                                              from citymaster in LJCityMaster.DefaultIfEmpty()
+
+                                              join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
+                                              from countrymaster in LJCountryMaster.DefaultIfEmpty()
+
+                                              join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
+                                              from acco in LJAcco.DefaultIfEmpty()
+                                              where apm.Supplier_Id == SupplierCodes.Supplier_Id && apm.IsActive == true
+                                              select new DC_ProductMapping
+                                              {
+                                                  SupplierCode = SupplierCodes.SupplierCode,
+                                                  SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                  SupplierCountryCode = apm.CountryCode.ToUpper(),
+                                                  SupplierCountryName = apm.CountryName.ToUpper(),
+                                                  SupplierCityCode = apm.CityCode.ToUpper(),
+                                                  SupplierCityName = apm.CityName.ToUpper(),
+                                                  SupplierProductName = apm.ProductName.ToUpper(),
+                                                  MappingStatus = apm.Status.ToUpper(),
+                                                  MapId = apm.MapId,
+
+                                                  SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
+                                                  SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
+                                                  SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
+                                                  TlgxMdmHotelId = (acco == null ? string.Empty : acco.TLGXAccoId.ToUpper()),
+
+                                                  SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
+                                                  SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
+                                                  SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
+
+                                              }).ToList();
+                        }
+                        scope.Complete();
+                    }
+
+                    List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                    #endregion
+
+                    #region Mongo Delete
+
+                    List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCodes.SupplierCode).Project(u => u.MapId).ToList();
+
+                    List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                   where !MappedIds.Contains(m)
+                                                   select m).ToList();
+
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var MapId in MapIdsToBeDeleted)
+                        {
+                            var filter = Builders<DC_ProductMapping>.Filter.Eq(c => c.MapId, MapId);
+                            collection.DeleteMany(filter);
+                        }
+                    }
+
+                    #endregion
+
+                    #region Mongo Add/Update
+
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DC_ProductMapping>.Filter.Eq(c => c.MapId, product.MapId);
+                            collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount);
+                    }
+
+                    #endregion
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount);
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount, Supplier_ID.ToString());
+                }
+            }
+            catch (FaultException<ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount, Supplier_ID.ToString());
+            }
+
+            collection = null;
+            _database = null;
+        }
+
+        public void LoadProductMappingLiteBySupplier(Guid LogId, Guid Supplier_ID)
+        {
+            #region Params
+
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+            bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+            bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+            bool Is_IX_MapId_Exists = false;
+            bool Is_IX_SupplierCode_Exists = false;
+
+            #endregion
+
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DC_ProductMappingLite>("ProductMappingLite");
+
+                if (LogId == Guid.Empty)
+                {
+                    LogId = Guid.NewGuid();
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                }
+
+                #region Index Management
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    JObject rss = JObject.Parse(index.ToJson());
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null) { Is_IX_SupplierCode_SupplierProductCode_Exists = true; }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null) { Is_IX_SupplierCode_SystemProductCode_Exists = true; }
+
+                    if ((string)rss["key"]["MapId"] != null) { Is_IX_MapId_Exists = true; }
+
+                    if ((string)rss["key"]["SupplierCode"] != null) { Is_IX_SupplierCode_Exists = true; }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_MapId_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_ProductMappingLite> IndexBuilder = new IndexKeysDefinitionBuilder<DC_ProductMappingLite>();
+                    var keys = IndexBuilder.Ascending(_ => _.MapId);
+                    CreateIndexModel<DC_ProductMappingLite> IndexModel = new CreateIndexModel<DC_ProductMappingLite>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                #region Fetch Supplier Additional Details
+
+                DC_Supplier_ShortVersion SupplierCodes = new DC_Supplier_ShortVersion();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => w.Supplier_Id == Supplier_ID &&
+                        (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        { SupplierCode = s.Code.ToUpper(), Supplier_Id = s.Supplier_Id, SupplierName = s.Name.ToUpper() }).FirstOrDefault();
+
+                        TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => w.Supplier_Id == Supplier_ID && (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
+                    }
+                    scope.Complete();
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                #endregion
+
+                if (SupplierCodes != null)
+                {
+                    #region Fetch APM Lite Details
+                    List<DC_ProductMappingLite> productMapList = new List<DC_ProductMappingLite>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions() { IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted, Timeout = new TimeSpan(0, 2, 0) }))
+                    {
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+                            productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                                              join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                              where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCodes.Supplier_Id
+                                              && apm.IsActive == true
+                                              select new DC_ProductMappingLite
+                                              {
+                                                  SupplierCode = SupplierCodes.SupplierCode,
+                                                  SupplierProductCode = apm.SupplierProductReference.ToUpper(),
+                                                  MapId = apm.MapId,
+                                                  SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
+                                                  TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
+                                              }).ToList();
+                        }
+                        scope.Complete();
+                    }
+
+                    List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
+                    #endregion
+
+                    #region Mongo Delete
+
+                    List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCodes.SupplierCode).Project(u => u.MapId).ToList();
+
+                    List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
+                                                   where !MappedIds.Contains(m)
+                                                   select m).ToList();
+
+                    if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
+                    {
+                        foreach (var MapId in MapIdsToBeDeleted) { collection.DeleteMany(x => x.MapId == MapId); }
+                    }
+
+                    #endregion
+
+                    #region Mongo Upserts
+
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DC_ProductMappingLite>.Filter.Eq(c => c.MapId, product.MapId);
+                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                    }
+
+                    #endregion
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+                }
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<ErrorNotifier> ex) { UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount); }
         }
 
         #endregion
@@ -5207,7 +6002,7 @@ namespace DAL
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
-                UpdateDistLogInfo(Logid, PushStatus.COMPLETED, 0, 0, Logid.ToString(), "VISA", "MAPPING");
+                UpdateDistLogInfo(Logid, PushStatus.ERROR, 0, 0, Logid.ToString(), "VISA", "MAPPING");
             }
         }
         #endregion
@@ -5226,7 +6021,26 @@ namespace DAL
                 UpdateDistLogInfo(Logid, PushStatus.RUNNNING, 0, 0, Logid.ToString(), "HOLIDAY", "MAPPING");
 
                 _database = MongoDBHandler.mDatabase();
-                _database.DropCollection("HolidayMapping");
+                // _database.DropCollection("HolidayMapping");
+
+                IMongoCollection<HolidayModel> collectionHolidayModel = _database.GetCollection<HolidayModel>("HolidayMapping");
+
+                var searchResult = collectionHolidayModel.Find(s => true).Project(u => new
+                {
+                    u.NakshatraHolidayId,
+                    u.ClassificationAttributes,
+                    u.SupplierProductCode,
+                    u.SupplierName,
+                    u.TypeOfHoliday,
+                    u.TravelFrequency,
+                    u.PaceOfHoliday,
+                    u.Rating,
+                    u.ComfortLevel,
+                    u.StayType,
+                    u.Interests,
+                    u.TravellerType,
+                    u.Collections
+                }).ToList();
 
                 var CollecionHolidayDetail = _database.GetCollection<BsonDocument>("HolidayDetail");
                 var HolidayMappingCollection = _database.GetCollection<HolidayModel>("HolidayMapping");
@@ -5261,7 +6075,7 @@ namespace DAL
                     objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
                     objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
-                    objHolidayModel.NakshatraHolidayId = Guid.NewGuid().ToString().ToUpper();
+                    objHolidayModel.NakshatraHolidayId = Convert.ToString(HolidayJson["Holiday"]["NakshatraHolidayId"]);
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
                     DateTime EffectiveFromDate;
@@ -5368,31 +6182,58 @@ namespace DAL
                     }
                     #endregion
 
-                    #region TravelType
-                    //if (HolidayJson["Holiday"]["TravelType"] != null)
-                    //{
-                    //    var TypeOfTravelType = HolidayJson["Holiday"]["TravelType"].GetType();
-                    //    if (TypeOfTravelType.GetType().Name.ToUpper() != "JARRAY")
-                    //    {
-                    //        int totalSubType = 0;
-                    //        objHolidayModel.TravellerType = new List<HolidayTypes>();
-                    //        List<SubType> lst = new List<SubType>();
-                    //        if (HolidayJson["Holiday"]["TravelType"]["SubType"] != null)
-                    //            totalSubType = HolidayJson["Holiday"]["TravelType"]["SubType"].ToList().Count;
-                    //        for (int j = 0; j < totalSubType; j++)
-                    //        {
-                    //            lst.Add(new SubType()
-                    //            {
-                    //                Type = Convert.ToString(HolidayJson["Holiday"]["TravelType"]["SubType"][j])
-                    //            });
-                    //        }
-                    //        objHolidayModel.TravellerType.Add(new HolidayTypes()
-                    //        {
-                    //            Type = Convert.ToString(HolidayJson["Holiday"]["TravelType"]["Type"]),
-                    //            SubType = lst
-                    //        });
-                    //    }
-                    //}
+                    #region TravellerType
+
+                    if (HolidayJson["Holiday"]["TravellerType"] != null)
+                    {
+
+                        var TypeOfTravellerType = HolidayJson["Holiday"]["TravellerType"].GetType();
+                        if (TypeOfTravellerType.Name.ToUpper() != "JARRAY")
+                        {
+                            int totalSubType = 0;
+                            objHolidayModel.TravellerType = new List<HolidayTypes>();
+                            List<SubType> lst = new List<SubType>();
+                            if (HolidayJson["Holiday"]["TravellerType"].ToList().Count != 0)
+                            {
+
+                                if (HolidayJson["Holiday"]["TravellerType"]["SubType"] != null)
+                                    totalSubType = HolidayJson["Holiday"]["TravellerType"]["SubType"].ToList().Count;
+                                for (int j = 0; j < totalSubType; j++)
+                                {
+                                    lst.Add(new SubType()
+                                    {
+                                        Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"]["SubType"][j])
+                                    });
+                                }
+                                objHolidayModel.TravellerType.Add(new HolidayTypes()
+                                {
+                                    Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"]["Type"]),
+                                    SubType = lst
+                                });
+                            }
+                        }
+                        else
+                        {
+                            objHolidayModel.TravellerType = new List<HolidayTypes>();
+
+                            int TotalTravellerType = HolidayJson["Holiday"]["TravellerType"].ToList().Count;
+                            for (int k = 0; k < TotalTravellerType; k++)
+                            {
+                                HolidayTypes objHolidayTypes = new HolidayTypes();
+                                objHolidayTypes.SubType = new List<SubType>();
+                                objHolidayTypes.Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"][k]["Type"]);
+                                if (HolidayJson["Holiday"]["TravellerType"][k]["SubType"] != null && HolidayJson["Holiday"]["TravellerType"][k]["SubType"].ToList().Count > 0)
+                                {
+                                    int TotalSubTypes = HolidayJson["Holiday"]["TravellerType"][k]["SubType"].ToList().Count;
+                                    for (int p = 0; p < TotalSubTypes; p++)
+                                    {
+                                        objHolidayTypes.SubType.Add(new SubType() { Type = Convert.ToString(HolidayJson["Holiday"]["TravellerType"][k]["SubType"][p]) });
+                                    }
+                                }
+                                objHolidayModel.TravellerType.Add(objHolidayTypes);
+                            }
+                        }
+                    }
                     #endregion
 
                     #region Interests
@@ -5544,13 +6385,57 @@ namespace DAL
                     #endregion
 
                     #region ComfortLevel
-                    if (HolidayJson["Holiday"]["ComfortLevel"] != null)
+                    if (HolidayJson["Holiday"]["PaceOfHoliday"] != null && HolidayJson["Holiday"]["ComfortLevel"].ToList().Count > 0)
                     {
-                        objHolidayModel.ComfortLevel = new List<string>();
+
                         int totalComfortLevel = HolidayJson["Holiday"]["ComfortLevel"].ToList().Count;
-                        for (int f = 0; f < totalComfortLevel; f++)
+
+                        objHolidayModel.ComfortLevel = new List<ComfortLevel>();
+                        var TypeOfComfortLevel = HolidayJson["Holiday"]["ComfortLevel"].GetType();
+                        if (TypeOfComfortLevel.Name.ToUpper() != "JARRAY")
                         {
-                            objHolidayModel.ComfortLevel.Add(Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"][f]));
+                            // It is a single object
+                            objHolidayModel.ComfortLevel.Add(new ComfortLevel()
+                            {
+                                Level = Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"]["Level"]),
+                            });
+                        }
+                        else
+                        {
+                            for (int f = 0; f < totalComfortLevel; f++)
+                            {
+                                objHolidayModel.ComfortLevel.Add(new ComfortLevel()
+                                {
+                                    Level = Convert.ToString(HolidayJson["Holiday"]["ComfortLevel"][f]["Level"])
+                                });
+                            }
+                        }
+                    }
+                    #endregion
+
+                    #region PaceOfHoliday
+                    if (HolidayJson["Holiday"]["PaceOfHoliday"] != null && HolidayJson["Holiday"]["PaceOfHoliday"].ToList().Count > 0)
+                    {
+                        int totalPaceOfHoliday = HolidayJson["Holiday"]["PaceOfHoliday"].ToList().Count;
+                        objHolidayModel.PaceOfHoliday = new List<PaceOfHoliday>();
+                        var TypeOfPaceOfHoliday = HolidayJson["Holiday"]["PaceOfHoliday"].GetType();
+                        if (TypeOfPaceOfHoliday.Name.ToUpper() != "JARRAY")
+                        {
+                            // It is a single object
+                            objHolidayModel.PaceOfHoliday.Add(new PaceOfHoliday()
+                            {
+                                Pace = Convert.ToString(HolidayJson["Holiday"]["PaceOfHoliday"]["Pace"]),
+                            });
+                        }
+                        else
+                        {
+                            for (int f = 0; f < totalPaceOfHoliday; f++)
+                            {
+                                objHolidayModel.PaceOfHoliday.Add(new PaceOfHoliday()
+                                {
+                                    Pace = Convert.ToString(HolidayJson["Holiday"]["PaceOfHoliday"][f]["Pace"])
+                                });
+                            }
                         }
                     }
                     #endregion
@@ -7732,156 +8617,325 @@ namespace DAL
 
                             for (int n = 0; n < TotalPreTourPrice; n++)
                             {
-                                PreTourPrice objPreTourPrice = new PreTourPrice();
-                                objPreTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Currency"]);
-                                objPreTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"]);
-                                objPreTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ExtraBedding"]);
-                                objPreTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PersonType"]);
-                                objPreTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["RoomType"]);
-                                objPreTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["SupplierProductCode"]);
-
-                                #region PassengerRangeFrom
-                                double PassengerRangeFrom = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeFrom"])))
+                                if (HolidayJson["Holiday"]["PreTourPrice"][n].GetType().Name.ToUpper() == "JARRAY")
                                 {
-                                    if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeFrom"]), out PassengerRangeFrom))
+                                    int TotalPreTourPriceNodes = HolidayJson["Holiday"]["PreTourPrice"][n].ToList().Count;
+                                    for (int u = 0; u < TotalPreTourPriceNodes; u++)
                                     {
-                                        // Conversion Success
-                                        objPreTourPrice.PassengerRangeFrom = PassengerRangeFrom;
-                                    }
-                                }
-                                #endregion
+                                        PreTourPrice objPreTourPrice = new PreTourPrice();
 
-                                #region PassengerRangeTo
-                                double PassengerRangeTo = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeTo"])))
-                                {
-                                    if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeTo"]), out PassengerRangeTo))
-                                    {
-                                        // Conversion Success
-                                        objPreTourPrice.PassengerRangeTo = PassengerRangeTo;
-                                    }
-                                }
-                                #endregion
-
-                                #region ValidFrom
-                                DateTime ValidFrom;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidFrom"])))
-                                {
-                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidFrom"]), out ValidFrom))
-                                    {
-                                        // Conversion Success
-                                        objPreTourPrice.ValidFrom = ValidFrom;
-                                    }
-                                }
-                                #endregion
-
-                                #region ValidTo
-                                DateTime ValidTo;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidTo"])))
-                                {
-                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidTo"]), out ValidTo))
-                                    {
-                                        // Conversion Success
-                                        objPreTourPrice.ValidTo = ValidTo;
-                                    }
-                                }
-                                #endregion
-
-                                #region Amount
-                                double Amount = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Amount"])))
-                                {
-                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Amount"]), out Amount))
-                                    {
-                                        objPreTourPrice.Amount = Amount;
-                                    }
-                                }
-                                #endregion
-
-                                #region AgeFrom
-                                int AgeFrom = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeFrom"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeFrom"]), out AgeFrom))
-                                    {
-                                        objPreTourPrice.AgeFrom = AgeFrom;
-                                    }
-                                }
-                                #endregion
-
-                                #region AgeTo
-                                int AgeTo = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeTo"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeTo"]), out AgeTo))
-                                    {
-                                        objPreTourPrice.AgeTo = AgeTo;
-                                    }
-                                }
-                                #endregion
-
-                                #region DiscountAmount
-                                int DiscountAmount = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"]), out DiscountAmount))
-                                    {
-                                        objPreTourPrice.DiscountAmount = DiscountAmount;
-                                    }
-                                }
-                                #endregion
-
-                                #region Tax
-                                if (HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"] != null)
-                                {
-                                    objPreTourPrice.Tax = new List<TaxStructure>();
-                                    var TypeOfTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"].GetType();
-                                    if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
-                                    {
-                                        double TaxAmt = 0;
-                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxAmount"])))
+                                        objPreTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Currency"]);
+                                        objPreTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["DiscountAmount"]);
+                                        objPreTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["ExtraBedding"]);
+                                        objPreTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["PersonType"]);
+                                        objPreTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["RoomType"]);
+                                        objPreTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["SupplierProductCode"]);
+                                        #region PassengerRangeFrom
+                                        double PassengerRangeFrom = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["PassengerRangeFrom"])))
                                         {
-                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxAmount"]), out TaxAmt))
+                                            if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["PassengerRangeFrom"]), out PassengerRangeFrom))
                                             {
                                                 // Conversion Success
+                                                objPreTourPrice.PassengerRangeFrom = PassengerRangeFrom;
                                             }
                                         }
-                                        objPreTourPrice.Tax.Add(new TaxStructure()
+                                        #endregion
+
+                                        #region PassengerRangeTo
+                                        double PassengerRangeTo = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["PassengerRangeTo"])))
                                         {
-                                            TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxRate"]),
-                                            TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxType"]),
-                                            TaxAmount = TaxAmt
-                                        });
+                                            if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["PassengerRangeTo"]), out PassengerRangeTo))
+                                            {
+                                                // Conversion Success
+                                                objPreTourPrice.PassengerRangeTo = PassengerRangeTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region ValidFrom
+                                        DateTime ValidFrom;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["ValidFrom"])))
+                                        {
+                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["ValidFrom"]), out ValidFrom))
+                                            {
+                                                // Conversion Success
+                                                objPreTourPrice.ValidFrom = ValidFrom;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region ValidTo
+                                        DateTime ValidTo;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["ValidTo"])))
+                                        {
+                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["ValidTo"]), out ValidTo))
+                                            {
+                                                // Conversion Success
+                                                objPreTourPrice.ValidTo = ValidTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region Amount
+                                        double Amount = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Amount"])))
+                                        {
+                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Amount"]), out Amount))
+                                            {
+                                                objPreTourPrice.Amount = Amount;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region AgeFrom
+                                        int AgeFrom = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["AgeFrom"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["AgeFrom"]), out AgeFrom))
+                                            {
+                                                objPreTourPrice.AgeFrom = AgeFrom;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region AgeTo
+                                        int AgeTo = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["AgeTo"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["AgeTo"]), out AgeTo))
+                                            {
+                                                objPreTourPrice.AgeTo = AgeTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region DiscountAmount
+                                        int DiscountAmount = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["DiscountAmount"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["DiscountAmount"]), out DiscountAmount))
+                                            {
+                                                objPreTourPrice.DiscountAmount = DiscountAmount;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region Tax
+                                        if (HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"] != null)
+                                        {
+                                            objPreTourPrice.Tax = new List<TaxStructure>();
+                                            var TypeOfTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"].GetType();
+                                            if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
+                                            {
+                                                double TaxAmt = 0;
+                                                if (HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"].ToList().Count != 0
+                                                    && !string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"]["TaxAmount"])))
+                                                {
+                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"]["TaxAmount"]), out TaxAmt))
+                                                    {
+                                                        // Conversion Success
+                                                    }
+                                                }
+                                                if (HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"].ToList().Count != 0)
+                                                {
+                                                    objPreTourPrice.Tax.Add(new TaxStructure()
+                                                    {
+                                                        TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"]["TaxRate"]),
+                                                        TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"]["TaxType"]),
+                                                        TaxAmount = TaxAmt
+                                                    });
+                                                }
+                                            }
+                                            else
+                                            {  // it is array
+                                                int totalTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"].ToList().Count;
+                                                for (int p = 0; p < totalTaxNodes; p++)
+                                                {
+                                                    double TaxAmt = 0;
+                                                    if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"][p]["TaxAmount"])))
+                                                    {
+                                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                        {
+                                                            // Conversion Success
+                                                        }
+                                                    }
+                                                    if ((HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"][p].ToList().Count != 0))
+                                                    {
+                                                        objPreTourPrice.Tax.Add(new TaxStructure()
+                                                        {
+                                                            TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"][p]["TaxRate"]),
+                                                            TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n][u]["Tax"][p]["TaxType"]),
+                                                            TaxAmount = TaxAmt
+                                                        });
+                                                    }
+                                                }
+
+                                            }
+
+
+                                        }
+                                        #endregion
+                                        objHolidayModel.PreTourPrice.Add(objPreTourPrice);
+
+
                                     }
-                                    else
-                                    {  // it is array
-                                        int totalTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"].ToList().Count;
-                                        for (int p = 0; p < totalTaxNodes; p++)
+
+                                }
+                                else
+                                {
+                                    PreTourPrice objPreTourPrice = new PreTourPrice();
+                                    objPreTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Currency"]);
+                                    objPreTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"]);
+                                    objPreTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ExtraBedding"]);
+                                    objPreTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PersonType"]);
+                                    objPreTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["RoomType"]);
+                                    objPreTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["SupplierProductCode"]);
+
+                                    #region PassengerRangeFrom
+                                    double PassengerRangeFrom = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeFrom"])))
+                                    {
+                                        if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeFrom"]), out PassengerRangeFrom))
+                                        {
+                                            // Conversion Success
+                                            objPreTourPrice.PassengerRangeFrom = PassengerRangeFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region PassengerRangeTo
+                                    double PassengerRangeTo = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeTo"])))
+                                    {
+                                        if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["PassengerRangeTo"]), out PassengerRangeTo))
+                                        {
+                                            // Conversion Success
+                                            objPreTourPrice.PassengerRangeTo = PassengerRangeTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region ValidFrom
+                                    DateTime ValidFrom;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidFrom"])))
+                                    {
+                                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidFrom"]), out ValidFrom))
+                                        {
+                                            // Conversion Success
+                                            objPreTourPrice.ValidFrom = ValidFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region ValidTo
+                                    DateTime ValidTo;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidTo"])))
+                                    {
+                                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["ValidTo"]), out ValidTo))
+                                        {
+                                            // Conversion Success
+                                            objPreTourPrice.ValidTo = ValidTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region Amount
+                                    double Amount = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Amount"])))
+                                    {
+                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Amount"]), out Amount))
+                                        {
+                                            objPreTourPrice.Amount = Amount;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region AgeFrom
+                                    int AgeFrom = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeFrom"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeFrom"]), out AgeFrom))
+                                        {
+                                            objPreTourPrice.AgeFrom = AgeFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region AgeTo
+                                    int AgeTo = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeTo"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["AgeTo"]), out AgeTo))
+                                        {
+                                            objPreTourPrice.AgeTo = AgeTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region DiscountAmount
+                                    int DiscountAmount = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["DiscountAmount"]), out DiscountAmount))
+                                        {
+                                            objPreTourPrice.DiscountAmount = DiscountAmount;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region Tax
+                                    if (HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"] != null)
+                                    {
+                                        objPreTourPrice.Tax = new List<TaxStructure>();
+                                        var TypeOfTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"].GetType();
+                                        if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
                                         {
                                             double TaxAmt = 0;
-                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxAmount"])))
+                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxAmount"])))
                                             {
-                                                if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxAmount"]), out TaxAmt))
                                                 {
                                                     // Conversion Success
                                                 }
                                             }
                                             objPreTourPrice.Tax.Add(new TaxStructure()
                                             {
-                                                TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxRate"]),
-                                                TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxType"]),
+                                                TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxRate"]),
+                                                TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"]["TaxType"]),
                                                 TaxAmount = TaxAmt
                                             });
                                         }
+                                        else
+                                        {  // it is array
+                                            int totalTaxNodes = HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"].ToList().Count;
+                                            for (int p = 0; p < totalTaxNodes; p++)
+                                            {
+                                                double TaxAmt = 0;
+                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxAmount"])))
+                                                {
+                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                    {
+                                                        // Conversion Success
+                                                    }
+                                                }
+                                                objPreTourPrice.Tax.Add(new TaxStructure()
+                                                {
+                                                    TaxRate = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxRate"]),
+                                                    TaxType = Convert.ToString(HolidayJson["Holiday"]["PreTourPrice"][n]["Tax"][p]["TaxType"]),
+                                                    TaxAmount = TaxAmt
+                                                });
+                                            }
+
+                                        }
+
 
                                     }
+                                    #endregion
 
-
+                                    objHolidayModel.PreTourPrice.Add(objPreTourPrice);
                                 }
-                                #endregion
-
-                                objHolidayModel.PreTourPrice.Add(objPreTourPrice);
                             }
                         }
 
@@ -8053,156 +9107,327 @@ namespace DAL
 
                             for (int n = 0; n < TotalPreTourPrice; n++)
                             {
-                                PreTourPrice objPostTourPrice = new PreTourPrice();
-                                objPostTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Currency"]);
-                                objPostTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"]);
-                                objPostTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ExtraBedding"]);
-                                objPostTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PersonType"]);
-                                objPostTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["RoomType"]);
-                                objPostTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["SupplierProductCode"]);
 
-                                #region PassengerRangeFrom
-                                double PassengerRangeFrom = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeFrom"])))
+                                if (HolidayJson["Holiday"]["PostTourPrice"][n].GetType().Name.ToUpper() == "JARRAY")
                                 {
-                                    if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeFrom"]), out PassengerRangeFrom))
-                                    {
-                                        // Conversion Success
-                                        objPostTourPrice.PassengerRangeFrom = PassengerRangeFrom;
-                                    }
-                                }
-                                #endregion
+                                    int totalPostTourPrice = HolidayJson["Holiday"]["PostTourPrice"][n].ToList().Count;
 
-                                #region PassengerRangeTo
-                                double PassengerRangeTo = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeTo"])))
-                                {
-                                    if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeTo"]), out PassengerRangeTo))
+                                    for (int q = 0; q < totalPostTourPrice; q++)
                                     {
-                                        // Conversion Success
-                                        objPostTourPrice.PassengerRangeTo = PassengerRangeTo;
-                                    }
-                                }
-                                #endregion
+                                        PreTourPrice objPostTourPrice = new PreTourPrice();
+                                        objPostTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Currency"]);
+                                        objPostTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["DiscountAmount"]);
+                                        objPostTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["ExtraBedding"]);
+                                        objPostTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["PersonType"]);
+                                        objPostTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["RoomType"]);
+                                        objPostTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["SupplierProductCode"]);
 
-                                #region ValidFrom
-                                DateTime ValidFrom;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidFrom"])))
-                                {
-                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidFrom"]), out ValidFrom))
-                                    {
-                                        // Conversion Success
-                                        objPostTourPrice.ValidFrom = ValidFrom;
-                                    }
-                                }
-                                #endregion
-
-                                #region ValidTo
-                                DateTime ValidTo;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidTo"])))
-                                {
-                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidTo"]), out ValidTo))
-                                    {
-                                        // Conversion Success
-                                        objPostTourPrice.ValidTo = ValidTo;
-                                    }
-                                }
-                                #endregion
-
-                                #region Amount
-                                double Amount = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Amount"])))
-                                {
-                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Amount"]), out Amount))
-                                    {
-                                        objPostTourPrice.Amount = Amount;
-                                    }
-                                }
-                                #endregion
-
-                                #region AgeFrom
-                                int AgeFrom = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeFrom"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeFrom"]), out AgeFrom))
-                                    {
-                                        objPostTourPrice.AgeFrom = AgeFrom;
-                                    }
-                                }
-                                #endregion
-
-                                #region AgeTo
-                                int AgeTo = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeTo"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeTo"]), out AgeTo))
-                                    {
-                                        objPostTourPrice.AgeTo = AgeTo;
-                                    }
-                                }
-                                #endregion
-
-                                #region DiscountAmount
-                                int DiscountAmount = 0;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"])))
-                                {
-                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"]), out DiscountAmount))
-                                    {
-                                        objPostTourPrice.DiscountAmount = DiscountAmount;
-                                    }
-                                }
-                                #endregion
-
-                                #region Tax
-                                if (HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"] != null)
-                                {
-                                    objPostTourPrice.Tax = new List<TaxStructure>();
-                                    var TypeOfTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"].GetType();
-                                    if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
-                                    {
-                                        double TaxAmt = 0;
-                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxAmount"])))
+                                        #region PassengerRangeFrom
+                                        double PassengerRangeFrom = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["PassengerRangeFrom"])))
                                         {
-                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxAmount"]), out TaxAmt))
+                                            if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["PassengerRangeFrom"]), out PassengerRangeFrom))
                                             {
                                                 // Conversion Success
+                                                objPostTourPrice.PassengerRangeFrom = PassengerRangeFrom;
                                             }
                                         }
-                                        objPostTourPrice.Tax.Add(new TaxStructure()
+                                        #endregion
+
+                                        #region PassengerRangeTo
+                                        double PassengerRangeTo = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["PassengerRangeTo"])))
                                         {
-                                            TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxRate"]),
-                                            TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxType"]),
-                                            TaxAmount = TaxAmt
-                                        });
+                                            if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["PassengerRangeTo"]), out PassengerRangeTo))
+                                            {
+                                                // Conversion Success
+                                                objPostTourPrice.PassengerRangeTo = PassengerRangeTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region ValidFrom
+                                        DateTime ValidFrom;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["ValidFrom"])))
+                                        {
+                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["ValidFrom"]), out ValidFrom))
+                                            {
+                                                // Conversion Success
+                                                objPostTourPrice.ValidFrom = ValidFrom;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region ValidTo
+                                        DateTime ValidTo;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["ValidTo"])))
+                                        {
+                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["ValidTo"]), out ValidTo))
+                                            {
+                                                // Conversion Success
+                                                objPostTourPrice.ValidTo = ValidTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region Amount
+                                        double Amount = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Amount"])))
+                                        {
+                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Amount"]), out Amount))
+                                            {
+                                                objPostTourPrice.Amount = Amount;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region AgeFrom
+                                        int AgeFrom = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["AgeFrom"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["AgeFrom"]), out AgeFrom))
+                                            {
+                                                objPostTourPrice.AgeFrom = AgeFrom;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region AgeTo
+                                        int AgeTo = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["AgeTo"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["AgeTo"]), out AgeTo))
+                                            {
+                                                objPostTourPrice.AgeTo = AgeTo;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region DiscountAmount
+                                        int DiscountAmount = 0;
+                                        if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["DiscountAmount"])))
+                                        {
+                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["DiscountAmount"]), out DiscountAmount))
+                                            {
+                                                objPostTourPrice.DiscountAmount = DiscountAmount;
+                                            }
+                                        }
+                                        #endregion
+
+                                        #region Tax
+                                        if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"] != null)
+                                        {
+                                            objPostTourPrice.Tax = new List<TaxStructure>();
+                                            var TypeOfTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"].GetType();
+                                            if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
+                                            {
+                                                double TaxAmt = 0;
+                                                if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"].ToList().Count != 0 &&
+                                                    !string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxAmount"])))
+                                                {
+                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxAmount"]), out TaxAmt))
+                                                    {
+                                                        // Conversion Success
+                                                    }
+                                                }
+                                                if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"].ToList().Count != 0)
+                                                {
+                                                    objPostTourPrice.Tax.Add(new TaxStructure()
+                                                    {
+                                                        TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxRate"]),
+                                                        TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxType"]),
+                                                        TaxAmount = TaxAmt
+                                                    }); 
+                                                }
+                                            }
+                                            else
+                                            {  // it is array
+                                                int totalTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"].ToList().Count;
+                                                for (int p = 0; p < totalTaxNodes; p++)
+                                                {
+                                                    double TaxAmt = 0;
+                                                    if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxAmount"])))
+                                                    {
+                                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                        {
+                                                            // Conversion Success
+                                                        }
+                                                    }
+                                                    if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p].ToList().Count != 0 )
+                                                    {
+                                                        objPostTourPrice.Tax.Add(new TaxStructure()
+                                                        {
+                                                            TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxRate"]),
+                                                            TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxType"]),
+                                                            TaxAmount = TaxAmt
+                                                        }); 
+                                                    }
+                                                }
+
+                                            }
+
+
+                                        }
+                                        #endregion
+
+                                        objHolidayModel.PostTourPrice.Add(objPostTourPrice);
                                     }
-                                    else
-                                    {  // it is array
-                                        int totalTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"].ToList().Count;
-                                        for (int p = 0; p < totalTaxNodes; p++)
+
+                                }
+                                else
+                                {
+
+                                    PreTourPrice objPostTourPrice = new PreTourPrice();
+                                    objPostTourPrice.Currency = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Currency"]);
+                                    objPostTourPrice.DiscountName = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"]);
+                                    objPostTourPrice.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ExtraBedding"]);
+                                    objPostTourPrice.PersonType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PersonType"]);
+                                    objPostTourPrice.RoomType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["RoomType"]);
+                                    objPostTourPrice.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["SupplierProductCode"]);
+
+                                    #region PassengerRangeFrom
+                                    double PassengerRangeFrom = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeFrom"])))
+                                    {
+                                        if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeFrom"]), out PassengerRangeFrom))
+                                        {
+                                            // Conversion Success
+                                            objPostTourPrice.PassengerRangeFrom = PassengerRangeFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region PassengerRangeTo
+                                    double PassengerRangeTo = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeTo"])))
+                                    {
+                                        if (Double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["PassengerRangeTo"]), out PassengerRangeTo))
+                                        {
+                                            // Conversion Success
+                                            objPostTourPrice.PassengerRangeTo = PassengerRangeTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region ValidFrom
+                                    DateTime ValidFrom;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidFrom"])))
+                                    {
+                                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidFrom"]), out ValidFrom))
+                                        {
+                                            // Conversion Success
+                                            objPostTourPrice.ValidFrom = ValidFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region ValidTo
+                                    DateTime ValidTo;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidTo"])))
+                                    {
+                                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["ValidTo"]), out ValidTo))
+                                        {
+                                            // Conversion Success
+                                            objPostTourPrice.ValidTo = ValidTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region Amount
+                                    double Amount = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Amount"])))
+                                    {
+                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Amount"]), out Amount))
+                                        {
+                                            objPostTourPrice.Amount = Amount;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region AgeFrom
+                                    int AgeFrom = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeFrom"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeFrom"]), out AgeFrom))
+                                        {
+                                            objPostTourPrice.AgeFrom = AgeFrom;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region AgeTo
+                                    int AgeTo = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeTo"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["AgeTo"]), out AgeTo))
+                                        {
+                                            objPostTourPrice.AgeTo = AgeTo;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region DiscountAmount
+                                    int DiscountAmount = 0;
+                                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"])))
+                                    {
+                                        if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["DiscountAmount"]), out DiscountAmount))
+                                        {
+                                            objPostTourPrice.DiscountAmount = DiscountAmount;
+                                        }
+                                    }
+                                    #endregion
+
+                                    #region Tax
+                                    if (HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"] != null)
+                                    {
+                                        objPostTourPrice.Tax = new List<TaxStructure>();
+                                        var TypeOfTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"].GetType();
+                                        if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
                                         {
                                             double TaxAmt = 0;
-                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxAmount"])))
+                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxAmount"])))
                                             {
-                                                if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxAmount"]), out TaxAmt))
                                                 {
                                                     // Conversion Success
                                                 }
                                             }
                                             objPostTourPrice.Tax.Add(new TaxStructure()
                                             {
-                                                TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxRate"]),
-                                                TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxType"]),
+                                                TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxRate"]),
+                                                TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"]["TaxType"]),
                                                 TaxAmount = TaxAmt
                                             });
                                         }
+                                        else
+                                        {  // it is array
+                                            int totalTaxNodes = HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"].ToList().Count;
+                                            for (int p = 0; p < totalTaxNodes; p++)
+                                            {
+                                                double TaxAmt = 0;
+                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxAmount"])))
+                                                {
+                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxAmount"]), out TaxAmt))
+                                                    {
+                                                        // Conversion Success
+                                                    }
+                                                }
+                                                objPostTourPrice.Tax.Add(new TaxStructure()
+                                                {
+                                                    TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxRate"]),
+                                                    TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n]["Tax"][p]["TaxType"]),
+                                                    TaxAmount = TaxAmt
+                                                });
+                                            }
+
+                                        }
+
 
                                     }
+                                    #endregion
 
-
+                                    objHolidayModel.PostTourPrice.Add(objPostTourPrice);
                                 }
-                                #endregion
-
-                                objHolidayModel.PostTourPrice.Add(objPostTourPrice);
                             }
                         }
 
@@ -8210,7 +9435,35 @@ namespace DAL
 
                     #endregion
 
-                    HolidayMappingCollection.InsertOne(objHolidayModel);
+                    #region Update
+
+                    //var ObjHolidayMapping = searchResult.Where(x => x.SupplierName.ToLower() == objHolidayModel.SupplierName.ToLower() && x.SupplierProductCode == objHolidayModel.SupplierProductCode).ToList().FirstOrDefault();
+                    var ObjHolidayMapping = searchResult.Where(x => x.NakshatraHolidayId.ToLower() == objHolidayModel.NakshatraHolidayId).ToList().FirstOrDefault();
+                    if (ObjHolidayMapping != null)
+                    {// it means its a old record so assign Nakid and classificationattributes to our model.
+                        objHolidayModel.NakshatraHolidayId = ObjHolidayMapping.NakshatraHolidayId;
+                        objHolidayModel.TypeOfHoliday = ObjHolidayMapping.TypeOfHoliday;
+                        objHolidayModel.TravelFrequency = ObjHolidayMapping.TravelFrequency;
+                        objHolidayModel.PaceOfHoliday = ObjHolidayMapping.PaceOfHoliday;
+                        objHolidayModel.Rating = ObjHolidayMapping.Rating;
+                        objHolidayModel.ComfortLevel = ObjHolidayMapping.ComfortLevel;
+                        objHolidayModel.StayType = ObjHolidayMapping.StayType;
+                        objHolidayModel.Interests = ObjHolidayMapping.Interests;
+                        objHolidayModel.TravellerType = ObjHolidayMapping.TravellerType;
+                        objHolidayModel.Collections = ObjHolidayMapping.Collections;
+
+                        if (ObjHolidayMapping.ClassificationAttributes != null && ObjHolidayMapping.ClassificationAttributes.Count > 0)
+                        {
+                            objHolidayModel.ClassificationAttributes = ObjHolidayMapping.ClassificationAttributes;
+                        }
+                    }
+
+                    #endregion
+
+                    // HolidayMappingCollection.InsertOne(objHolidayModel);
+                    var filter1 = Builders<HolidayModel>.Filter.Eq(c => c.SupplierProductCode, objHolidayModel.SupplierProductCode);
+                    filter1 = filter1 & Builders<HolidayModel>.Filter.Eq(c => c.SupplierName, objHolidayModel.SupplierName);
+                    HolidayMappingCollection.ReplaceOneAsync(filter1, objHolidayModel, new UpdateOptions { IsUpsert = true });
 
                     counter++;
                     UpdateDistLogInfo(Logid, PushStatus.RUNNNING, CollecionHolidayMappingsFiltered.Count, counter, Logid.ToString(), "HOLIDAY", "MAPPING");
