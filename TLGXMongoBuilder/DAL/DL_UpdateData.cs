@@ -706,8 +706,8 @@ namespace DAL
                     {
                         _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<BsonDocument>("Supplier");
-                        var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code);
-                        var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName)
+                        var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code.ToUpper());
+                        var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName.ToUpper())
                             .Set("SupplierOwner", Supplier.SupplierOwner)
                             .Set("SupplierType", Supplier.SupplierType);
                         var result = collection.UpdateOne(filter, update);
@@ -731,7 +731,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<BsonDocument>("Supplier");
-                var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code);
+                var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code.ToUpper());
                 var result = collection.DeleteOne(filter);
                 filter = null;
                 collection = null;
