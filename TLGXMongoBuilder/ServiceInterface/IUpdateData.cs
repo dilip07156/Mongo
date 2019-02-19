@@ -52,13 +52,8 @@ namespace ServiceContracts
         #region City Mapping
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Insert/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Insert_CityMapping_ByMapId(string MapId);
-
-        [OperationContract]
-        [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_CityMapping_ByMapId(string MapId);
+        [WebGet(UriTemplate = "Upsert/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_CityMapping_ByMapId(string MapId);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]

@@ -65,19 +65,13 @@ namespace BAL
         #endregion
 
         #region City Mapping
-        public void Insert_CityMapping_ByMapId(string MapId)
-        {
-            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
-            {
-                DL.Insert_CityMapping_ByMapId(MapId);
-            }
-        }
 
-        public void Update_CityMapping_ByMapId(string MapId)
+        public void Upsert_CityMapping_ByMapId(string MapId)
         {
             using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
             {
-                DL.Update_CityMapping_ByMapId(MapId);
+                var mapId = Convert.ToInt32(MapId);
+                DL.Upsert_CityMapping_ByMapId(mapId);
             }
         }
 
@@ -129,7 +123,7 @@ namespace BAL
         {
             using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
             {
-                DL.Update_CountryMaster_ByCode(Code,OldCode);
+                DL.Update_CountryMaster_ByCode(Code, OldCode);
             }
         }
 

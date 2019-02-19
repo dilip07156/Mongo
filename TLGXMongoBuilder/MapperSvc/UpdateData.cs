@@ -69,19 +69,11 @@ namespace MapperSvc
         #endregion
 
         #region City Mapping
-        public void Insert_CityMapping_ByMapId(string MapId)
+        public void Upsert_CityMapping_ByMapId(string MapId)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Insert_CityMapping_ByMapId(MapId);
-            }
-        }
-
-        public void Update_CityMapping_ByMapId(string MapId)
-        {
-            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
-            {
-                BL.Update_CityMapping_ByMapId(MapId);
+                BL.Upsert_CityMapping_ByMapId(MapId);
             }
         }
 
