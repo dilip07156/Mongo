@@ -565,10 +565,10 @@ namespace DAL
                                     where s.Code == Code
                                     select new
                                     {
-                                        SupplierName = s.Name,
-                                        SupplierCode = s.Code,
-                                        SupplierType = s.SupplierType ?? string.Empty,
-                                        SupplierOwner = s.SupplierOwner ?? string.Empty
+                                        SupplierName = s.Name.ToUpper(),
+                                        SupplierCode = s.Code.ToUpper(),
+                                        SupplierType = s.SupplierType.ToUpper() ?? string.Empty,
+                                        SupplierOwner = s.SupplierOwner.ToUpper() ?? string.Empty
                                     }).FirstOrDefault();
 
 
@@ -610,10 +610,10 @@ namespace DAL
                                     where s.Code == Code
                                     select new
                                     {
-                                        SupplierName = s.Name,
-                                        SupplierCode = s.Code,
-                                        SupplierType = s.SupplierType ?? string.Empty,
-                                        SupplierOwner = s.SupplierOwner ?? string.Empty
+                                        SupplierName = s.Name.ToUpper(),
+                                        SupplierCode = s.Code.ToUpper(),
+                                        SupplierType = s.SupplierType.ToUpper() ?? string.Empty,
+                                        SupplierOwner = s.SupplierOwner.ToUpper() ?? string.Empty
                                     }).FirstOrDefault();
 
 
