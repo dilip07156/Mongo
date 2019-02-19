@@ -129,11 +129,11 @@ namespace MapperSvc
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Update_CountryMaster_ByCode(Code);
+                BL.Update_CountryMaster_ByCode(Code,OldCode);
             }
         }
 
@@ -168,6 +168,14 @@ namespace MapperSvc
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
                 BL.Delete_CityMaster_ByCode(Code);
+            }
+        }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Upsert_CityMaster_ByCode(Code);
             }
         }
         #endregion

@@ -125,11 +125,11 @@ namespace BAL
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
             {
-                DL.Update_CountryMaster_ByCode(Code);
+                DL.Update_CountryMaster_ByCode(Code,OldCode);
             }
         }
 
@@ -164,6 +164,14 @@ namespace BAL
             using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
             {
                 DL.Delete_CityMaster_ByCode(Code);
+            }
+        }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Upsert_CityMaster_ByCode(Code);
             }
         }
         #endregion
