@@ -190,6 +190,7 @@ namespace DAL
         {
             try
             {
+                int id = Convert.ToInt32(MapId);
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
                     _database = MongoDBHandler.mDatabase();
@@ -199,7 +200,7 @@ namespace DAL
                                    join city in context.m_CityMaster on cm.City_Id equals city.City_Id
                                    join country in context.m_CountryMaster on cm.Country_Id equals country.Country_Id
                                    join supplier in context.Suppliers on cm.Supplier_Id equals supplier.Supplier_Id
-                                   where (cm.Status ?? string.Empty) != "UNMAPPED" && cm.MapID == Convert.ToInt32(MapId)
+                                   where (cm.Status ?? string.Empty) != "UNMAPPED" && cm.MapID == id
                                    select new DataContracts.Mapping.DC_CityMapping
                                    {
                                        CityName = (city.Name ?? string.Empty),
