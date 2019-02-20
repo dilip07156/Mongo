@@ -181,11 +181,11 @@ namespace MapperSvc
             }
         }
 
-        public void Update_SupplierMaster_ByCode(string Code)
+        public void Upsert_SupplierMaster_ByCode(string Code)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Update_SupplierMaster_ByCode(Code);
+                BL.Upsert_SupplierMaster_ByCode(Code);
             }
         }
 

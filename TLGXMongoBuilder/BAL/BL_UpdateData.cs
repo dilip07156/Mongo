@@ -179,11 +179,11 @@ namespace BAL
             }
         }
 
-        public void Update_SupplierMaster_ByCode(string Code)
+        public void Upsert_SupplierMaster_ByCode(string Code)
         {
             using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
             {
-                DL.Update_SupplierMaster_ByCode(Code);
+                DL.Upsert_SupplierMaster_ByCode(Code);
             }
         }
 

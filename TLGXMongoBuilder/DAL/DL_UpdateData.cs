@@ -687,7 +687,7 @@ namespace DAL
             }
         }
 
-        public void Update_SupplierMaster_ByCode(string Code)
+        public void Upsert_SupplierMaster_ByCode(string Code)
         {
             try
             {

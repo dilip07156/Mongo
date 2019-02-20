@@ -125,8 +125,8 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/SupplierMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_SupplierMaster_ByCode(string Code);
+        [WebGet(UriTemplate = "Upsert/SupplierMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_SupplierMaster_ByCode(string Code);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
