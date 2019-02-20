@@ -186,55 +186,59 @@ namespace DAL
         #endregion
 
         #region City Mapping
-        public void Insert_CityMapping_ByMapId(string MapId)
+        public void Upsert_CityMapping_ByMapId(int MapId)
         {
             try
             {
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
-                    _database = MongoDBHandler.mDatabase();
-                    var collection = _database.GetCollection<DataContracts.Mapping.DC_CityMapping>("CityMapping");
-
                     var CityMap = (from cm in context.m_CityMapping
                                    join city in context.m_CityMaster on cm.City_Id equals city.City_Id
                                    join country in context.m_CountryMaster on cm.Country_Id equals country.Country_Id
                                    join supplier in context.Suppliers on cm.Supplier_Id equals supplier.Supplier_Id
-                                   where (cm.Status ?? string.Empty) != "UNMAPPED" && cm.MapID == Convert.ToInt32(MapId)
+                                   where (cm.Status ?? string.Empty) == "MAPPED" && cm.MapID == MapId
                                    select new DataContracts.Mapping.DC_CityMapping
                                    {
-                                       CityName = (city.Name ?? string.Empty),
-                                       CityCode = (city.Code ?? string.Empty),
-                                       SupplierCityCode = (cm.CityCode ?? string.Empty),
-                                       SupplierCityName = (cm.CityName ?? string.Empty),
-                                       SupplierName = supplier.Name,
-                                       SupplierCode = supplier.Code,
-                                       CountryCode = country.Code,
-                                       CountryName = country.Name,
-                                       SupplierCountryName = (cm.CountryName ?? string.Empty),
-                                       SupplierCountryCode = (cm.CountryCode ?? string.Empty),
+                                       CityName = (city.Name ?? string.Empty).ToUpper(),
+                                       CityCode = (city.Code ?? string.Empty).ToUpper(),
+                                       SupplierCityCode = (supplier.Code.ToUpper() == "CLEARTRIP") ? (cm.CityName ?? string.Empty).ToUpper() : (cm.CityCode ?? string.Empty).ToUpper(),
+                                       SupplierCityName = (cm.CityName ?? string.Empty).ToUpper(),
+                                       SupplierName = supplier.Name.ToUpper(),
+                                       SupplierCode = supplier.Code.ToUpper(),
+                                       CountryCode = country.Code.ToUpper(),
+                                       CountryName = country.Name.ToUpper(),
+                                       SupplierCountryName = (cm.CountryName ?? string.Empty).ToUpper(),
+                                       SupplierCountryCode = (cm.CountryCode ?? string.Empty).ToUpper(),
                                        MapId = cm.MapID ?? 0
                                    }).FirstOrDefault();
 
                     if (CityMap != null)
                     {
-                        collection.InsertOne(CityMap);
-                    }
-                    collection = null;
-                    _database = null;
-                }
-            }
-            catch (FaultException<DataContracts.ErrorNotifier> ex)
-            {
-                throw ex;
-            }
-        }
+                        var CityMapDetails = new BsonDocument
+                        {
+                            { "CountryName", CityMap.CountryName },
+                            { "CountryCode", CityMap.CountryCode },
+                            { "CityName", CityMap.CityName },
+                            { "CityCode", CityMap.CityCode },
+                            { "SupplierName", CityMap.SupplierName },
+                            { "SupplierCode", CityMap.SupplierCode },
+                            { "SupplierCountryName", CityMap.SupplierCountryName },
+                            { "SupplierCountryCode", CityMap.SupplierCountryCode },
+                            { "SupplierCityName", CityMap.SupplierCityName },
+                            { "SupplierCityCode", CityMap .SupplierCityCode},
+                            { "MapId", CityMap.MapId }
+                        };
 
-        public void Update_CityMapping_ByMapId(string MapId)
-        {
-            try
-            {
-                Delete_CityMapping_ByMapId(MapId);
-                Insert_CityMapping_ByMapId(MapId);
+                        _database = MongoDBHandler.mDatabase();
+                        var collection = _database.GetCollection<BsonDocument>("CityMapping");
+                        var filter = Builders<BsonDocument>.Filter.Eq("MapId", MapId);
+                        var result = collection.ReplaceOne(filter, CityMapDetails, new UpdateOptions { IsUpsert = true });
+
+                        filter = null;
+                        collection = null;
+                        _database = null;
+                    }
+                }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -396,23 +400,61 @@ namespace DAL
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             try
             {
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
+                    /*
                     var CountryName = (from c in context.m_CountryMaster
                                        where c.Code == Code
                                        select c.Name).FirstOrDefault();
+
+                    _database = MongoDBHandler.mDatabase();
+                    var collection1 = _database.GetCollection<BsonDocument>("CountryMaster");
+                    var filter1 = Builders<BsonDocument>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                    var result1 = collection1.Find(filter1).FirstOrDefault();
+
+                    //For insert Country Name and Country Code
+                    if(result1 == null)
+                    {
+                        Insert_CountryMaster_ByCode(Code);
+
+                        filter1 = null;
+                        collection1 = null;
+                        _database = null;
+                        return;
+                    }
+
                     if (CountryName != null)
                     {
                         _database = MongoDBHandler.mDatabase();
                         var collection = _database.GetCollection<BsonDocument>("CountryMaster");
-                        var filter = Builders<BsonDocument>.Filter.Eq("CountryCode", Code);
-                        var update = Builders<BsonDocument>.Update.Set("CountryName", CountryName);
+                        var filter = Builders<BsonDocument>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                        var update = Builders<BsonDocument>.Update.Set("CountryName", CountryName.ToUpper()).Set("CountryCode", Code.ToUpper());
                         var result = collection.UpdateOne(filter, update);
                         update = null;
+                        filter = null;
+                        collection = null;
+                        _database = null;
+                    }
+
+                    */
+                    var CountryName = (from c in context.m_CountryMaster
+                                       where c.Code == Code
+                                       select new DataContracts.Masters.DC_Country
+                                       {
+                                           CountryName = c.Name.Trim().ToUpper(),
+                                           CountryCode = c.Code.Trim().ToUpper(),
+                                       }).FirstOrDefault();
+
+                    if (CountryName != null)
+                    {
+                        _database = MongoDBHandler.mDatabase();
+                        var collection = _database.GetCollection<DataContracts.Masters.DC_Country>("CountryMaster");
+                        var filter = Builders<DataContracts.Masters.DC_Country>.Filter.Eq("CountryCode", OldCode.ToUpper());
+                        collection.ReplaceOne(filter, CountryName, new UpdateOptions { IsUpsert = true });
                         filter = null;
                         collection = null;
                         _database = null;
@@ -551,6 +593,52 @@ namespace DAL
                 throw ex;
             }
         }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            try
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    var City = (from city in context.m_CityMaster
+                                join country in context.m_CountryMaster on city.Country_Id equals country.Country_Id
+                                where city.Code == Code
+                                select new
+                                {
+                                    CountryName = country.Name,
+                                    CountryCode = country.Code ?? string.Empty,
+                                    CityName = city.Name,
+                                    CityCode = city.Code ?? string.Empty,
+                                    StateName = city.StateName ?? string.Empty,
+                                    StateCode = city.StateCode ?? string.Empty
+                                }).FirstOrDefault();
+
+                    if (City != null)
+                    {
+                        var document = new BsonDocument
+                        {
+                            { "CityName", City.CityName},
+                            { "CityCode", City.CityCode },
+                            { "StateName", City.StateName },
+                            { "StateCode", City.StateCode },
+                            { "CountryCode", City.CountryCode },
+                            { "CountryName", City.CountryName },
+                        };
+                        _database = MongoDBHandler.mDatabase();
+                        var collection = _database.GetCollection<BsonDocument>("CityMaster");
+                        var filter = Builders<BsonDocument>.Filter.Eq("CityCode", Code);
+                        var result = collection.ReplaceOne(filter, document, new UpdateOptions { IsUpsert = true });
+                        filter = null;
+                        collection = null;
+                        _database = null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
         #endregion
 
         #region Supplier Master
@@ -565,10 +653,10 @@ namespace DAL
                                     where s.Code == Code
                                     select new
                                     {
-                                        SupplierName = s.Name,
-                                        SupplierCode = s.Code,
-                                        SupplierType = s.SupplierType ?? string.Empty,
-                                        SupplierOwner = s.SupplierOwner ?? string.Empty
+                                        SupplierName = s.Name.ToUpper(),
+                                        SupplierCode = s.Code.ToUpper(),
+                                        SupplierType = s.SupplierType.ToUpper() ?? string.Empty,
+                                        SupplierOwner = s.SupplierOwner.ToUpper() ?? string.Empty
                                     }).FirstOrDefault();
 
 
@@ -579,10 +667,10 @@ namespace DAL
 
                         var document = new BsonDocument
                         {
-                            { "SupplierName", Supplier.SupplierName },
-                            { "SupplierCode", Supplier.SupplierCode },
-                            { "SupplierOwner", Supplier.SupplierOwner },
-                            { "SupplierType", Supplier.SupplierType }
+                            { "SupplierName", (Supplier.SupplierName ?? string.Empty).ToUpper() },
+                            { "SupplierCode", (Supplier.SupplierCode ?? string.Empty).ToUpper() },
+                            { "SupplierOwner", (Supplier.SupplierOwner ?? string.Empty).ToUpper() },
+                            { "SupplierType", (Supplier.SupplierType ?? string.Empty).ToUpper() }
                         };
 
                         collection.InsertOne(document);
@@ -599,7 +687,7 @@ namespace DAL
             }
         }
 
-        public void Update_SupplierMaster_ByCode(string Code)
+        public void Upsert_SupplierMaster_ByCode(string Code)
         {
             try
             {
@@ -610,10 +698,10 @@ namespace DAL
                                     where s.Code == Code
                                     select new
                                     {
-                                        SupplierName = s.Name,
-                                        SupplierCode = s.Code,
-                                        SupplierType = s.SupplierType ?? string.Empty,
-                                        SupplierOwner = s.SupplierOwner ?? string.Empty
+                                        SupplierName = s.Name.ToUpper(),
+                                        SupplierCode = s.Code.ToUpper(),
+                                        SupplierType = (s.SupplierType ?? string.Empty).ToUpper(),
+                                        SupplierOwner = (s.SupplierOwner ?? string.Empty).ToUpper()
                                     }).FirstOrDefault();
 
 
@@ -625,7 +713,7 @@ namespace DAL
                         var update = Builders<BsonDocument>.Update.Set("SupplierName", Supplier.SupplierName)
                             .Set("SupplierOwner", Supplier.SupplierOwner)
                             .Set("SupplierType", Supplier.SupplierType);
-                        var result = collection.UpdateOne(filter, update);
+                        var result = collection.UpdateOne(filter, update, new UpdateOptions { IsUpsert = true });
                         update = null;
                         filter = null;
                         collection = null;
@@ -646,7 +734,7 @@ namespace DAL
             {
                 _database = MongoDBHandler.mDatabase();
                 var collection = _database.GetCollection<BsonDocument>("Supplier");
-                var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code);
+                var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Code.ToUpper());
                 var result = collection.DeleteOne(filter);
                 filter = null;
                 collection = null;

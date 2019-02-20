@@ -69,19 +69,11 @@ namespace MapperSvc
         #endregion
 
         #region City Mapping
-        public void Insert_CityMapping_ByMapId(string MapId)
+        public void Upsert_CityMapping_ByMapId(string MapId)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Insert_CityMapping_ByMapId(MapId);
-            }
-        }
-
-        public void Update_CityMapping_ByMapId(string MapId)
-        {
-            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
-            {
-                BL.Update_CityMapping_ByMapId(MapId);
+                BL.Upsert_CityMapping_ByMapId(MapId);
             }
         }
 
@@ -129,11 +121,11 @@ namespace MapperSvc
             }
         }
 
-        public void Update_CountryMaster_ByCode(string Code)
+        public void Update_CountryMaster_ByCode(string Code, string OldCode)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Update_CountryMaster_ByCode(Code);
+                BL.Update_CountryMaster_ByCode(Code,OldCode);
             }
         }
 
@@ -170,6 +162,14 @@ namespace MapperSvc
                 BL.Delete_CityMaster_ByCode(Code);
             }
         }
+
+        public void Upsert_CityMaster_ByCode(string Code)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Upsert_CityMaster_ByCode(Code);
+            }
+        }
         #endregion
 
         #region Supplier Master
@@ -181,11 +181,11 @@ namespace MapperSvc
             }
         }
 
-        public void Update_SupplierMaster_ByCode(string Code)
+        public void Upsert_SupplierMaster_ByCode(string Code)
         {
             using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
             {
-                BL.Update_SupplierMaster_ByCode(Code);
+                BL.Upsert_SupplierMaster_ByCode(Code);
             }
         }
 

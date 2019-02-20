@@ -52,13 +52,8 @@ namespace ServiceContracts
         #region City Mapping
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Insert/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Insert_CityMapping_ByMapId(string MapId);
-
-        [OperationContract]
-        [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_CityMapping_ByMapId(string MapId);
+        [WebGet(UriTemplate = "Upsert/CityMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_CityMapping_ByMapId(string MapId);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -91,8 +86,8 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/CountryMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_CountryMaster_ByCode(string Code);
+        [WebGet(UriTemplate = "Update/CountryMaster/Code/{Code}/{OldCode}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Update_CountryMaster_ByCode(string Code, string OldCode);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -115,6 +110,11 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Delete/CityMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void Delete_CityMaster_ByCode(string Code);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Upsert/CityMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_CityMaster_ByCode(string Code);
         #endregion
 
         #region Supplier Master
@@ -125,8 +125,8 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Update/SupplierMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void Update_SupplierMaster_ByCode(string Code);
+        [WebGet(UriTemplate = "Upsert/SupplierMaster/Code/{Code}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_SupplierMaster_ByCode(string Code);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
