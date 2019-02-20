@@ -6070,7 +6070,7 @@ namespace DAL
                     objHolidayModel.ClassificationAttributes = new List<ClassificationAttributes>();
                     objHolidayModel.CallType = Convert.ToString(HolidayJson["CallType"]);
                     objHolidayModel.SupplierName = Convert.ToString(HolidayJson["SupplierName"]);
-                    objHolidayModel.NakshatraHolidayId = Convert.ToString(HolidayJson["Holiday"]["NakshatraHolidayId"]);
+                    objHolidayModel.NakshatraHolidayId = Convert.ToString(HolidayJson["Holiday"]["NakshatraHolidayId"]).ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
                     DateTime EffectiveFromDate;
@@ -8309,117 +8309,247 @@ namespace DAL
 
                                                     for (int v = 0; v < TotalProceDetails; v++)
                                                     {
-                                                        PriceDetailsStructure objPriceDetailsStructure = new PriceDetailsStructure();
-                                                        #region PassengerRangeFrom
-                                                        int PassengerRangeFrom = 0;
-                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeFrom"])))
+                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v].GetType().Name.ToUpper()!="JARRAY")
                                                         {
-                                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeFrom"]), out PassengerRangeFrom))
+                                                            PriceDetailsStructure objPriceDetailsStructure = new PriceDetailsStructure();
+                                                            #region PassengerRangeFrom
+                                                            int PassengerRangeFrom = 0;
+                                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeFrom"])))
                                                             {
-                                                                objPriceDetailsStructure.PassengerRangeFrom = PassengerRangeFrom;
-                                                            }
-                                                        }
-                                                        #endregion
-
-                                                        #region PassengerRangeTo
-                                                        int PassengerRangeTo = 0;
-                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeTo"])))
-                                                        {
-                                                            if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeTo"]), out PassengerRangeTo))
-                                                            {
-                                                                objPriceDetailsStructure.PassengerRangeTo = PassengerRangeTo;
-                                                            }
-                                                        }
-                                                        #endregion
-
-                                                        #region ValidFrom
-                                                        DateTime ValidFrom;
-                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidFrom"])))
-                                                        {
-                                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidFrom"]), out ValidFrom))
-                                                            {
-                                                                objPriceDetailsStructure.ValidFrom = ValidFrom;
-                                                            }
-                                                        }
-                                                        #endregion
-
-                                                        #region ValidTo
-                                                        DateTime ValidTo;
-                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidTo"])))
-                                                        {
-                                                            if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidTo"]), out ValidTo))
-                                                            {
-                                                                objPriceDetailsStructure.ValidTo = ValidTo;
-                                                            }
-                                                        }
-                                                        #endregion                                                      
-
-                                                        #region Amount
-                                                        double Amount;
-                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Amount"])))
-                                                        {
-                                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Amount"]), out Amount))
-                                                            {
-                                                                objPriceDetailsStructure.Amount = Amount;
-                                                            }
-                                                        }
-                                                        #endregion
-
-                                                        objPriceDetailsStructure.PersonType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PersonType"]);
-                                                        objPriceDetailsStructure.RoomType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["RoomType"]);
-                                                        objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ExtraBedding"]);
-                                                        objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ExtraBedding"]);
-                                                        objPriceDetailsStructure.Currency = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Currency"]);
-                                                        objPriceDetailsStructure.PriceDescription = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PriceDescription"]);
-
-                                                        #region Tax
-                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"] != null)
-                                                        {
-                                                            objPriceDetailsStructure.Tax = new List<TaxStructure>();
-                                                            var TypeOfTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"].GetType();
-                                                            if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
-                                                            {// it is single object
-                                                                double TaxAmount = 0;
-                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxAmount"])))
+                                                                if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeFrom"]), out PassengerRangeFrom))
                                                                 {
-                                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxAmount"]), out TaxAmount))
-                                                                    {
-                                                                        // Conversion Success
-                                                                    }
+                                                                    objPriceDetailsStructure.PassengerRangeFrom = PassengerRangeFrom;
                                                                 }
-                                                                objPriceDetailsStructure.Tax.Add(new TaxStructure()
-                                                                {
-                                                                    TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxRate"]),
-                                                                    TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxType"]),
-                                                                    TaxAmount = TaxAmount
-                                                                });
                                                             }
-                                                            else
-                                                            { // it is array of Tax
-                                                                int TotalTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"].ToList().Count;
-                                                                for (int b = 0; b < TotalTaxNodes; b++)
+                                                            #endregion
+
+                                                            #region PassengerRangeTo
+                                                            int PassengerRangeTo = 0;
+                                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeTo"])))
+                                                            {
+                                                                if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PassengerRangeTo"]), out PassengerRangeTo))
                                                                 {
+                                                                    objPriceDetailsStructure.PassengerRangeTo = PassengerRangeTo;
+                                                                }
+                                                            }
+                                                            #endregion
+
+                                                            #region ValidFrom
+                                                            DateTime ValidFrom;
+                                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidFrom"])))
+                                                            {
+                                                                if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidFrom"]), out ValidFrom))
+                                                                {
+                                                                    objPriceDetailsStructure.ValidFrom = ValidFrom;
+                                                                }
+                                                            }
+                                                            #endregion
+
+                                                            #region ValidTo
+                                                            DateTime ValidTo;
+                                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidTo"])))
+                                                            {
+                                                                if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ValidTo"]), out ValidTo))
+                                                                {
+                                                                    objPriceDetailsStructure.ValidTo = ValidTo;
+                                                                }
+                                                            }
+                                                            #endregion
+
+                                                            #region Amount
+                                                            double Amount;
+                                                            if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Amount"])))
+                                                            {
+                                                                if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Amount"]), out Amount))
+                                                                {
+                                                                    objPriceDetailsStructure.Amount = Amount;
+                                                                }
+                                                            }
+                                                            #endregion
+
+                                                            objPriceDetailsStructure.PersonType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PersonType"]);
+                                                            objPriceDetailsStructure.RoomType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["RoomType"]);
+                                                            objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ExtraBedding"]);
+                                                            objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["ExtraBedding"]);
+                                                            objPriceDetailsStructure.Currency = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Currency"]);
+                                                            objPriceDetailsStructure.PriceDescription = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["PriceDescription"]);
+
+                                                            #region Tax
+                                                            if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"] != null)
+                                                            {
+                                                                objPriceDetailsStructure.Tax = new List<TaxStructure>();
+                                                                var TypeOfTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"].GetType();
+                                                                if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
+                                                                {// it is single object
                                                                     double TaxAmount = 0;
-                                                                    if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxAmount"])))
+                                                                    if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxAmount"])))
                                                                     {
-                                                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxAmount"]), out TaxAmount))
+                                                                        if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxAmount"]), out TaxAmount))
                                                                         {
                                                                             // Conversion Success
                                                                         }
                                                                     }
                                                                     objPriceDetailsStructure.Tax.Add(new TaxStructure()
                                                                     {
-                                                                        TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxRate"]),
-                                                                        TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxType"]),
+                                                                        TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxRate"]),
+                                                                        TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"]["TaxType"]),
                                                                         TaxAmount = TaxAmount
                                                                     });
                                                                 }
+                                                                else
+                                                                { // it is array of Tax
+                                                                    int TotalTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"].ToList().Count;
+                                                                    for (int b = 0; b < TotalTaxNodes; b++)
+                                                                    {
+                                                                        double TaxAmount = 0;
+                                                                        if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxAmount"])))
+                                                                        {
+                                                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxAmount"]), out TaxAmount))
+                                                                            {
+                                                                                // Conversion Success
+                                                                            }
+                                                                        }
+                                                                        objPriceDetailsStructure.Tax.Add(new TaxStructure()
+                                                                        {
+                                                                            TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxRate"]),
+                                                                            TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v]["Tax"][b]["TaxType"]),
+                                                                            TaxAmount = TaxAmount
+                                                                        });
+                                                                    }
+                                                                }
                                                             }
+                                                            #endregion
+
+
+                                                            ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure); 
                                                         }
-                                                        #endregion
+                                                        else
+                                                        {
+                                                            int totalPriceDetails = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v].ToList().Count;
+
+                                                            for (int h = 0; h < totalPriceDetails; h++)
+                                                            {
+                                                                PriceDetailsStructure objPriceDetailsStructure = new PriceDetailsStructure();
+                                                                #region PassengerRangeFrom
+                                                                int PassengerRangeFrom = 0;
+                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PassengerRangeFrom"])))
+                                                                {
+                                                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PassengerRangeFrom"]), out PassengerRangeFrom))
+                                                                    {
+                                                                        objPriceDetailsStructure.PassengerRangeFrom = PassengerRangeFrom;
+                                                                    }
+                                                                }
+                                                                #endregion
+
+                                                                #region PassengerRangeTo
+                                                                int PassengerRangeTo = 0;
+                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PassengerRangeTo"])))
+                                                                {
+                                                                    if (int.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PassengerRangeTo"]), out PassengerRangeTo))
+                                                                    {
+                                                                        objPriceDetailsStructure.PassengerRangeTo = PassengerRangeTo;
+                                                                    }
+                                                                }
+                                                                #endregion
+
+                                                                #region ValidFrom
+                                                                DateTime ValidFrom;
+                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ValidFrom"])))
+                                                                {
+                                                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ValidFrom"]), out ValidFrom))
+                                                                    {
+                                                                        objPriceDetailsStructure.ValidFrom = ValidFrom;
+                                                                    }
+                                                                }
+                                                                #endregion
+
+                                                                #region ValidTo
+                                                                DateTime ValidTo;
+                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ValidTo"])))
+                                                                {
+                                                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ValidTo"]), out ValidTo))
+                                                                    {
+                                                                        objPriceDetailsStructure.ValidTo = ValidTo;
+                                                                    }
+                                                                }
+                                                                #endregion
+
+                                                                #region Amount
+                                                                double Amount;
+                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Amount"])))
+                                                                {
+                                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Amount"]), out Amount))
+                                                                    {
+                                                                        objPriceDetailsStructure.Amount = Amount;
+                                                                    }
+                                                                }
+                                                                #endregion
+
+                                                                objPriceDetailsStructure.PersonType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PersonType"]);
+                                                                objPriceDetailsStructure.RoomType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["RoomType"]);
+                                                                objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ExtraBedding"]);
+                                                                objPriceDetailsStructure.ExtraBedding = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["ExtraBedding"]);
+                                                                objPriceDetailsStructure.Currency = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Currency"]);
+                                                                objPriceDetailsStructure.PriceDescription = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["PriceDescription"]);
+
+                                                                #region Tax
+                                                                if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"] != null)
+                                                                {
+                                                                    objPriceDetailsStructure.Tax = new List<TaxStructure>();
+                                                                    var TypeOfTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].GetType();
+                                                                    if (TypeOfTaxNodes.Name.ToUpper() != "JARRAY")
+                                                                    {// it is single object
+                                                                        double TaxAmount = 0;
+                                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0 &&
+                                                                            !string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxAmount"])))
+                                                                        {
+                                                                            if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxAmount"]), out TaxAmount))
+                                                                            {
+                                                                                // Conversion Success
+                                                                            }
+                                                                        }
+                                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0 )
+                                                                        {
+                                                                            objPriceDetailsStructure.Tax.Add(new TaxStructure()
+                                                                            {
+                                                                                TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxRate"]),
+                                                                                TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxType"]),
+                                                                                TaxAmount = TaxAmount
+                                                                            }); 
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    { // it is array of Tax
+                                                                        int TotalTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count;
+                                                                        for (int b = 0; b < TotalTaxNodes; b++)
+                                                                        {
+                                                                            if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0 )
+                                                                            {
+                                                                                double TaxAmount = 0;
+                                                                                if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxAmount"])))
+                                                                                {
+                                                                                    if (double.TryParse(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxAmount"]), out TaxAmount))
+                                                                                    {
+                                                                                        // Conversion Success
+                                                                                    }
+                                                                                }
+                                                                                objPriceDetailsStructure.Tax.Add(new TaxStructure()
+                                                                                {
+                                                                                    TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxRate"]),
+                                                                                    TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxType"]),
+                                                                                    TaxAmount = TaxAmount
+                                                                                }); 
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                                #endregion
 
 
-                                                        ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure);
+                                                                ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure);
+                                                            }
+                                                           
+                                                        }
                                                     }
 
                                                 }
@@ -9433,7 +9563,7 @@ namespace DAL
                     #region Update
 
                     //var ObjHolidayMapping = searchResult.Where(x => x.SupplierName.ToLower() == objHolidayModel.SupplierName.ToLower() && x.SupplierProductCode == objHolidayModel.SupplierProductCode).ToList().FirstOrDefault();
-                    var ObjHolidayMapping = searchResult.Where(x => x.NakshatraHolidayId.ToLower() == objHolidayModel.NakshatraHolidayId).ToList().FirstOrDefault();
+                    var ObjHolidayMapping = searchResult.Where(x => x.NakshatraHolidayId.ToUpper() == objHolidayModel.NakshatraHolidayId).ToList().FirstOrDefault();
                     if (ObjHolidayMapping != null)
                     {// it means its a old record so assign Nakid and classificationattributes to our model.
                         objHolidayModel.NakshatraHolidayId = ObjHolidayMapping.NakshatraHolidayId;
