@@ -514,8 +514,8 @@ namespace DAL
                                 RemoveDiacritics(x.Location);
                                 RemoveDiacritics(x.Latitude);
                                 RemoveDiacritics(x.Longitude);
-                                RemoveDiacritics(x.Interest);
                                 RemoveDiacritics(x.TLGXAccoId);
+                                x.Interests = x.Interest != null ? RemoveDiacritics(x.Interest).Split(',').ToList() : new List<string>();
                             }
                             );
 
@@ -553,7 +553,7 @@ namespace DAL
                                 WebSiteURL = RemoveDiacritics(acco.WebSiteURL),
                                 Telephone = RemoveDiacritics(acco.Telephone),
                                 CodeStatus = RemoveDiacritics(acco.CodeStatus),
-                                Interest = RemoveDiacritics(acco.Interest),
+                                Interests = acco.Interest != null ? RemoveDiacritics(acco.Interest).Split(',').ToList() : new List<string>(),
                                 AccomodationCompanyVersions = lstCompanyVersion
                             };
 
@@ -826,9 +826,7 @@ namespace DAL
                         sbSelectAccoRoomVersionMaster.Append(@"  
                                                 SELECT ARICV.RoomCategory,ARICV.RoomName,ARICV.CompanyRoomCategory,ARICV.RoomDescription,ARICV.RoomView,ARICV.BedType,ARICV.Smoking,ARICV.TlgxAccoId,ARICV.TlgxAccoRoomId,ACV.CompanyId, ACV.CompanyName
                                                 from Accommodation_RoomInfo_CompanyVersion ARICV  with(nolock) Join 
-                                                Accommodation_CompanyVersion ACV with(nolock) on ARICV.Accommodation_CompanyVersion_Id = ACV.Accommodation_CompanyVersion_Id
-
-");
+                                                Accommodation_CompanyVersion ACV with(nolock) on ARICV.Accommodation_CompanyVersion_Id = ACV.Accommodation_CompanyVersion_Id ");
                         sbSelectAccoRoomVersionMaster.AppendLine(" where ARICV.Accommodation_RoomInfo_Id = '" + Accommodation_RoomInfo_Id + "';");
 
 
@@ -1348,7 +1346,7 @@ namespace DAL
                     {
                         context.Database.CommandTimeout = 0;
 
-                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "W2MTravel").Select(s => new DC_Supplier_ShortVersion
                         {
                             SupplierCode = s.Code.ToUpper(),
                             Supplier_Id = s.Supplier_Id,
@@ -1530,7 +1528,7 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
 
-                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GIATA").Select(s => new DC_Supplier_ShortVersion
                             {
                                 SupplierCode = s.Code.ToUpper(),
                                 Supplier_Id = s.Supplier_Id,
@@ -1571,7 +1569,7 @@ namespace DAL
                                                   from acco in LJAcco.DefaultIfEmpty()
 
                                                   where apm.Supplier_Id == SupplierCode.Supplier_Id && apm.IsActive == true
-
+                                                
                                                   select new DataContracts.Mapping.DC_ProductMapping
                                                   {
                                                       SupplierCode = SupplierCode.SupplierCode,
@@ -1780,14 +1778,14 @@ namespace DAL
                             //TotalCount
                             TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
 
-                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GIATA").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
 
                             foreach (var SupplierCode in SupplierCodes)
                             {
                                 var productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
                                                       join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
                                                       where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
-                                                      && apm.IsActive == true
+                                                      && apm.IsActive == true 
                                                       select new DataContracts.Mapping.DC_ProductMappingLite
                                                       {
                                                           SupplierCode = SupplierCode.SupplierCode,
@@ -4104,7 +4102,7 @@ namespace DAL
                                         objVisaInfoInew.VisaGeneralInformation = new List<VisaGeneralInformation>();
 
                                         VisaGeneralInformation objVisaGeneralInformationNew = new VisaGeneralInformation();
-                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null && 
+                                        if (VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"] != null &&
                                             VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"].GetType().Name.ToUpper() == "JOBJECT")
                                         {
 
@@ -4115,7 +4113,7 @@ namespace DAL
                                             {
                                                 objVisaGeneralInformationNew.GeneralInfo = (string)VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["VisaInfo"]["VisaGeneralInformation"]["GeneralInfo"];
                                             }
-                                           
+
                                         }
 
                                         objVisaInfoInew.VisaGeneralInformation.Add(objVisaGeneralInformationNew);
@@ -4377,7 +4375,7 @@ namespace DAL
                                                                 objVisaCategoryDetailNew.CategoryInfo[0].Information[0].DocumentsRequired = Convert.ToString(VisaJson["VisaDetail"]["Visa"]["VisaInformation"][i]["Categories"]["Category"][m]["CategoryInfo"]
                                                                                                          ["Information"]["DocumentsRequired"]);
                                                             }
-                                                        } 
+                                                        }
                                                     }
                                                 }
                                                 else
@@ -5354,7 +5352,8 @@ namespace DAL
                                 join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
                                 join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
                                 join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
-                                where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
+                                where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
+                                //where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
                                 select new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
                                 {
                                     Accommodation_SupplierRoomTypeMapping_Id = srtm.Accommodation_SupplierRoomTypeMapping_Id,

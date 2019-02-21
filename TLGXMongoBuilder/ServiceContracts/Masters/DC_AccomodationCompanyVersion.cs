@@ -100,8 +100,12 @@ namespace DataContracts.Masters
         [DataMember]
         public string TLGXAccoId { get; set; }
 
+        [BsonIgnore]
         [DataMember]
         public string Interest { get; set; }
-        
+
+        [DataMember]
+        public List<string> Interests { get; set; }
+
     }
 }

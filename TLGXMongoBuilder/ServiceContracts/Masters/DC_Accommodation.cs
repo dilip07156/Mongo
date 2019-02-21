@@ -113,16 +113,27 @@ namespace DataContracts.Masters
         [DataMember]
         public string CodeStatus { get; set; }
 
+        [BsonIgnore]
+        [DataMember]
+        public string Interest { get; set; }
+
+        [DataMember]
+        public List<string> Interests { get; set; }
+
+        [DataMember]
+        public bool IsDirectContract { get; set; }
+
         [DataMember]
         public List<DC_AccomodationCompanyVersions> AccomodationCompanyVersions { get; set; }
+
+      
 
         //GAURAV_TMAP_1034
         [BsonIgnore]
         [DataMember]
         public System.Guid Accommodation_Id { get; set; }
 
-        [DataMember]
-        public string Interest { get; set; }
+       
     }
 
 }
