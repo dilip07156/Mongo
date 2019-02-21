@@ -6489,7 +6489,7 @@ namespace DAL
                     #endregion
 
                     #region HolidayIncludes
-                    if (HolidayJson["Holiday"]["HolidayIncludes"] != null)
+                    if (HolidayJson["Holiday"]["HolidayIncludes"] != null && HolidayJson["Holiday"]["HolidayIncludes"].ToList().Count != 0 )
                     {
                         objHolidayModel.HolidayIncludes = new List<HolidayIncludes>();
 
@@ -6530,7 +6530,7 @@ namespace DAL
                     #endregion
 
                     #region UniqueSellingPoints
-                    if (HolidayJson["Holiday"]["UniqueSellingPoints"] != null)
+                    if (HolidayJson["Holiday"]["UniqueSellingPoints"] != null && HolidayJson["Holiday"]["UniqueSellingPoints"].ToList().Count != 0)
                     {
                         var TypeOfUniqueSellingPoints = HolidayJson["Holiday"]["UniqueSellingPoints"].GetType();
                         if (TypeOfUniqueSellingPoints.Name.ToUpper() != "JARRAY")
@@ -6543,7 +6543,7 @@ namespace DAL
                     #endregion
 
                     #region Highlights
-                    if (HolidayJson["Holiday"]["Highlights"] != null)
+                    if (HolidayJson["Holiday"]["Highlights"] != null && HolidayJson["Holiday"]["Highlights"].ToList().Count != 0)
                     {
                         objHolidayModel.Highlights = new List<HolidayHighlights>();
                         var TypeOfHighlights = HolidayJson["Holiday"]["Highlights"].GetType();
@@ -6610,7 +6610,7 @@ namespace DAL
                     #endregion
 
                     #region Brands
-                    if (HolidayJson["Holiday"]["Brands"] != null)
+                    if (HolidayJson["Holiday"]["Brands"] != null && HolidayJson["Holiday"]["Brands"].ToList().Count != 0 )
                     {
                         objHolidayModel.Brands = new List<HolidayBrandsAndBrochures>();
                         var TypeOfBrands = HolidayJson["Holiday"]["Brands"].GetType();
@@ -6641,7 +6641,7 @@ namespace DAL
                     #endregion
 
                     #region Brochures
-                    if (HolidayJson["Holiday"]["Brochures"] != null)
+                    if (HolidayJson["Holiday"]["Brochures"] != null && HolidayJson["Holiday"]["Brochures"].ToList().Count != 0)
                     {
                         objHolidayModel.Brochures = new List<HolidayBrandsAndBrochures>();
                         var TypeOfBrochures = HolidayJson["Holiday"]["Brochures"].GetType();
@@ -6671,7 +6671,7 @@ namespace DAL
                     #endregion
 
                     #region TourNotes
-                    if (HolidayJson["Holiday"]["TourNotes"] != null)
+                    if (HolidayJson["Holiday"]["TourNotes"] != null && HolidayJson["Holiday"]["TourNotes"].ToList().Count != 0)
                     {
                         objHolidayModel.TourNotes = new List<HolidayTermsConditions>();
                         var TypeOfTournotes = HolidayJson["Holiday"]["TourNotes"].GetType();
@@ -6717,7 +6717,7 @@ namespace DAL
                     #endregion
 
                     #region Media
-                    if (HolidayJson["Holiday"]["Media"] != null)
+                    if (HolidayJson["Holiday"]["Media"] != null && HolidayJson["Holiday"]["Media"].ToList().Count != 0 )
                     {
                         objHolidayModel.Media = new List<HolidayMedia>();
                         var TypeOfMedia = HolidayJson["Holiday"]["Media"].GetType();
@@ -6780,7 +6780,7 @@ namespace DAL
                     #endregion
 
                     #region Inclusions
-                    if (HolidayJson["Holiday"]["Inclusions"] != null)
+                    if (HolidayJson["Holiday"]["Inclusions"] != null && HolidayJson["Holiday"]["Inclusions"].ToList().Count !=0)
                     {
                         objHolidayModel.Inclusions = new List<HolidayInclusionExclusion>();
                         var TypeOfInclusions = HolidayJson["Holiday"]["Inclusions"].GetType();
@@ -6823,7 +6823,7 @@ namespace DAL
                     #endregion
 
                     #region ExclusionsObj
-                    if (HolidayJson["Holiday"]["ExclusionsObj"] != null)
+                    if (HolidayJson["Holiday"]["ExclusionsObj"] != null && HolidayJson["Holiday"]["ExclusionsObj"].ToList().Count != 0)
                     {
                         objHolidayModel.Exclusions = new List<HolidayInclusionExclusion>();
                         var TypeOfExclusionObj = HolidayJson["Holiday"]["ExclusionsObj"].GetType();
@@ -6865,7 +6865,7 @@ namespace DAL
                     #endregion
 
                     #region TermsConditions
-                    if (HolidayJson["Holiday"]["TermsConditions"] != null)
+                    if (HolidayJson["Holiday"]["TermsConditions"] != null && HolidayJson["Holiday"]["TermsConditions"].ToList().Count !=0)
                     {
                         objHolidayModel.TermsConditions = new List<HolidayTermsConditions>();
                         var TypeOfTermsConditions = HolidayJson["Holiday"]["TermsConditions"].GetType();
@@ -6907,7 +6907,7 @@ namespace DAL
                     #endregion
 
                     #region BookingPolicy
-                    if (HolidayJson["Holiday"]["BookingPolicy"] != null)
+                    if (HolidayJson["Holiday"]["BookingPolicy"] != null && HolidayJson["Holiday"]["BookingPolicy"].ToList().Count !=0)
                     {
                         objHolidayModel.BookingPolicy = new List<HolidayTermsConditions>();
                         var TypeOfBookingPolicy = HolidayJson["Holiday"]["BookingPolicy"].GetType();
@@ -6949,7 +6949,7 @@ namespace DAL
                     #endregion
 
                     #region DayWiseItineraries
-                    if (HolidayJson["Holiday"]["DayWiseItineraries"] != null)
+                    if (HolidayJson["Holiday"]["DayWiseItineraries"] != null && HolidayJson["Holiday"]["DayWiseItineraries"].ToList().Count != 0)
                     {
                         objHolidayModel.DayWiseItineraries = new List<HolidayDayWiseItineraries>();
                         var TypeOfDayWiseItineraries = HolidayJson["Holiday"]["DayWiseItineraries"].GetType();
@@ -7116,7 +7116,7 @@ namespace DAL
                     #endregion
 
                     #region Accommodation
-                    if (HolidayJson["Holiday"]["Accommodation"] != null)
+                    if (HolidayJson["Holiday"]["Accommodation"] != null && HolidayJson["Holiday"]["Accommodation"].ToList().Count != 0)
                     {
                         objHolidayModel.Accommodation = new List<HolidayAccommodation>();
                         var TypeOfAccommodation = HolidayJson["Holiday"]["Accommodation"].GetType();
@@ -7177,7 +7177,7 @@ namespace DAL
                     #endregion
 
                     #region Activity
-                    if (HolidayJson["Holiday"]["Activity"] != null)
+                    if (HolidayJson["Holiday"]["Activity"] != null && HolidayJson["Holiday"]["Activity"].ToList().Count != 0)
                     {
                         objHolidayModel.Activity = new List<HolidayActivity>();
                         var TypeOfActivity = HolidayJson["Holiday"]["Activity"].GetType();
@@ -7356,7 +7356,7 @@ namespace DAL
                     #endregion
 
                     #region Departure
-                    if (HolidayJson["Holiday"]["Departure"] != null)
+                    if (HolidayJson["Holiday"]["Departure"] != null && HolidayJson["Holiday"]["Departure"].ToList().Count != 0 )
                     {
                         objHolidayModel.Departure = new List<HolidayDeparture>();
                         var TypeOfDeparture = HolidayJson["Holiday"]["Departure"].GetType();
@@ -7416,7 +7416,7 @@ namespace DAL
                     #endregion
 
                     #region PreTour
-                    if (HolidayJson["Holiday"]["PreTour"] != null)
+                    if (HolidayJson["Holiday"]["PreTour"] != null && HolidayJson["Holiday"]["PreTour"].ToList().Count != 0)
                     {
                         objHolidayModel.PreTour = new List<PreTourStructure>();
                         var TypeOfPreTour = HolidayJson["Holiday"]["PreTour"].GetType();
@@ -7486,7 +7486,7 @@ namespace DAL
                     #endregion
 
                     #region PostTour
-                    if (HolidayJson["Holiday"]["PostTour"] != null)
+                    if (HolidayJson["Holiday"]["PostTour"] != null && HolidayJson["Holiday"]["PostTour"].ToList().Count != 0)
                     {
                         objHolidayModel.PostTour = new List<PreTourStructure>();
                         var TypeOfPostTour = HolidayJson["Holiday"]["PostTour"].GetType();
@@ -7555,7 +7555,7 @@ namespace DAL
                     #endregion
 
                     #region PackagePrice
-                    if (HolidayJson["Holiday"]["PackagePrice"] != null)
+                    if (HolidayJson["Holiday"]["PackagePrice"] != null && HolidayJson["Holiday"]["PackagePrice"].ToList().Count !=0)
                     {
                         objHolidayModel.PackagePrice = new List<PackagePrice>();
 
@@ -8584,7 +8584,7 @@ namespace DAL
                     #endregion
 
                     #region PreTourPrice
-                    if (HolidayJson["Holiday"]["PreTourPrice"] != null)
+                    if (HolidayJson["Holiday"]["PreTourPrice"] != null && HolidayJson["Holiday"]["PreTourPrice"].ToList().Count != 0)
                     {
                         objHolidayModel.PreTourPrice = new List<PreTourPrice>();
                         var TypeOfPreTourPrice = HolidayJson["Holiday"]["PreTourPrice"].GetType();
@@ -9074,7 +9074,7 @@ namespace DAL
 
                     #region PostTourPrice
 
-                    if (HolidayJson["Holiday"]["PostTourPrice"] != null)
+                    if (HolidayJson["Holiday"]["PostTourPrice"] != null && HolidayJson["Holiday"]["PostTourPrice"].ToList().Count !=0)
                     {
                         objHolidayModel.PostTourPrice = new List<PreTourPrice>();
                         var TypeOfPostTourPrice = HolidayJson["Holiday"]["PostTourPrice"].GetType();
@@ -9566,7 +9566,6 @@ namespace DAL
                     #endregion
 
                     #region Update
-
                     //var ObjHolidayMapping = searchResult.Where(x => x.SupplierName.ToLower() == objHolidayModel.SupplierName.ToLower() && x.SupplierProductCode == objHolidayModel.SupplierProductCode).ToList().FirstOrDefault();
                     var ObjHolidayMapping = searchResult.Where(x => x.NakshatraHolidayId.ToUpper() == objHolidayModel.NakshatraHolidayId).ToList().FirstOrDefault();
                     if (ObjHolidayMapping != null)
