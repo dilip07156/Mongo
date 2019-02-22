@@ -517,6 +517,7 @@ namespace DAL
                                 RemoveDiacritics(x.Latitude);
                                 RemoveDiacritics(x.Longitude);
                                 RemoveDiacritics(x.TLGXAccoId);
+                                x.Interests = x.Interest != null ? RemoveDiacritics(x.Interest).Split(',').ToList() : new List<string>();
                             }
                             );
 
@@ -554,6 +555,7 @@ namespace DAL
                                 WebSiteURL = RemoveDiacritics(acco.WebSiteURL),
                                 Telephone = RemoveDiacritics(acco.Telephone),
                                 CodeStatus = RemoveDiacritics(acco.CodeStatus),
+                                Interests = acco.Interest != null ? RemoveDiacritics(acco.Interest).Split(',').ToList() : new List<string>(),
                                 AccomodationCompanyVersions = lstCompanyVersion
                             };
 
@@ -588,7 +590,7 @@ namespace DAL
                                                 ACC.Location ,ACC.Area,ACC.TLGXAccoId ,ACC.ProductCategory ,ACC.ProductCategorySubType ,isnull(ACC.IsRoomMappingCompleted,0)  as IsRoomMappingCompleted ,
                                                 ACC.HotelRating,ACC.CompanyRating,ACC.CompanyRecommended,ACC.RecommendedFor,ACC.Brand,ACC.Chain,ACC.Latitude,ACC.Longitude,ACC.FullAddress, ACC.HotelRating as HotelStarRating,
                                                 ACC.Brand,ACC.Chain,Cont.Email,Cont.Fax,Cont.WebSiteURL,Cont.Telephone ,(case when ACC.IsActive = 1 then  'Active' when ACC.IsActive = 0 then  'Inactive' else '' end) as CodeStatus , 
-                                                ACC.SuburbDowntown
+                                                ACC.SuburbDowntown, ACC.Interest
                                                 from Accommodation ACC with(nolock) Left Join m_CityMaster CM with(nolock)  on Cm.City_Id = ACC.City_Id and CM.Country_Id = Acc.Country_Id
                                                 Left join m_CountryMaster MCM with(nolock) on MCM.Country_Id = ACC.Country_Id
                                                 LEft Join m_States MST with(nolock) on MST.State_Id = CM.State_Id
@@ -636,7 +638,7 @@ namespace DAL
                         sbSelectAccoMaster.Append(@"  
                                                 Select CommonProductId,CompanyProductId,CompanyId,CompanyName,ProductName,ProductDisplayName,StarRating,CompanyRating,ProductCatSubType,
                                                 Brand,Chain,HouseNumber,Street,Street2,Street3,Street4,Street5,Zone,PostalCode,Country,
-                                                State,City,Area,Location,Latitude,Longitude,TLGXAccoId from Accommodation_CompanyVersion with(nolock)  ");
+                                                State,City,Area,Location,Latitude,Longitude,TLGXAccoId,Interest from Accommodation_CompanyVersion with(nolock)  ");
                         sbSelectAccoMaster.AppendLine(" WHERE Accommodation_Id = '" + gAccommodation_Id + "';");
 
 
@@ -826,9 +828,7 @@ namespace DAL
                         sbSelectAccoRoomVersionMaster.Append(@"  
                                                 SELECT ARICV.RoomCategory,ARICV.RoomName,ARICV.CompanyRoomCategory,ARICV.RoomDescription,ARICV.RoomView,ARICV.BedType,ARICV.Smoking,ARICV.TlgxAccoId,ARICV.TlgxAccoRoomId,ACV.CompanyId, ACV.CompanyName
                                                 from Accommodation_RoomInfo_CompanyVersion ARICV  with(nolock) Join 
-                                                Accommodation_CompanyVersion ACV with(nolock) on ARICV.Accommodation_CompanyVersion_Id = ACV.Accommodation_CompanyVersion_Id
-
-");
+                                                Accommodation_CompanyVersion ACV with(nolock) on ARICV.Accommodation_CompanyVersion_Id = ACV.Accommodation_CompanyVersion_Id ");
                         sbSelectAccoRoomVersionMaster.AppendLine(" where ARICV.Accommodation_RoomInfo_Id = '" + Accommodation_RoomInfo_Id + "';");
 
 
@@ -1991,7 +1991,7 @@ namespace DAL
                                                   from acco in LJAcco.DefaultIfEmpty()
 
                                                   where apm.Supplier_Id == SupplierCode.Supplier_Id && apm.IsActive == true
-
+                                                
                                                   select new DataContracts.Mapping.DC_ProductMapping
                                                   {
                                                       SupplierCode = SupplierCode.SupplierCode,
@@ -9755,7 +9755,8 @@ namespace DAL
                                 join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
                                 join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
                                 join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
-                                where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
+                                where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
+                                //where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
                                 select new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
                                 {
                                     Accommodation_SupplierRoomTypeMapping_Id = srtm.Accommodation_SupplierRoomTypeMapping_Id,
