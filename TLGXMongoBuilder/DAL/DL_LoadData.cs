@@ -1346,7 +1346,7 @@ namespace DAL
                     {
                         context.Database.CommandTimeout = 0;
 
-                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "W2MTravel").Select(s => new DC_Supplier_ShortVersion
+                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
                         {
                             SupplierCode = s.Code.ToUpper(),
                             Supplier_Id = s.Supplier_Id,
@@ -1528,7 +1528,7 @@ namespace DAL
                         {
                             context.Database.CommandTimeout = 0;
 
-                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GIATA").Select(s => new DC_Supplier_ShortVersion
+                            SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").Select(s => new DC_Supplier_ShortVersion
                             {
                                 SupplierCode = s.Code.ToUpper(),
                                 Supplier_Id = s.Supplier_Id,
@@ -1778,7 +1778,7 @@ namespace DAL
                             //TotalCount
                             TotalAPMCount = context.Accommodation_ProductMapping.AsNoTracking().Where(w => (w.Status.Trim().ToUpper() == "MAPPED" || w.Status.Trim().ToUpper() == "AUTOMAPPED") && w.IsActive == true).Count();
 
-                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "GIATA").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
+                            var SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE" && w.Code == "W2MTravel").Select(s => new { SupplierCode = s.Code.ToUpper(), s.Supplier_Id }).Distinct().ToList();
 
                             foreach (var SupplierCode in SupplierCodes)
                             {
