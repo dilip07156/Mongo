@@ -47,6 +47,14 @@ namespace MapperSvc
 
         }
 
+        public void UpdateHolidayMapping(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateHolidayMapping(LogId);
+            }
+
+        }
 
         public void LoadActivityDefinition()
         {
@@ -151,11 +159,35 @@ namespace MapperSvc
             }
         }
 
+        public void LoadObjectMapping(string Entity, string EntityMappingID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadObjectMapping(Entity, EntityMappingID);
+            }
+        }
+
+        public void LoadCountryMappingBySupplier(string LogId,string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCountryMapping(LogId, Supplier_ID);
+            }
+        }
+
         public void LoadCityMapping(string LogId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.LoadCityMapping(LogId);
+            }
+        }
+
+        public void LoadCityMappingBySupplier(string LogId, string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCityMapping(LogId, Supplier_ID);
             }
         }
 
@@ -168,6 +200,14 @@ namespace MapperSvc
             }
         }
 
+        public void LoadProductMappingBySupplier(string LogId, string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadProductMappingBySupplier(LogId, Supplier_ID);
+            }
+        }
+        
         public void LoadProductMappingLite(string LogId, string MapId)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
@@ -175,6 +215,16 @@ namespace MapperSvc
                 objBL.LoadProductMappingLite(LogId, MapId);
             }
         }
+
+        public void LoadProductMappingLiteBySupplier(string LogId, string Supplier_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadProductMappingLiteBySupplier(LogId, Supplier_ID);
+            }
+        }
+        
+
         #endregion
 
         public void LoadActivityMapping(string LogId)

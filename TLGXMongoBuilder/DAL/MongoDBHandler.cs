@@ -27,24 +27,40 @@ namespace DAL
             MongoClientSettings mcs = new MongoClientSettings();
             mcs.ApplicationName = MongoDBApplicationName;
             mcs.ConnectionMode = ConnectionMode.Automatic;
-            mcs.ConnectTimeout = new TimeSpan(0, 0, 10);
+            mcs.ConnectTimeout = new TimeSpan(0, 0, 5);
             mcs.Server = new MongoServerAddress(MongoDBServerHost, Convert.ToInt32(MongoDBServerPort));
-            mcs.MaxConnectionPoolSize = 500;
+
+            //Previously below was set for MaxConnectionPoolSize and now it is changed to MinConnectionPoolSize
+            mcs.MinConnectionPoolSize = 1500;
+
+            mcs.WaitQueueSize = 5000;
+            mcs.WaitQueueTimeout = new TimeSpan(0, 0, 10);
+
+            //Commented below code as we are not show how this helps
+            //mcs.MaxConnectionLifeTime = new TimeSpan(0, 2, 0);
+            //mcs.MaxConnectionIdleTime = new TimeSpan(0, 1, 0);
 
             if (MongoDBServerUser != null && MongoDBServerPassword != null && MongoDBServerAuthenticationDatabase != null)
             {
-                var credential = MongoCredential.CreateCredential(MongoDBServerAuthenticationDatabase, MongoDBServerUser, MongoDBServerPassword);
-                mcs.Credentials = new[] { credential };
+                mcs.Credential = MongoCredential.CreateCredential(MongoDBServerAuthenticationDatabase, MongoDBServerUser, MongoDBServerPassword);
             }
-            
+
             _client = new MongoClient(mcs);
             return _client;
         }
 
         public static IMongoDatabase mDatabase()
         {
-            _client = mClientConnection();
-            _database = _client.GetDatabase(System.Configuration.ConfigurationManager.AppSettings["Mongo_DB_Name"]);//,new MongoDatabaseSettings { ReadConcern = ReadConcern.Local, WriteConcern = WriteConcern.Unacknowledged, ReadPreference = ReadPreference.Primary });          
+            if (_client == null)
+            {
+                _client = mClientConnection();
+            }
+
+            if (_database == null)
+            {
+                _database = _client.GetDatabase(System.Configuration.ConfigurationManager.AppSettings["Mongo_DB_Name"]);//,new MongoDatabaseSettings { ReadConcern = ReadConcern.Local, WriteConcern = WriteConcern.Unacknowledged, ReadPreference = ReadPreference.Primary });          
+            }
+
             return _database;
         }
 

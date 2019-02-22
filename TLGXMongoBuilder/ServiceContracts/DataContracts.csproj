@@ -127,6 +127,8 @@
     <Compile Include="DC_SupplierProductValues.cs" />
     <Compile Include="ErrorNotifier.cs" />
     <Compile Include="GetMasterData.cs" />
+    <Compile Include="Holiday\HolidayModel.cs" />
+    <Compile Include="Holiday\HolidaySubModels.cs" />
     <Compile Include="HotelDescription.cs" />
     <Compile Include="HotelSearchContracts.cs" />
     <Compile Include="Mapping\DC_CityMapping.cs" />

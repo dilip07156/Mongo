@@ -20,6 +20,7 @@ namespace DataContracts.Activity
         public string Category { get; set; }
         public string Type { get; set; }
         public string SubType { get; set; }
+        public List<ActivityCategory> CategoryGroup { get; set; }
         public string TLGXDisplaySubType { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
@@ -65,6 +66,17 @@ namespace DataContracts.Activity
         /// Internal Use
         /// </summary>
         public List<string> ProductSubTypeId { get; set; }
+    }
+
+    /// <summary>
+    /// Activity category, subcategory, type and interest type
+    /// </summary>
+    public class ActivityCategory
+    {
+        public string InterestType { get; set; }
+        public string Category { get; set; }
+        public string Type { get; set; }
+        public string SubType { get; set; }
     }
 
     public class SupplierCityDepartureCode
