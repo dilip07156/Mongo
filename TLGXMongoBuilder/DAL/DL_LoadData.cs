@@ -9755,8 +9755,8 @@ namespace DAL
                                 join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
                                 join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
                                 join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
-                                where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
-                                //where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
+                               // where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
+                                where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
                                 select new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
                                 {
                                     Accommodation_SupplierRoomTypeMapping_Id = srtm.Accommodation_SupplierRoomTypeMapping_Id,
