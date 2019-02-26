@@ -10,12 +10,8 @@ namespace DataContracts.Mapping
     [BsonIgnoreExtraElements]
     public class DC_HotelRoomTypeMappingRequest
     {
-        
-        public string TLGXAccoId { get; set; }
         [BsonIgnore]
         public Guid Accommodation_SupplierRoomTypeMapping_Id { get; set; }
-        
-        public string TLGXAccoRoomId { get; set; }
         
         public string supplierCode { get; set; }
         

@@ -84,6 +84,8 @@
           <Property Name="TLGXAccoId" Type="nvarchar" MaxLength="50" />
           <Property Name="Priority" Type="int" />
           <Property Name="IsRoomMappingCompleted" Type="bit" />
+          <Property Name="IsDirectContract" Type="bit" />
+          <Property Name="Interest" Type="nvarchar" MaxLength="510" />
         </EntityType>
         <EntityType Name="Accommodation_ClassificationAttributes">
           <Key>
@@ -377,6 +379,7 @@
           <Property Name="TLGXAccoRoomId" Type="varchar" MaxLength="50" />
           <Property Name="TX_RoomName" Type="nvarchar" MaxLength="255" />
           <Property Name="TX_RoomName_Stripped" Type="nvarchar" MaxLength="255" />
+          <Property Name="CommonRoomId" Type="nvarchar" MaxLength="510" />
         </EntityType>
         <EntityType Name="Accommodation_RoomInfo_Attributes">
           <Key>
@@ -1901,6 +1904,8 @@
           <Property Name="TLGXAccoId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="Priority" Type="Int32" />
           <Property Name="IsRoomMappingCompleted" Type="Boolean" />
+          <Property Name="IsDirectContract" Type="Boolean" />
+          <Property Name="Interest" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityContainer Name="TLGX_Entities" annotation:LazyLoadingEnabled="true">
           <EntitySet Name="Accommodations" EntityType="Self.Accommodation" />
@@ -1970,11 +1975,11 @@
           <EntitySet Name="Accommodation_NearbyPlaces" EntityType="TLGX_Model.Accommodation_NearbyPlaces" />
           <EntitySet Name="Accommodation_PaxOccupancy" EntityType="TLGX_Model.Accommodation_PaxOccupancy" />
           <EntitySet Name="Accommodation_RoomFacility" EntityType="TLGX_Model.Accommodation_RoomFacility" />
-          <EntitySet Name="Accommodation_RoomInfo" EntityType="TLGX_Model.Accommodation_RoomInfo" />
           <EntitySet Name="Accommodation_RoomInfo_Attributes" EntityType="TLGX_Model.Accommodation_RoomInfo_Attributes" />
           <EntitySet Name="Accommodation_RouteInfo" EntityType="TLGX_Model.Accommodation_RouteInfo" />
           <EntitySet Name="Accommodation_RuleInfo" EntityType="TLGX_Model.Accommodation_RuleInfo" />
           <EntitySet Name="Accommodation_Status" EntityType="TLGX_Model.Accommodation_Status" />
+          <EntitySet Name="Accommodation_RoomInfo" EntityType="TLGX_Model.Accommodation_RoomInfo" />
         </EntityContainer>
         <EntityType Name="Accommodation_SupplierRoomTypeAttributes">
           <Key>
@@ -3531,41 +3536,6 @@
           <Property Name="Edit_user" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="IsActive" Type="Boolean" />
         </EntityType>
-        <EntityType Name="Accommodation_RoomInfo">
-          <Key>
-            <PropertyRef Name="Accommodation_RoomInfo_Id" />
-          </Key>
-          <Property Name="Accommodation_RoomInfo_Id" Type="Guid" Nullable="false" />
-          <Property Name="Accommodation_Id" Type="Guid" />
-          <Property Name="Legacy_Htl_Id" Type="Int32" />
-          <Property Name="RoomId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="RoomView" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="NoOfRooms" Type="Int32" />
-          <Property Name="RoomName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="NoOfInterconnectingRooms" Type="Int32" />
-          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="RoomSize" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="RoomDecor" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Smoking" Type="Boolean" />
-          <Property Name="FloorName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="FloorNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="MysteryRoom" Type="Boolean" />
-          <Property Name="BathRoomType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="BedType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyRoomCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="RoomCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="Category" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="AmenityTypes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
-          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Create_Date" Type="DateTime" Precision="3" />
-          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
-          <Property Name="IsActive" Type="Boolean" />
-          <Property Name="TLGXAccoRoomId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="TX_RoomName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-          <Property Name="TX_RoomName_Stripped" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
-        </EntityType>
         <EntityType Name="Accommodation_RoomInfo_Attributes">
           <Key>
             <PropertyRef Name="Accommodation_RoomInfo_Attribute_Id" />
@@ -3635,6 +3605,42 @@
           <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Edit_Date" Type="DateTime" Precision="3" />
         </EntityType>
+        <EntityType Name="Accommodation_RoomInfo">
+          <Key>
+            <PropertyRef Name="Accommodation_RoomInfo_Id" />
+          </Key>
+          <Property Name="Accommodation_RoomInfo_Id" Type="Guid" Nullable="false" />
+          <Property Name="Accommodation_Id" Type="Guid" />
+          <Property Name="Legacy_Htl_Id" Type="Int32" />
+          <Property Name="RoomId" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RoomView" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="NoOfRooms" Type="Int32" />
+          <Property Name="RoomName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="NoOfInterconnectingRooms" Type="Int32" />
+          <Property Name="Description" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="RoomSize" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="RoomDecor" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Smoking" Type="Boolean" />
+          <Property Name="FloorName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="FloorNumber" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="MysteryRoom" Type="Boolean" />
+          <Property Name="BathRoomType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="BedType" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyRoomCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="RoomCategory" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="Category" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CompanyName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
+          <Property Name="AmenityTypes" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
+          <Property Name="Create_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Create_Date" Type="DateTime" Precision="3" />
+          <Property Name="Edit_User" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="Edit_Date" Type="DateTime" Precision="3" />
+          <Property Name="IsActive" Type="Boolean" />
+          <Property Name="TLGXAccoRoomId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TX_RoomName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="TX_RoomName_Stripped" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CommonRoomId" Type="String" MaxLength="510" FixedLength="false" Unicode="true" />
+        </EntityType>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -3644,6 +3650,8 @@
           <EntitySetMapping Name="Accommodations">
             <EntityTypeMapping TypeName="TLGX_Model.Accommodation">
               <MappingFragment StoreEntitySet="Accommodation">
+                <ScalarProperty Name="Interest" ColumnName="Interest" />
+                <ScalarProperty Name="IsDirectContract" ColumnName="IsDirectContract" />
                 <ScalarProperty Name="Accommodation_Id" ColumnName="Accommodation_Id" />
                 <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
                 <ScalarProperty Name="CompanyHotelID" ColumnName="CompanyHotelID" />
@@ -5343,42 +5351,6 @@
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>
-          <EntitySetMapping Name="Accommodation_RoomInfo">
-            <EntityTypeMapping TypeName="TLGX_Model.Accommodation_RoomInfo">
-              <MappingFragment StoreEntitySet="Accommodation_RoomInfo">
-                <ScalarProperty Name="TX_RoomName_Stripped" ColumnName="TX_RoomName_Stripped" />
-                <ScalarProperty Name="TX_RoomName" ColumnName="TX_RoomName" />
-                <ScalarProperty Name="TLGXAccoRoomId" ColumnName="TLGXAccoRoomId" />
-                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
-                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
-                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
-                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
-                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
-                <ScalarProperty Name="AmenityTypes" ColumnName="AmenityTypes" />
-                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
-                <ScalarProperty Name="Category" ColumnName="Category" />
-                <ScalarProperty Name="RoomCategory" ColumnName="RoomCategory" />
-                <ScalarProperty Name="CompanyRoomCategory" ColumnName="CompanyRoomCategory" />
-                <ScalarProperty Name="BedType" ColumnName="BedType" />
-                <ScalarProperty Name="BathRoomType" ColumnName="BathRoomType" />
-                <ScalarProperty Name="MysteryRoom" ColumnName="MysteryRoom" />
-                <ScalarProperty Name="FloorNumber" ColumnName="FloorNumber" />
-                <ScalarProperty Name="FloorName" ColumnName="FloorName" />
-                <ScalarProperty Name="Smoking" ColumnName="Smoking" />
-                <ScalarProperty Name="RoomDecor" ColumnName="RoomDecor" />
-                <ScalarProperty Name="RoomSize" ColumnName="RoomSize" />
-                <ScalarProperty Name="Description" ColumnName="Description" />
-                <ScalarProperty Name="NoOfInterconnectingRooms" ColumnName="NoOfInterconnectingRooms" />
-                <ScalarProperty Name="RoomName" ColumnName="RoomName" />
-                <ScalarProperty Name="NoOfRooms" ColumnName="NoOfRooms" />
-                <ScalarProperty Name="RoomView" ColumnName="RoomView" />
-                <ScalarProperty Name="RoomId" ColumnName="RoomId" />
-                <ScalarProperty Name="Legacy_Htl_Id" ColumnName="Legacy_Htl_Id" />
-                <ScalarProperty Name="Accommodation_Id" ColumnName="Accommodation_Id" />
-                <ScalarProperty Name="Accommodation_RoomInfo_Id" ColumnName="Accommodation_RoomInfo_Id" />
-              </MappingFragment>
-            </EntityTypeMapping>
-          </EntitySetMapping>
           <EntitySetMapping Name="Accommodation_RoomInfo_Attributes">
             <EntityTypeMapping TypeName="TLGX_Model.Accommodation_RoomInfo_Attributes">
               <MappingFragment StoreEntitySet="Accommodation_RoomInfo_Attributes">
@@ -5449,6 +5421,43 @@
                 <ScalarProperty Name="From" ColumnName="From" />
                 <ScalarProperty Name="Accommodation_Id" ColumnName="Accommodation_Id" />
                 <ScalarProperty Name="Accommodation_Status_Id" ColumnName="Accommodation_Status_Id" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Accommodation_RoomInfo">
+            <EntityTypeMapping TypeName="TLGX_Model.Accommodation_RoomInfo">
+              <MappingFragment StoreEntitySet="Accommodation_RoomInfo">
+                <ScalarProperty Name="CommonRoomId" ColumnName="CommonRoomId" />
+                <ScalarProperty Name="TX_RoomName_Stripped" ColumnName="TX_RoomName_Stripped" />
+                <ScalarProperty Name="TX_RoomName" ColumnName="TX_RoomName" />
+                <ScalarProperty Name="TLGXAccoRoomId" ColumnName="TLGXAccoRoomId" />
+                <ScalarProperty Name="IsActive" ColumnName="IsActive" />
+                <ScalarProperty Name="Edit_Date" ColumnName="Edit_Date" />
+                <ScalarProperty Name="Edit_User" ColumnName="Edit_User" />
+                <ScalarProperty Name="Create_Date" ColumnName="Create_Date" />
+                <ScalarProperty Name="Create_User" ColumnName="Create_User" />
+                <ScalarProperty Name="AmenityTypes" ColumnName="AmenityTypes" />
+                <ScalarProperty Name="CompanyName" ColumnName="CompanyName" />
+                <ScalarProperty Name="Category" ColumnName="Category" />
+                <ScalarProperty Name="RoomCategory" ColumnName="RoomCategory" />
+                <ScalarProperty Name="CompanyRoomCategory" ColumnName="CompanyRoomCategory" />
+                <ScalarProperty Name="BedType" ColumnName="BedType" />
+                <ScalarProperty Name="BathRoomType" ColumnName="BathRoomType" />
+                <ScalarProperty Name="MysteryRoom" ColumnName="MysteryRoom" />
+                <ScalarProperty Name="FloorNumber" ColumnName="FloorNumber" />
+                <ScalarProperty Name="FloorName" ColumnName="FloorName" />
+                <ScalarProperty Name="Smoking" ColumnName="Smoking" />
+                <ScalarProperty Name="RoomDecor" ColumnName="RoomDecor" />
+                <ScalarProperty Name="RoomSize" ColumnName="RoomSize" />
+                <ScalarProperty Name="Description" ColumnName="Description" />
+                <ScalarProperty Name="NoOfInterconnectingRooms" ColumnName="NoOfInterconnectingRooms" />
+                <ScalarProperty Name="RoomName" ColumnName="RoomName" />
+                <ScalarProperty Name="NoOfRooms" ColumnName="NoOfRooms" />
+                <ScalarProperty Name="RoomView" ColumnName="RoomView" />
+                <ScalarProperty Name="RoomId" ColumnName="RoomId" />
+                <ScalarProperty Name="Legacy_Htl_Id" ColumnName="Legacy_Htl_Id" />
+                <ScalarProperty Name="Accommodation_Id" ColumnName="Accommodation_Id" />
+                <ScalarProperty Name="Accommodation_RoomInfo_Id" ColumnName="Accommodation_RoomInfo_Id" />
               </MappingFragment>
             </EntityTypeMapping>
           </EntitySetMapping>

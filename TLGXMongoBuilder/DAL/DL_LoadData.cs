@@ -9805,9 +9805,7 @@ namespace DAL
                                     SystemRoomTypeCode = ari.RoomId,
                                     SystemRoomTypeMapId = srtmv.MapId,
                                     SystemRoomTypeName = ari.RoomName,
-                                    SystemStrippedRoomType = srtm.Tx_StrippedName,
-                                    TLGXAccoId = acco.TLGXAccoId,
-                                    TLGXAccoRoomId = ari.TLGXAccoRoomId
+                                    SystemStrippedRoomType = srtm.Tx_StrippedName
                                 }).ToList();
                 }
             }

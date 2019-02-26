@@ -257,5 +257,23 @@ namespace BAL
             }
         }
         #endregion
+
+        #region Room Type Mapping
+        public void Upsert_RoomTypeMapping_ByMapId(string MapId)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Upsert_RoomTypeMapping_ByMapId(MapId);
+            }
+        }
+
+        public void Delete_RoomTypeMapping_ByMapId(string MapId)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Delete_RoomTypeMapping_ByMapId(MapId);
+            }
+        }
+        #endregion
     }
 }

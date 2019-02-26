@@ -44,5 +44,6 @@ namespace DAL
         public string TLGXAccoRoomId { get; set; }
         public string TX_RoomName { get; set; }
         public string TX_RoomName_Stripped { get; set; }
+        public string CommonRoomId { get; set; }
     }
 }
