@@ -259,5 +259,22 @@ namespace MapperSvc
             }
         }
         #endregion
+
+        #region Room Type Mapping
+        public void Upsert_RoomTypeMapping_ByMapId(string MapId)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Upsert_RoomTypeMapping_ByMapId(MapId);
+            }
+        }
+        public void Delete_RoomTypeMapping_ByMapId(string MapId)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Delete_RoomTypeMapping_ByMapId(MapId);
+            }
+        }
+        #endregion
     }
 }

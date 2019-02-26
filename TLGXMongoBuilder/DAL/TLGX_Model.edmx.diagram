@@ -16,11 +16,11 @@
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_NearbyPlaces" Width="1.5" PointX="9.375" PointY="6.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_PaxOccupancy" Width="1.5" PointX="3.375" PointY="10.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_RoomFacility" Width="1.5" PointX="5.375" PointY="10.75" />
-        <EntityTypeShape EntityType="TLGX_Model.Accommodation_RoomInfo" Width="1.5" PointX="11.375" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_RoomInfo_Attributes" Width="1.5" PointX="7.375" PointY="11.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_RouteInfo" Width="1.5" PointX="11.375" PointY="8.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_RuleInfo" Width="1.5" PointX="13.375" PointY="0.75" />
         <EntityTypeShape EntityType="TLGX_Model.Accommodation_Status" Width="1.5" PointX="13.375" PointY="4.75" />
+        <EntityTypeShape EntityType="TLGX_Model.Accommodation_RoomInfo" Width="1.5" PointX="13.375" PointY="9.75" />
       </Diagram>
       <Diagram DiagramId="60bb214301be4d009da20c597894b40f" Name="CountryMaster" >
         <EntityTypeShape EntityType="TLGX_Model.m_CountryMaster" Width="1.5" PointX="0.75" PointY="0.75" />

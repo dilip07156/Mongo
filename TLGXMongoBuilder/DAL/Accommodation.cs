@@ -89,5 +89,7 @@ namespace DAL
         public string TLGXAccoId { get; set; }
         public Nullable<int> Priority { get; set; }
         public Nullable<bool> IsRoomMappingCompleted { get; set; }
+        public Nullable<bool> IsDirectContract { get; set; }
+        public string Interest { get; set; }
     }
 }

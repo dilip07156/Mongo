@@ -2,11 +2,8 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DAL
 {
@@ -1049,6 +1046,100 @@ namespace DAL
                 {
                     obj.LoadActivityDefinition(Activity_Flavour_Id);
                 }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+        #endregion
+
+        #region Room Type Mapping
+
+        public void Upsert_RoomTypeMapping_ByMapId(string MapId)
+        {
+            int mapId = Convert.ToInt32(MapId);
+            _database = MongoDBHandler.mDatabase();
+            var collection = _database.GetCollection<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>("RoomTypeMapping");
+
+            using (TLGX_Entities context = new TLGX_Entities())
+            {
+                var RoomTypeMapping = (from srtm in context.Accommodation_SupplierRoomTypeMapping.AsNoTracking()
+                                       join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
+                                       join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
+                                       join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
+                                       join sup in context.Suppliers on srtm.Supplier_Id equals sup.Supplier_Id
+                                       where srtmv.MapId == mapId
+                                       select new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
+                                       {
+                                           Accommodation_SupplierRoomTypeMapping_Id = srtm.Accommodation_SupplierRoomTypeMapping_Id,
+                                           Amenities = srtm.Amenities,
+                                           Attibutes = context.Accommodation_SupplierRoomTypeAttributes
+                                           .Where(w => w.RoomTypeMap_Id == srtm.Accommodation_SupplierRoomTypeMapping_Id)
+                                           .Select(s => new DataContracts.Mapping.DC_RoomTypeMapping_Attributes_HRTM
+                                           {
+                                               Key = s.SystemAttributeKeyword,
+                                               Value = s.SupplierRoomTypeAttribute
+                                           }).ToList(),
+                                           BathRoomType = srtm.BathRoomType,
+                                           BeddingConfig = srtm.BeddingConfig,
+                                           Bedrooms = srtm.Bedrooms,
+                                           BedType = srtm.BedTypeCode,
+                                           ChildAge = srtm.ChildAge,
+                                           ExtraBed = srtm.ExtraBed,
+                                           FloorName = srtm.FloorName,
+                                           FloorNumber = srtm.FloorNumber,
+                                           MatchingScore = srtmv.MatchingScore,
+                                           MaxAdults = srtm.MaxAdults,
+                                           MaxChild = srtm.MaxChild,
+                                           MaxGuestOccupancy = srtm.MaxGuestOccupancy,
+                                           MaxInfants = srtm.MaxInfants,
+                                           MinGuestOccupancy = srtm.MinGuestOccupancy,
+                                           PromotionalVendorCode = srtm.PromotionalVendorCode,
+                                           Quantity = srtm.Quantity,
+                                           RatePlan = srtm.RatePlan,
+                                           RatePlanCode = srtm.RatePlanCode,
+                                           RoomDescription = srtm.RoomDescription,
+                                           RoomLocationCode = srtm.RoomLocationCode,
+                                           RoomSize = srtm.RoomSize,
+                                           RoomView = srtm.RoomViewCode,
+                                           Smoking = srtm.Smoking,
+                                           Status = srtmv.UserMappingStatus,
+                                           supplierCode = sup.Code.ToUpper(),
+                                           SupplierProductId = srtm.SupplierProductId.ToUpper(),
+                                           SupplierRoomCategory = srtm.SupplierRoomCategory.ToUpper(),
+                                           SupplierRoomCategoryId = srtm.SupplierRoomCategoryId.ToUpper(),
+                                           SupplierRoomId = srtm.SupplierRoomId.ToUpper(),
+                                           SupplierRoomName = srtm.SupplierRoomName.ToUpper(),
+                                           SupplierRoomTypeCode = srtm.SupplierRoomTypeCode.ToUpper(),
+                                           SystemNormalizedRoomType = ari.TX_RoomName,
+                                           SystemProductCode = acco.CompanyHotelID,
+                                           SystemRoomCategory = ari.RoomCategory,
+                                           SystemRoomTypeCode = ari.CommonRoomId,
+                                           SystemRoomTypeMapId = srtmv.MapId,
+                                           SystemRoomTypeName = ari.RoomName,
+                                           SystemStrippedRoomType = ari.TX_RoomName_Stripped
+                                       }).FirstOrDefault();
+
+                var filter = Builders<DataContracts.Mapping.DC_HotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, RoomTypeMapping.SystemRoomTypeMapId);
+                collection.ReplaceOne(filter, RoomTypeMapping, new UpdateOptions { IsUpsert = true });
+                filter = null;
+                collection = null;
+                _database = null;
+            }
+        }
+
+        public void Delete_RoomTypeMapping_ByMapId(string MapId)
+        {
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<BsonDocument>("RoomTypeMapping");
+                var filter = Builders<BsonDocument>.Filter.Eq("SystemRoomTypeMapId", Convert.ToInt32(MapId));
+                var result = collection.DeleteOne(filter);
+                filter = null;
+                collection = null;
+                _database = null;
             }
             catch (Exception ex)
             {

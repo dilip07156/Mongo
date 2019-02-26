@@ -92,10 +92,10 @@ namespace DAL
         public virtual DbSet<Accommodation_NearbyPlaces> Accommodation_NearbyPlaces { get; set; }
         public virtual DbSet<Accommodation_PaxOccupancy> Accommodation_PaxOccupancy { get; set; }
         public virtual DbSet<Accommodation_RoomFacility> Accommodation_RoomFacility { get; set; }
-        public virtual DbSet<Accommodation_RoomInfo> Accommodation_RoomInfo { get; set; }
         public virtual DbSet<Accommodation_RoomInfo_Attributes> Accommodation_RoomInfo_Attributes { get; set; }
         public virtual DbSet<Accommodation_RouteInfo> Accommodation_RouteInfo { get; set; }
         public virtual DbSet<Accommodation_RuleInfo> Accommodation_RuleInfo { get; set; }
         public virtual DbSet<Accommodation_Status> Accommodation_Status { get; set; }
+        public virtual DbSet<Accommodation_RoomInfo> Accommodation_RoomInfo { get; set; }
     }
 }

@@ -175,5 +175,16 @@ namespace ServiceContracts
         void Sync_ActivityDefinition_ByActivityFlavourId(string ActivityFlavourId);
         #endregion
 
+        #region Room Type Mapping
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Upsert/RoomTypeMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_RoomTypeMapping_ByMapId(string MapId);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Delete/RoomTypeMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Delete_RoomTypeMapping_ByMapId(string MapId);
+        #endregion
     }
 }
