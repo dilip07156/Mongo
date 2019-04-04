@@ -3750,6 +3750,8 @@ namespace DAL
 
                             //Activity TLGXDisplaySubType Setting
                             newActivity.TLGXDisplaySubType = Activity.TLGXDisplaySubType;
+                            // Activity Display Name
+                            newActivity.DisplayName = Activity.DisplayName ?? null;
 
 
                             ActivityClassAttr = null;
