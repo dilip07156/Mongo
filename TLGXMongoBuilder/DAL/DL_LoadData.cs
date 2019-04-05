@@ -1540,7 +1540,7 @@ namespace DAL
                             var filter = Builders<DataContracts.Mapping.DC_CityMapping>.Filter.Eq(c => c.MapId, city.MapId);
                             collection.ReplaceOne(filter, city, new UpdateOptions { IsUpsert = true });
                             TotalProcessed++;
-                            if(TotalProcessed % 100 == 0)
+                            if (TotalProcessed % 100 == 0)
                             {
                                 UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
                             }
@@ -1991,7 +1991,7 @@ namespace DAL
                                                   from acco in LJAcco.DefaultIfEmpty()
 
                                                   where apm.Supplier_Id == SupplierCode.Supplier_Id && apm.IsActive == true
-                                                
+
                                                   select new DataContracts.Mapping.DC_ProductMapping
                                                   {
                                                       SupplierCode = SupplierCode.SupplierCode,
@@ -2726,6 +2726,265 @@ namespace DAL
                 _database = null;
             }
             catch (FaultException<ErrorNotifier> ex) { UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount); }
+        }
+
+        public void LoadCompanyAccommodationProductMapping(Guid LogId)
+        {
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_ConpanyAccommodationMapping>("CompanyAccommodationProductMapping");
+                List<DC_ConpanyAccommodationRoomMapping> lstMappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+
+                if (LogId == Guid.Empty)
+                {
+                    LogId = Guid.NewGuid();
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                }
+
+                #region Index Management
+                bool Is_IX_SupplierCode_SupplierProductCode_Exists = false;
+                bool Is_IX_SupplierCode_SystemProductCode_Exists = false;
+                bool Is_IX_MapId_Exists = false;
+                bool Is_IX_SupplierCode_Exists = false;
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    Newtonsoft.Json.Linq.JObject rss = Newtonsoft.Json.Linq.JObject.Parse(index.ToJson());
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SupplierProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SupplierProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null && (string)rss["key"]["SystemProductCode"] != null)
+                    {
+                        Is_IX_SupplierCode_SystemProductCode_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["MapId"] != null)
+                    {
+                        Is_IX_MapId_Exists = true;
+                    }
+
+                    if ((string)rss["key"]["SupplierCode"] != null)
+                    {
+                        Is_IX_SupplierCode_Exists = true;
+                    }
+                }
+
+                if (!Is_IX_SupplierCode_SupplierProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ConpanyAccommodationMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ConpanyAccommodationMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ConpanyAccommodationMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                if (!Is_IX_SupplierCode_SystemProductCode_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ConpanyAccommodationMapping> IndexBuilder = new IndexKeysDefinitionBuilder<DataContracts.Mapping.DC_ConpanyAccommodationMapping>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode);
+                    CreateIndexModel<DataContracts.Mapping.DC_ConpanyAccommodationMapping> IndexModel = new CreateIndexModel<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions()
+                {
+                    IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                    Timeout = new TimeSpan(0, 2, 0)
+                }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        {
+                            SupplierCode = s.Code.ToUpper(),
+                            Supplier_Id = s.Supplier_Id,
+                            SupplierName = s.Name.ToUpper()
+                        }).ToList();
+
+
+                        StringBuilder sbSelectAMPCount = new StringBuilder();
+
+                        sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_ProductMapping with(nolock) where Status in ('MAPPED','AUTOMAPPED') and IsActive = 1 ");
+
+                        TotalAPMCount = context.Database.SqlQuery<int>(sbSelectAMPCount.ToString()).SingleOrDefault();
+                    }
+                    scope.Complete();
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                foreach (var SupplierCode in SupplierCodes)
+                {
+                    List<DataContracts.Mapping.DC_ConpanyAccommodationMapping> productMapList = new List<DataContracts.Mapping.DC_ConpanyAccommodationMapping>();
+
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions()
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                        Timeout = new TimeSpan(0, 2, 0)
+                    }))
+                    {
+
+
+
+                        #region Generating Query
+                        StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                        sbSelectAccoMaster.Append(@"  
+                                    select  
+	                                      apm.Supplier_Id					     as [SupplierId]
+                                        , '" + SupplierCode.SupplierCode + @"'				 as [SupplierCode]	  
+                                        , ('" + SupplierCode.SupplierCode + @"'	 + '_'+    apm.SupplierProductReference + '_'+  av.CompanyId + '_' +   av.CompanyProductId) as _id 
+	                                    , apm.SupplierProductReference		 as [SupplierProductCode]
+	                                    , apm.ProductName					 as [SupplierProductName]
+	                                    , av.ProductName					 as [CompanyProductName]
+                                        , av.CommonProductId                 as [CommonProductId]
+	                                    , av.CompanyId						 as [TLGXCompanyId]
+                                        , av.CompanyProductId                as [CompanyProductId]
+	                                    , av.CompanyName					 as [TLGXCompanyName]	 
+	                                    , av.Country						 as [CountryName]
+	                                    , av.City							 as [CityName]
+	                                    , av.State							 as [StateName]
+                                        , 'Accommodation'                    as [ProductCategory]
+	                                    , av.ProductCatSubType				 as [ProductCategorySubType]
+	                                    , av.Brand							 as [Brand]
+	                                    , av.Chain							 as [Chain]
+	                                    , av.Interest						 as [Interest]
+	                                    , av.Accommodation_CompanyVersion_Id as [Accommodation_CompanyVersion_Id]
+                                        , av.StarRating						 as [Rating]
+                                        , isnull(acc.IsRoomMappingCompleted,0)  as [IsRoomMappingCompleted] 
+										, isnull(apm.IsDirectContract,0)     as [IsDirectContract]   
+                                    from  Accommodation_ProductMapping apm with (NOLOCk)
+                                    join  Accommodation_CompanyVersion av 
+		                                    on av.Accommodation_Id = apm.Accommodation_Id
+                                    join  Accommodation acc 
+		                                    on acc.Accommodation_Id = av.Accommodation_Id
+                                    where 
+	                                    apm.supplier_id = '" + SupplierCode.Supplier_Id + @"' and 
+	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') --and apm.SupplierProductReference = '136329'
+                                        --and av.Accommodation_CompanyVersion_Id = '151A0F5C-B336-4939-8089-8D567099DB2E'
+
+                                              ");
+
+                        //if (gAccommodation_Id == Guid.Empty)
+                        //{
+                        //    sbSelectAccoMaster.AppendLine(" ORDER BY ACC.CompanyHotelID  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY;");
+                        //}
+                        //else
+                        //{
+                        //    sbSelectAccoMaster.AppendLine(" WHERE ACC.Accommodation_Id = '" + gAccommodation_Id + "';");
+                        //}
+
+                        #endregion
+
+                        //using (TLGX_Entities context = new TLGX_Entities())
+                        //{
+                        //    context.Database.CommandTimeout = 0;
+                        //    _AccoListResultMain = context.Database.SqlQuery<DataContracts.Masters.DC_Accomodation>(sbSelectAccoMaster.ToString()).ToList();
+                        //}
+
+
+                        StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
+
+
+                        sbSelectAccoRoomMapped.Append(@"  
+                                 SELECT  ASRTM.SupplierRoomId
+			                             ,ASRTM.SupplierRoomTypeCode
+			                             ,ASRTM.SupplierRoomName
+			                             ,ASRTM.SupplierRoomCategory
+			                             ,ASRTM.SupplierRoomCategoryId 
+			                             ,ARIC.TlgxAccoRoomId as CompanyRoomId
+			                             ,ARIC.RoomName as CompanyRoomName
+			                             ,ARIC.CompanyRoomCategory 
+			                             ,cast(ASRTMV.MapId  as varchar(max)) as NakshatraRoomMappingId
+                                         ,ARIC.Accommodation_CompanyVersion_Id
+                                         ,ASRTM.Supplier_Id 
+                                         ,ASRTM.SupplierProductId
+			                             ,ARIC.CommonRoomId as TLGXCommonRoomId   
+			                    from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
+			                           join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
+                                            ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
+			                           join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock) 
+				                            ON ARIC.Accommodation_RoomInfo_Id = ASRTMV.Accommodation_RoomInfo_Id 
+	                                    where 
+                                            ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"' and 
+                                            (ASRTMV.SystemMappingStatus in  ('MAPPED', 'AUTOMAPPED') or ASRTMV.UserMappingStatus in  ('MAPPED', 'AUTOMAPPED'))
+                                            
+                        ");
+
+
+
+
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+                         
+
+                            productMapList = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(sbSelectAccoMaster.ToString()).ToList();
+
+                            lstMappedRooms = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationRoomMapping>(sbSelectAccoRoomMapped.ToString()).ToList();
+
+                        }
+                        scope.Complete();
+                    }
+
+
+
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
+
+                            if (lstMappedRooms != null && lstMappedRooms.Count > 0)
+                            {
+                                product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
+                            }
+                            else
+                            {
+                                product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+                            }
+
+                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+
+                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                        //}
+                    }
+
+
+                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+
+                }
+
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+
+
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+
+            }
         }
 
         #endregion
@@ -6489,7 +6748,7 @@ namespace DAL
                     #endregion
 
                     #region HolidayIncludes
-                    if (HolidayJson["Holiday"]["HolidayIncludes"] != null && HolidayJson["Holiday"]["HolidayIncludes"].ToList().Count != 0 )
+                    if (HolidayJson["Holiday"]["HolidayIncludes"] != null && HolidayJson["Holiday"]["HolidayIncludes"].ToList().Count != 0)
                     {
                         objHolidayModel.HolidayIncludes = new List<HolidayIncludes>();
 
@@ -6610,7 +6869,7 @@ namespace DAL
                     #endregion
 
                     #region Brands
-                    if (HolidayJson["Holiday"]["Brands"] != null && HolidayJson["Holiday"]["Brands"].ToList().Count != 0 )
+                    if (HolidayJson["Holiday"]["Brands"] != null && HolidayJson["Holiday"]["Brands"].ToList().Count != 0)
                     {
                         objHolidayModel.Brands = new List<HolidayBrandsAndBrochures>();
                         var TypeOfBrands = HolidayJson["Holiday"]["Brands"].GetType();
@@ -6717,7 +6976,7 @@ namespace DAL
                     #endregion
 
                     #region Media
-                    if (HolidayJson["Holiday"]["Media"] != null && HolidayJson["Holiday"]["Media"].ToList().Count != 0 )
+                    if (HolidayJson["Holiday"]["Media"] != null && HolidayJson["Holiday"]["Media"].ToList().Count != 0)
                     {
                         objHolidayModel.Media = new List<HolidayMedia>();
                         var TypeOfMedia = HolidayJson["Holiday"]["Media"].GetType();
@@ -6780,7 +7039,7 @@ namespace DAL
                     #endregion
 
                     #region Inclusions
-                    if (HolidayJson["Holiday"]["Inclusions"] != null && HolidayJson["Holiday"]["Inclusions"].ToList().Count !=0)
+                    if (HolidayJson["Holiday"]["Inclusions"] != null && HolidayJson["Holiday"]["Inclusions"].ToList().Count != 0)
                     {
                         objHolidayModel.Inclusions = new List<HolidayInclusionExclusion>();
                         var TypeOfInclusions = HolidayJson["Holiday"]["Inclusions"].GetType();
@@ -6865,7 +7124,7 @@ namespace DAL
                     #endregion
 
                     #region TermsConditions
-                    if (HolidayJson["Holiday"]["TermsConditions"] != null && HolidayJson["Holiday"]["TermsConditions"].ToList().Count !=0)
+                    if (HolidayJson["Holiday"]["TermsConditions"] != null && HolidayJson["Holiday"]["TermsConditions"].ToList().Count != 0)
                     {
                         objHolidayModel.TermsConditions = new List<HolidayTermsConditions>();
                         var TypeOfTermsConditions = HolidayJson["Holiday"]["TermsConditions"].GetType();
@@ -6907,7 +7166,7 @@ namespace DAL
                     #endregion
 
                     #region BookingPolicy
-                    if (HolidayJson["Holiday"]["BookingPolicy"] != null && HolidayJson["Holiday"]["BookingPolicy"].ToList().Count !=0)
+                    if (HolidayJson["Holiday"]["BookingPolicy"] != null && HolidayJson["Holiday"]["BookingPolicy"].ToList().Count != 0)
                     {
                         objHolidayModel.BookingPolicy = new List<HolidayTermsConditions>();
                         var TypeOfBookingPolicy = HolidayJson["Holiday"]["BookingPolicy"].GetType();
@@ -7356,7 +7615,7 @@ namespace DAL
                     #endregion
 
                     #region Departure
-                    if (HolidayJson["Holiday"]["Departure"] != null && HolidayJson["Holiday"]["Departure"].ToList().Count != 0 )
+                    if (HolidayJson["Holiday"]["Departure"] != null && HolidayJson["Holiday"]["Departure"].ToList().Count != 0)
                     {
                         objHolidayModel.Departure = new List<HolidayDeparture>();
                         var TypeOfDeparture = HolidayJson["Holiday"]["Departure"].GetType();
@@ -7555,7 +7814,7 @@ namespace DAL
                     #endregion
 
                     #region PackagePrice
-                    if (HolidayJson["Holiday"]["PackagePrice"] != null && HolidayJson["Holiday"]["PackagePrice"].ToList().Count !=0)
+                    if (HolidayJson["Holiday"]["PackagePrice"] != null && HolidayJson["Holiday"]["PackagePrice"].ToList().Count != 0)
                     {
                         objHolidayModel.PackagePrice = new List<PackagePrice>();
 
@@ -8314,7 +8573,7 @@ namespace DAL
 
                                                     for (int v = 0; v < TotalProceDetails; v++)
                                                     {
-                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v].GetType().Name.ToUpper()!="JARRAY")
+                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v].GetType().Name.ToUpper() != "JARRAY")
                                                         {
                                                             PriceDetailsStructure objPriceDetailsStructure = new PriceDetailsStructure();
                                                             #region PassengerRangeFrom
@@ -8426,7 +8685,7 @@ namespace DAL
                                                             #endregion
 
 
-                                                            ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure); 
+                                                            ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure);
                                                         }
                                                         else
                                                         {
@@ -8513,14 +8772,14 @@ namespace DAL
                                                                                 // Conversion Success
                                                                             }
                                                                         }
-                                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0 )
+                                                                        if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0)
                                                                         {
                                                                             objPriceDetailsStructure.Tax.Add(new TaxStructure()
                                                                             {
                                                                                 TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxRate"]),
                                                                                 TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"]["TaxType"]),
                                                                                 TaxAmount = TaxAmount
-                                                                            }); 
+                                                                            });
                                                                         }
                                                                     }
                                                                     else
@@ -8528,7 +8787,7 @@ namespace DAL
                                                                         int TotalTaxNodes = HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count;
                                                                         for (int b = 0; b < TotalTaxNodes; b++)
                                                                         {
-                                                                            if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0 )
+                                                                            if (HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"].ToList().Count != 0)
                                                                             {
                                                                                 double TaxAmount = 0;
                                                                                 if (!string.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxAmount"])))
@@ -8543,7 +8802,7 @@ namespace DAL
                                                                                     TaxRate = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxRate"]),
                                                                                     TaxType = Convert.ToString(HolidayJson["Holiday"]["PackagePrice"][m]["BasePrice"][i]["PriceDetails"][v][h]["Tax"][b]["TaxType"]),
                                                                                     TaxAmount = TaxAmount
-                                                                                }); 
+                                                                                });
                                                                             }
                                                                         }
                                                                     }
@@ -8553,7 +8812,7 @@ namespace DAL
 
                                                                 ObjBasePriceStructure.PriceDetails.Add(objPriceDetailsStructure);
                                                             }
-                                                           
+
                                                         }
                                                     }
 
@@ -9074,7 +9333,7 @@ namespace DAL
 
                     #region PostTourPrice
 
-                    if (HolidayJson["Holiday"]["PostTourPrice"] != null && HolidayJson["Holiday"]["PostTourPrice"].ToList().Count !=0)
+                    if (HolidayJson["Holiday"]["PostTourPrice"] != null && HolidayJson["Holiday"]["PostTourPrice"].ToList().Count != 0)
                     {
                         objHolidayModel.PostTourPrice = new List<PreTourPrice>();
                         var TypeOfPostTourPrice = HolidayJson["Holiday"]["PostTourPrice"].GetType();
@@ -9367,7 +9626,7 @@ namespace DAL
                                                         TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxRate"]),
                                                         TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"]["TaxType"]),
                                                         TaxAmount = TaxAmt
-                                                    }); 
+                                                    });
                                                 }
                                             }
                                             else
@@ -9383,14 +9642,14 @@ namespace DAL
                                                             // Conversion Success
                                                         }
                                                     }
-                                                    if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p].ToList().Count != 0 )
+                                                    if (HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p].ToList().Count != 0)
                                                     {
                                                         objPostTourPrice.Tax.Add(new TaxStructure()
                                                         {
                                                             TaxRate = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxRate"]),
                                                             TaxType = Convert.ToString(HolidayJson["Holiday"]["PostTourPrice"][n][q]["Tax"][p]["TaxType"]),
                                                             TaxAmount = TaxAmt
-                                                        }); 
+                                                        });
                                                     }
                                                 }
 
@@ -9755,7 +10014,7 @@ namespace DAL
                                 join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
                                 join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
                                 join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
-                               // where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
+                                // where srtm.SupplierName == "Expedia" && srtm.SupplierProductId == "474569" && srtmv.UserMappingStatus == "MAPPED"
                                 where srtm.Supplier_Id == Supplier_id && srtmv.UserMappingStatus == "MAPPED"
                                 select new DataContracts.Mapping.DC_HotelRoomTypeMappingRequest
                                 {

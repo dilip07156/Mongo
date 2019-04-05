@@ -128,6 +128,12 @@ namespace ServiceContracts
         [WebGet(UriTemplate = "Load/ProductMappingLite/{LogId}/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadProductMappingLite(string LogId ,string MapId);
 
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCompanyAccommodationProductMapping(string LogId);
+
         [OperationContract]
         [FaultContract(typeof(ErrorNotifier))]
         [WebGet(UriTemplate = "LoadBySupplier/ProductMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
