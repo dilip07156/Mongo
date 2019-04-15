@@ -862,7 +862,6 @@ namespace DAL
 
 
 
-
         public static String RemoveDiacritics(string s)
         {
             string data = null;
@@ -2809,12 +2808,17 @@ namespace DAL
                     {
                         context.Database.CommandTimeout = 0;
 
-                        SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
-                        {
-                            SupplierCode = s.Code.ToUpper(),
-                            Supplier_Id = s.Supplier_Id,
-                            SupplierName = s.Name.ToUpper()
-                        }).ToList();
+                        StringBuilder sbSuuplierCodes = new StringBuilder();
+
+                        sbSuuplierCodes.Append("SELECT upper(Code) as SupplierCode ,Supplier_Id as Supplier_Id,UPPER(Name) as SupplierName from Supplier with(nolock) where StatusCode ='ACTIVE' and Code >= 'HOTELSPRO' order by Code ");
+
+                        SupplierCodes =  context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
+                        //SupplierCodes = context.Suppliers.Where(w => (w.StatusCode ?? string.Empty) == "ACTIVE").OrderBy(o => o.Code).Select(s => new DC_Supplier_ShortVersion
+                        //{
+                        //    SupplierCode = s.Code.ToUpper(),
+                        //    Supplier_Id = s.Supplier_Id,
+                        //    SupplierName = s.Name.ToUpper()
+                        //}).ToList();
 
 
                         StringBuilder sbSelectAMPCount = new StringBuilder();
@@ -2831,12 +2835,12 @@ namespace DAL
                 foreach (var SupplierCode in SupplierCodes)
                 {
                     List<DataContracts.Mapping.DC_ConpanyAccommodationMapping> productMapList = new List<DataContracts.Mapping.DC_ConpanyAccommodationMapping>();
-
+                    StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
                     using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
                     new System.Transactions.TransactionOptions()
                     {
                         IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
-                        Timeout = new TimeSpan(0, 2, 0)
+                        Timeout = new TimeSpan(0, 15, 0)
                     }))
                     {
 
@@ -2899,33 +2903,59 @@ namespace DAL
                         //}
 
 
-                        StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
+                        //StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
 
 
                         sbSelectAccoRoomMapped.Append(@"  
-                                 SELECT  ASRTM.SupplierRoomId
-			                             ,ASRTM.SupplierRoomTypeCode
-			                             ,ASRTM.SupplierRoomName
-			                             ,ASRTM.SupplierRoomCategory
-			                             ,ASRTM.SupplierRoomCategoryId 
-			                             ,ARIC.TlgxAccoRoomId as CompanyRoomId
-			                             ,ARIC.RoomName as CompanyRoomName
-			                             ,ARIC.CompanyRoomCategory 
-			                             ,cast(ASRTMV.MapId  as varchar(max)) as NakshatraRoomMappingId
-                                         ,ARIC.Accommodation_CompanyVersion_Id
-                                         ,ASRTM.Supplier_Id 
-                                         ,ASRTM.SupplierProductId
-			                             ,ARIC.CommonRoomId as TLGXCommonRoomId   
-			                    from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
-			                           join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
-                                            ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
-			                           join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock) 
-				                            ON ARIC.Accommodation_RoomInfo_Id = ASRTMV.Accommodation_RoomInfo_Id 
-	                                    where 
-                                            ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"' and 
-                                            (ASRTMV.SystemMappingStatus in  ('MAPPED', 'AUTOMAPPED') or ASRTMV.UserMappingStatus in  ('MAPPED', 'AUTOMAPPED'))
-                                            
-                        ");
+                                  SELECT  ASRTM.SupplierRoomId
+                                 ,ASRTM.SupplierRoomTypeCode
+                                 ,ASRTM.SupplierRoomName
+                                 ,ASRTM.SupplierRoomCategory
+                                 ,ASRTM.SupplierRoomCategoryId 
+                                 ,ARIC.TlgxAccoRoomId as CompanyRoomId
+                                 ,ARIC.RoomName as CompanyRoomName
+                                 ,ARIC.CompanyRoomCategory 
+                                 ,cast(ASRTMV.MapId  as varchar(max)) as NakshatraRoomMappingId
+                                          ,ARIC.Accommodation_CompanyVersion_Id
+                                          ,ASRTM.Supplier_Id 
+                                          ,ASRTM.SupplierProductId
+                                 ,ARIC.CommonRoomId as TLGXCommonRoomId   
+                        from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
+                               join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
+                                             ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
+                               join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock) 
+                                 ON ARIC.Accommodation_RoomInfo_Id = ASRTMV.Accommodation_RoomInfo_Id 
+                                      where 
+                                             ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"' and 
+                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED')
+
+                         ");
+
+                        // sbSelectAccoRoomMapped.Append(@"  
+                        //          SELECT  ASRTM.SupplierRoomId
+                        //         ,ASRTM.SupplierRoomTypeCode
+                        //         ,ASRTM.SupplierRoomName
+                        //         ,ASRTM.SupplierRoomCategory
+                        //         ,ASRTM.SupplierRoomCategoryId 
+                        //         ,ARIC.TlgxAccoRoomId as CompanyRoomId
+                        //         ,ARIC.RoomName as CompanyRoomName
+                        //         ,ARIC.CompanyRoomCategory 
+                        //         ,cast(ASRTMV.MapId  as varchar(max)) as NakshatraRoomMappingId
+                        //                  ,ARIC.Accommodation_CompanyVersion_Id
+                        //                  ,ASRTM.Supplier_Id 
+                        //                  ,ASRTM.SupplierProductId
+                        //         ,ARIC.CommonRoomId as TLGXCommonRoomId   
+                        //from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
+                        //       join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
+                        //                     ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
+                        //       join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock) 
+                        //         ON ARIC.Accommodation_RoomInfo_Id = ASRTMV.Accommodation_RoomInfo_Id 
+                        //              where 
+                        //                     ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"'  and 
+                        //                     (ASRTMV.SystemMappingStatus in  ('MAPPED', 'AUTOMAPPED') or ASRTMV.UserMappingStatus in  ('MAPPED', 'AUTOMAPPED'))
+
+                        // ");
+
 
 
 
@@ -2934,7 +2964,7 @@ namespace DAL
                         {
                             context.Configuration.AutoDetectChangesEnabled = false;
                             context.Database.CommandTimeout = 0;
-                         
+
 
                             productMapList = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(sbSelectAccoMaster.ToString()).ToList();
 
@@ -2942,34 +2972,48 @@ namespace DAL
 
                         }
                         scope.Complete();
-                    }
-
-
-
-                    if (productMapList != null && productMapList.Count() > 0)
-                    {
-                        foreach (var product in productMapList)
-                        {
-                            var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
-
-                            if (lstMappedRooms != null && lstMappedRooms.Count > 0)
-                            {
-                                product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
-                            }
-                            else
-                            {
-                                product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
-                            }
-
-                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
                         }
 
-                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+
+
+                        if (productMapList != null && productMapList.Count() > 0)
+                        {
+                            int counter = 0;
+                            foreach (var product in productMapList)
+                            {
+                                var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
+                                counter = counter + 1;
+                                //sbSelectAccoRoomMapped = sbSelectAccoRoomMapped.Replace("@ProductID", product.SupplierProductCode);
+                                //lstMappedRooms = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationRoomMapping>(sbSelectAccoRoomMapped.ToString()).ToList();
+                                System.Diagnostics.Debug.WriteLine(SupplierCode.SupplierCode + " : " +  counter.ToString());
+
+
+                                if (lstMappedRooms != null && lstMappedRooms.Count > 0)
+                                {
+                                    product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
+                                }
+                                else
+                                {
+                                    product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+                                }
+
+                                var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                            }
+
+                            var sup = SupplierCode.SupplierCode;
+                            int count = productMapList.Count;
+                            int RTcount = lstMappedRooms.Count;
+                            
+                            System.Diagnostics.Debug.WriteLine("Supplier : " + sup + ", Acc Count : " + Convert.ToString(count) + ", AccRT Count : " + Convert.ToString(count));
+                            MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
+                            //}
+                        }
+
+
                         //}
-                    }
-
-
+                        //scope.Complete();
+                    //}
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
 
                 }
