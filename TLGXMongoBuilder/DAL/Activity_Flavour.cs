@@ -62,6 +62,5 @@ namespace DAL
         public Nullable<System.DateTime> Activity_Status_Edit_Date { get; set; }
         public string TourType { get; set; }
         public string TLGXDisplaySubType { get; set; }
-        public string DisplayName { get; set; }
     }
 }
