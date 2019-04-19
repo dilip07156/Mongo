@@ -22,6 +22,7 @@ namespace DataContracts.Activity
         public string SubType { get; set; }
         public List<ActivityCategory> CategoryGroup { get; set; }
         public string TLGXDisplaySubType { get; set; }
+        public string DisplayName { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string DeparturePoint { get; set; }
