@@ -2231,26 +2231,24 @@ namespace DAL
                         new System.Transactions.TransactionOptions()
                         {
                             IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
-                            Timeout = new TimeSpan(0, 2, 0)
+                            Timeout = new TimeSpan(0, 5, 0)
                         }))
                         {
                             using (TLGX_Entities context = new TLGX_Entities())
                             {
                                 context.Configuration.AutoDetectChangesEnabled = false;
-                                context.Database.CommandTimeout = 0;
+                                context.Database.CommandTimeout = 0;                               
 
-                                productMapList = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
-                                                  join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
-                                                  where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Supplier_Id == SupplierCode.Supplier_Id
-                                                  && apm.IsActive == true
-                                                  select new DataContracts.Mapping.DC_ProductMappingLite
-                                                  {
-                                                      SupplierCode = SupplierCode.SupplierCode,
-                                                      SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                                      MapId = apm.MapId,
-                                                      SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
-                                                      TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
-                                                  }).ToList();
+                                StringBuilder sbsqlselectcount = new StringBuilder();
+                                sbsqlselectcount.Append("SELECT '"+ SupplierCode.SupplierCode+ "' AS SupplierCode,APM.SupplierProductReference AS SupplierProductCode," +
+                                    " APM.MapId AS MapId, UPPER(ACC.CompanyHotelID) AS SystemProductCode, UPPER(ISNULL(ACC.TLGXAccoId, '')) AS TlgxMdmHotelId" +
+                                    " FROM Accommodation_ProductMapping  APM with(Nolock) " +
+                                    " INNER JOIN Accommodation ACC with(Nolock) ON APM.Accommodation_Id = Acc.Accommodation_Id" +
+                                    " WHERE apm.Status IN('MAPPED', 'AUTOMAPPED') AND APM.IsActive = 1 AND apm.Supplier_Id = '"+ SupplierCode.Supplier_Id +"'");
+
+                                productMapList = context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMappingLite>(sbsqlselectcount.ToString()).ToList();
+
+
                             }
                             scope.Complete();
                         }
@@ -2258,25 +2256,25 @@ namespace DAL
                         List<int> MappedIds = productMapList.Select(s => s.MapId).ToList();
                         List<int> mapidsinmongo = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).Project(u => u.MapId).ToList();
 
-                        List<int> MapIdsToBeDeleted = (from m in mapidsinmongo
-                                                       where !MappedIds.Contains(m)
-                                                       select m).ToList();
+                        List<int> MapIdsToBeDeleted = mapidsinmongo.Except(MappedIds).ToList();
 
                         if (MapIdsToBeDeleted != null && MapIdsToBeDeleted.Count > 0)
                         {
-                            foreach (var MapId in MapIdsToBeDeleted)
-                            {
-                                collection.DeleteMany(x => x.MapId == MapId);
-                            }
+                            var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.In(c => c.MapId, MapIdsToBeDeleted);
+                            collection.DeleteMany(filter);                            
                         }
 
                         if (productMapList != null && productMapList.Count() > 0)
                         {
-                            foreach (var product in productMapList)
+                            var writeModelDetails = new List<WriteModel<DataContracts.Mapping.DC_ProductMappingLite>>();
+                            foreach (var item in productMapList)
                             {
-                                var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, product.MapId);
-                                var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                                writeModelDetails.Add(new ReplaceOneModel<DataContracts.Mapping.DC_ProductMappingLite>(
+                                        new BsonDocument("MapId", item.MapId), item)
+                                { IsUpsert = true });
                             }
+                            if (writeModelDetails.Any())
+                                collection.BulkWrite(writeModelDetails);
 
                             MongoInsertedCount = MongoInsertedCount + productMapList.Count();
                             UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MAPPINGLITE");
