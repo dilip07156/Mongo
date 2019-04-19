@@ -2015,43 +2015,6 @@ namespace DAL
 
                                                   }).ToList();
 
-
-                                                  join cm in context.m_CityMaster.AsNoTracking() on apm.City_Id equals cm.City_Id into LJCityMaster
-                                                  from citymaster in LJCityMaster.DefaultIfEmpty()
-
-                                                  join con in context.m_CountryMaster.AsNoTracking() on citymaster.Country_Id equals con.Country_Id into LJCountryMaster
-                                                  from countrymaster in LJCountryMaster.DefaultIfEmpty()
-
-                                                  join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
-                                                  from acco in LJAcco.DefaultIfEmpty()
-
-                                                  where apm.Supplier_Id == SupplierCode.Supplier_Id && apm.IsActive == true
-                                                
-                                                  select new DataContracts.Mapping.DC_ProductMapping
-                                                  {
-                                                      SupplierCode = SupplierCode.SupplierCode,
-                                                      SupplierProductCode = apm.SupplierProductReference.ToUpper(),
-                                                      SupplierCountryCode = apm.CountryCode.ToUpper(),
-                                                      SupplierCountryName = apm.CountryName.ToUpper(),
-                                                      SupplierCityCode = apm.CityCode.ToUpper(),
-                                                      SupplierCityName = apm.CityName.ToUpper(),
-                                                      SupplierProductName = apm.ProductName.ToUpper(),
-                                                      MappingStatus = apm.Status.ToUpper(),
-                                                      MapId = apm.MapId,
-
-                                                      SystemProductCode = (acco == null ? string.Empty : acco.CompanyHotelID.ToString().ToUpper()),
-                                                      SystemProductName = (acco == null ? string.Empty : acco.HotelName.ToUpper()),
-                                                      SystemProductType = (acco == null ? string.Empty : acco.ProductCategorySubType.ToUpper()),
-                                                      TlgxMdmHotelId = (acco == null ? string.Empty : acco.TLGXAccoId.ToUpper()),
-
-                                                      SystemCountryCode = (countrymaster != null ? countrymaster.Code.ToUpper() : string.Empty),
-                                                      SystemCountryName = (countrymaster != null ? countrymaster.Name.ToUpper() : string.Empty),
-                                                      SystemCityCode = (citymaster != null ? citymaster.Code.ToUpper() : string.Empty),
-                                                      SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
-
-                                                  }).ToList();
-
-
                             }
                             scope.Complete();
                         }
