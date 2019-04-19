@@ -853,6 +853,7 @@
           <Property Name="Activity_Status_Edit_Date" Type="datetime" />
           <Property Name="TourType" Type="nvarchar" MaxLength="100" />
           <Property Name="TLGXDisplaySubType" Type="varchar" MaxLength="500" />
+          <Property Name="DisplayName" Type="varchar" MaxLength="500" />
         </EntityType>
         <EntityType Name="Activity_FlavourOptions">
           <Key>
@@ -2351,6 +2352,7 @@
           <Property Name="Activity_Status_Edit_Date" Type="DateTime" Precision="3" />
           <Property Name="TourType" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="TLGXDisplaySubType" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
+          <Property Name="DisplayName" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="m_keyword">
           <Key>
@@ -4062,6 +4064,7 @@
             <EntityTypeMapping TypeName="TLGX_Model.Activity_Flavour">
               <MappingFragment StoreEntitySet="Activity_Flavour">
                 <ScalarProperty Name="TLGXDisplaySubType" ColumnName="TLGXDisplaySubType" />
+                <ScalarProperty Name="DisplayName" ColumnName="DisplayName" />
                 <ScalarProperty Name="TourType" ColumnName="TourType" />
                 <ScalarProperty Name="Activity_Status_Edit_Date" ColumnName="Activity_Status_Edit_Date" />
                 <ScalarProperty Name="Activity_Status_Edit_User" ColumnName="Activity_Status_Edit_User" />
