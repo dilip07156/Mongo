@@ -1985,7 +1985,7 @@ namespace DAL
                                     " FROM Accommodation_ProductMapping APM with(Nolock) " +
                                     " LEFT JOIN m_CityMaster City with(Nolock) ON APM.City_Id = City.City_Id " +
                                     " LEFT JOIN m_CountryMaster Country with(Nolock) ON City.Country_Id = Country.Country_Id" +
-                                    " LEFT JOIN ACCOMMODATION ACCO with(Nolock) ON APM.ACCOMMODATION_ID = ACCO.ACCOMMODATION_ID WHERE APM.isactive=1 AND APM.supplier_id='" + SupplierCode.Supplier_Id+"'");
+                                    " LEFT JOIN ACCOMMODATION ACCO with(Nolock) ON APM.ACCOMMODATION_ID = ACCO.ACCOMMODATION_ID WHERE apm.Status IN('MAPPED', 'AUTOMAPPED') AND APM.isactive=1 AND APM.supplier_id='" + SupplierCode.Supplier_Id+"'");
 
                                 productMapList= context.Database.SqlQuery<DataContracts.Mapping.DC_ProductMapping>(sbsqlselectcount.ToString()).ToList();
 
@@ -2041,7 +2041,7 @@ namespace DAL
                                           join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
                                           from acco in LJAcco.DefaultIfEmpty()
 
-                                          where apm.IsActive == true && apm.Accommodation_ProductMapping_Id == ProdMapId
+                                          where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.IsActive == true && apm.Accommodation_ProductMapping_Id == ProdMapId
 
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
