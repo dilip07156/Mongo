@@ -1,9 +1,12 @@
 ﻿using DataContracts;
+using DataContracts.Mapping;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.ServiceModel;
+using System.Text;
 
 namespace DAL
 {
@@ -1129,6 +1132,195 @@ namespace DAL
             }
         }
 
+        //public void Upsert_CompanySpecificRoomTypeMapping_ByMapId(string MapId)
+        //{
+        //    int mapId = Convert.ToInt32(MapId);
+        //    _database = MongoDBHandler.mDatabase();
+        //    var collection = _database.GetCollection<DataContracts.Mapping.DC_CompanySpecificHotelRoomTypeMappingRequest>("RoomTypeMappingOnline");
+
+        //    using (TLGX_Entities context = new TLGX_Entities())
+        //    {
+        //        var CompanySpecificRoomTypeMapping = (from srtm in context.Accommodation_SupplierRoomTypeMapping.AsNoTracking()
+        //                                              join srtmv in context.Accommodation_SupplierRoomTypeMapping_Values.AsNoTracking() on srtm.Accommodation_SupplierRoomTypeMapping_Id equals srtmv.Accommodation_SupplierRoomTypeMapping_Id
+        //                                              join ari in context.Accommodation_RoomInfo.AsNoTracking() on srtmv.Accommodation_RoomInfo_Id equals ari.Accommodation_RoomInfo_Id
+        //                                              join acco in context.Accommodations on ari.Accommodation_Id equals acco.Accommodation_Id
+        //                                              join sup in context.Suppliers on srtm.Supplier_Id equals sup.Supplier_Id
+        //                                              where srtmv.MapId == mapId
+        //                                              select new DataContracts.Mapping.DC_CompanySpecificHotelRoomTypeMappingRequest
+        //                                              {
+        //                                                  Accommodation_SupplierRoomTypeMapping_Id = srtm.Accommodation_SupplierRoomTypeMapping_Id,
+        //                                                  BathRoomType = srtm.BathRoomType,
+        //                                                  BeddingConfig = srtm.BeddingConfig,
+        //                                                  Bedrooms = srtm.Bedrooms,
+        //                                                  BedType = srtm.BedTypeCode,
+        //                                                  ExtraBed = srtm.ExtraBed,
+        //                                                  FloorName = srtm.FloorName,
+        //                                                  PromotionalVendorCode = srtm.PromotionalVendorCode,
+        //                                                  RatePlan = srtm.RatePlan,
+        //                                                  RatePlanCode = srtm.RatePlanCode,
+        //                                                  RoomDescription = srtm.RoomDescription,
+        //                                                  RoomLocationCode = srtm.RoomLocationCode,
+        //                                                  RoomSize = srtm.RoomSize,
+        //                                                  RoomView = srtm.RoomViewCode,
+        //                                                  Smoking = srtm.Smoking,
+        //                                                  Status = srtmv.UserMappingStatus,
+        //                                                  SupplierProductId = srtm.SupplierProductId.ToUpper(),
+        //                                                  SupplierRoomCategory = srtm.SupplierRoomCategory.ToUpper(),
+        //                                                  SupplierRoomCategoryId = srtm.SupplierRoomCategoryId.ToUpper(),
+        //                                                  SupplierRoomId = srtm.SupplierRoomId.ToUpper(),
+        //                                                  SupplierRoomName = srtm.SupplierRoomName.ToUpper(),
+        //                                                  SupplierRoomTypeCode = srtm.SupplierRoomTypeCode.ToUpper(),
+        //                                                  SystemProductCode = acco.CompanyHotelID,
+        //                                                  SystemRoomTypeCode = ari.CommonRoomId,
+        //                                                  SystemRoomTypeMapId = srtmv.MapId,
+        //                                                  CreateDateTime=DateTime.Now,
+        //                                                  Mode="Online",
+        //                                                  SupplierId = sup.Code//,
+        //                                                  //TLGXCommonHotelId=acco.CompanyHotelID
+
+
+        //                                              }).FirstOrDefault();
+
+        //        var filter = Builders<DataContracts.Mapping.DC_CompanySpecificHotelRoomTypeMappingRequest>.Filter.Eq(c => c.SystemRoomTypeMapId, CompanySpecificRoomTypeMapping.SystemRoomTypeMapId);
+        //        collection.ReplaceOne(filter, CompanySpecificRoomTypeMapping, new UpdateOptions { IsUpsert = true });
+        //        filter = null;
+        //        collection = null;
+        //        _database = null;
+        //    }
+        //}
+
+        public void LoadCompanyAccommodationProductMappingSingle(string MapId,string SupplierProductReference,string Supplier_id)
+        {
+           
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_ConpanyAccommodationMapping>("CompanyAccommodationProductMapping");
+                List<DC_ConpanyAccommodationRoomMapping> lstMappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+
+                    List<DataContracts.Mapping.DC_ConpanyAccommodationMapping> productMapList = new List<DataContracts.Mapping.DC_ConpanyAccommodationMapping>();
+                    StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
+                    using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                    new System.Transactions.TransactionOptions()
+                    {
+                        IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                        Timeout = new TimeSpan(0, 15, 0)
+                    }))
+                    {
+
+                        #region Generating Query
+                        StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                        sbSelectAccoMaster.Append(@"  
+                                    select  
+	                                      apm.Supplier_Id					     as [SupplierId]                                      
+	                                    , apm.SupplierProductReference		 as [SupplierProductCode]
+	                                    , apm.ProductName					 as [SupplierProductName]
+	                                    , av.ProductName					 as [CompanyProductName]
+                                        , av.CommonProductId                 as [CommonProductId]
+	                                    , av.CompanyId						 as [TLGXCompanyId]
+                                        , av.CompanyProductId                as [CompanyProductId]
+	                                    , av.CompanyName					 as [TLGXCompanyName]	 
+	                                    , av.Country						 as [CountryName]
+	                                    , av.City							 as [CityName]
+	                                    , av.State							 as [StateName]
+                                        , 'Accommodation'                    as [ProductCategory]
+	                                    , av.ProductCatSubType				 as [ProductCategorySubType]
+	                                    , av.Brand							 as [Brand]
+	                                    , av.Chain							 as [Chain]
+	                                    , av.Interest						 as [Interest]
+	                                    , av.Accommodation_CompanyVersion_Id as [Accommodation_CompanyVersion_Id]
+                                        , av.StarRating						 as [Rating]
+                                        , isnull(acc.IsRoomMappingCompleted,0)  as [IsRoomMappingCompleted] 
+										, isnull(apm.IsDirectContract,0)     as [IsDirectContract]   
+                                    from  Accommodation_ProductMapping apm with (NOLOCk)
+                                    join  Accommodation_CompanyVersion av 
+		                                    on av.Accommodation_Id = apm.Accommodation_Id
+                                    join  Accommodation acc 
+		                                    on acc.Accommodation_Id = av.Accommodation_Id
+                                    where 
+                                        apm.IsActive = 1  and
+	                                    apm.supplier_id = '" + Supplier_id + @"' and 
+                                        apm.SupplierProductReference = '" + SupplierProductReference + @"' and 
+	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') --and apm.SupplierProductReference = '136329'
+                                        --and av.Accommodation_CompanyVersion_Id = '151A0F5C-B336-4939-8089-8D567099DB2E'
+
+                                              ");
+
+                      
+
+                        #endregion
+
+                        sbSelectAccoRoomMapped.Append(@"  
+                                  SELECT  ASRTM.SupplierRoomId
+                                 ,ASRTM.SupplierRoomTypeCode
+                                 ,ASRTM.SupplierRoomName
+                                 ,ASRTM.SupplierRoomCategory
+                                 ,ASRTM.SupplierRoomCategoryId 
+                                 ,ARIC.TlgxAccoRoomId as CompanyRoomId
+                                 ,ARIC.RoomName as CompanyRoomName
+                                 ,ARIC.CompanyRoomCategory 
+                                 ,cast(ASRTMV.MapId  as varchar(max)) as NakshatraRoomMappingId
+                                          ,ARIC.Accommodation_CompanyVersion_Id
+                                          ,ASRTM.Supplier_Id 
+                                          ,ASRTM.SupplierProductId
+                                 ,ARIC.CommonRoomId as TLGXCommonRoomId   
+                        from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
+                               join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
+                                             ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
+                               join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock) 
+                                 ON ARIC.Accommodation_RoomInfo_Id = ASRTMV.Accommodation_RoomInfo_Id 
+                                      where  
+                                             ASRTM.Supplier_Id = '" + Supplier_id + @"' and 
+                                             ASRTMV.MapId = '" + MapId + @"' and 
+                                             ASRTM.SupplierProductId = '" + SupplierProductReference + @"' and 
+                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED')
+
+                         ");
+
+                      
+                        using (TLGX_Entities context = new TLGX_Entities())
+                        {
+                            context.Configuration.AutoDetectChangesEnabled = false;
+                            context.Database.CommandTimeout = 0;
+
+
+                            productMapList = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(sbSelectAccoMaster.ToString()).ToList();
+
+                            lstMappedRooms = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationRoomMapping>(sbSelectAccoRoomMapped.ToString()).ToList();
+
+                        }
+                        scope.Complete();
+                    }
+                    if (productMapList != null && productMapList.Count() > 0)
+                    {
+                       
+                        foreach (var product in productMapList)
+                        {
+                            var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
+                            if (lstMappedRooms != null && lstMappedRooms.Count > 0)
+                            {
+                                product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
+                            }
+                            else
+                            {
+                                product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+                            }
+
+                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        }
+                    }
+                
+                collection = null;
+                _database = null;
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                
+
+            }
+        }
+
         public void Delete_RoomTypeMapping_ByMapId(string MapId)
         {
             try
@@ -1137,6 +1329,30 @@ namespace DAL
                 var collection = _database.GetCollection<BsonDocument>("RoomTypeMapping");
                 var filter = Builders<BsonDocument>.Filter.Eq("SystemRoomTypeMapId", Convert.ToInt32(MapId));
                 var result = collection.DeleteOne(filter);
+                filter = null;
+                collection = null;
+                _database = null;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public void Delete_CompanySpecificRoomTypeMapping_ByMapId(string MapId, string SupplierProductReference, string Supplier_id)
+        {
+            try
+            {
+                _database = MongoDBHandler.mDatabase();            
+
+                var collection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
+                var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", Supplier_id);
+                    filter = filter & Builders<BsonDocument>.Filter.Eq("SupplierProductCode", SupplierProductReference);
+
+                var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
+                    Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", MapId));
+                var result = collection.FindOneAndUpdateAsync(filter, update).Result;
+
                 filter = null;
                 collection = null;
                 _database = null;

@@ -131,8 +131,8 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
-        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMapping/{LogId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadCompanyAccommodationProductMapping(string LogId);
+        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_ID);
 
         [OperationContract]
         [FaultContract(typeof(ErrorNotifier))]
@@ -191,7 +191,7 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/HotelRoomTypeMapping/{LogId}/{Supplier_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id);
-
+       
         #region ZoneTypeMaster
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]

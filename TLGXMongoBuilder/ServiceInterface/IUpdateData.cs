@@ -185,6 +185,16 @@ namespace ServiceContracts
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Delete/RoomTypeMapping/MapId/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void Delete_RoomTypeMapping_ByMapId(string MapId);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Upsert/CompanySpecificRoomTypeMapping/MapId/{MapId}/{SupplierProductReference}/{Supplier_id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Upsert_CompanySpecificRoomTypeMapping_ByMapId(string MapId,string SupplierProductReference, string Supplier_id);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Delete/CompanySpecificRoomTypeMapping/MapId/{MapId}/{SupplierProductReference}/{Supplier_id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void Delete_CompanySpecificRoomTypeMapping_ByMapId(string MapId,string SupplierProductReference, string Supplier_id);
         #endregion
     }
 }

@@ -275,6 +275,21 @@ namespace MapperSvc
                 BL.Delete_RoomTypeMapping_ByMapId(MapId);
             }
         }
+
+        public void Upsert_CompanySpecificRoomTypeMapping_ByMapId(string MapId,string SupplierProductReference,string Supplier_id)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Upsert_CompanySpecificRoomTypeMapping_ByMapId(MapId,SupplierProductReference,Supplier_id);
+            }
+        }
+        public void Delete_CompanySpecificRoomTypeMapping_ByMapId(string MapId,string SupplierProductReference,string Supplier_id)
+        {
+            using (BAL.BL_UpdateData BL = new BAL.BL_UpdateData())
+            {
+                BL.Delete_CompanySpecificRoomTypeMapping_ByMapId(MapId,SupplierProductReference,Supplier_id);
+            }
+        }
         #endregion
     }
 }

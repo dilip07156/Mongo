@@ -255,15 +255,15 @@ namespace BAL
 
         
 
-     public void LoadCompanyAccommodationProductMapping(string LogId)
+     public void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_Id)
         {
             Guid gLogId;
-            Guid gProdMapId;
-            if (Guid.TryParse(LogId, out gLogId) )
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
             {
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
-                    obj.LoadCompanyAccommodationProductMapping(gLogId);
+                    obj.LoadCompanyAccommodationProductMapping(gLogId, gSupplier_Id);
                 }
             }
         }
@@ -377,6 +377,19 @@ namespace BAL
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
                     obj.UpdateHotelRoomTypeMapping(gLogId, gSupplier_Id);
+                }
+            }
+        }
+
+        public void UpdateComanySpecificHotelRoomTypeMapping(string LogId, string Supplier_Id)
+        {
+            Guid gLogId;
+            Guid gSupplier_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCompanyAccommodationProductMapping(gLogId, gSupplier_Id);
                 }
             }
         }

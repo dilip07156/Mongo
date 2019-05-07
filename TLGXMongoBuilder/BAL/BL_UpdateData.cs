@@ -274,6 +274,22 @@ namespace BAL
                 DL.Delete_RoomTypeMapping_ByMapId(MapId);
             }
         }
+
+        public void Upsert_CompanySpecificRoomTypeMapping_ByMapId(string MapId,string SupplierProductReference,string Supplier_id)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.LoadCompanyAccommodationProductMappingSingle(MapId,SupplierProductReference, Supplier_id);
+            }
+        }
+
+        public void Delete_CompanySpecificRoomTypeMapping_ByMapId(string MapId, string SupplierProductReference, string Supplier_id)
+        {
+            using (DAL.DL_UpdateData DL = new DAL.DL_UpdateData())
+            {
+                DL.Delete_CompanySpecificRoomTypeMapping_ByMapId(MapId,  SupplierProductReference,  Supplier_id);
+            }
+        }
         #endregion
     }
 }

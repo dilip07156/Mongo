@@ -224,11 +224,11 @@ namespace MapperSvc
             }
         }
 
-        public void LoadCompanyAccommodationProductMapping(string LogId)
+        public void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_ID)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
-                objBL.LoadCompanyAccommodationProductMapping(LogId);
+                objBL.LoadCompanyAccommodationProductMapping(LogId, Supplier_ID);
             }
         }
         #endregion
@@ -312,6 +312,14 @@ namespace MapperSvc
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.UpdateHotelRoomTypeMapping(LogId, Supplier_Id);
+            }
+        }
+
+        public void UpdateComanySpecificHotelRoomTypeMapping(string LogId, string Supplier_Id)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.UpdateComanySpecificHotelRoomTypeMapping(LogId, Supplier_Id);
             }
         }
 
