@@ -6280,34 +6280,20 @@ namespace DAL
                     objHolidayModel.NakshatraHolidayId = Convert.ToString(HolidayJson["Holiday"]["NakshatraHolidayId"]).ToUpper();
                     objHolidayModel.SupplierHolidayId = Convert.ToString(HolidayJson["Holiday"]["SupplierHolidayId"]);
 
-                    DateTime EffectiveFromDate;
                     objHolidayModel.SupplierProductCode = Convert.ToString(HolidayJson["Holiday"]["SupplierProductCode"]);
                     CultureInfo culture = new CultureInfo("en-US");
+
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"])))
-                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"]), out EffectiveFromDate))
-                        {
-                            objHolidayModel.EffectiveFromDate = EffectiveFromDate;
-                        }
+                            objHolidayModel.EffectiveFromDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"]);
 
-                    DateTime EffectiveToDate;
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"])))
-                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"]), out EffectiveToDate))
-                        {
-                            objHolidayModel.EffectiveToDate = EffectiveToDate;
-                        }
-                    DateTime CreateDate;
-                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["CreateDate"])))
-                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["CreateDate"]), out CreateDate))
-                        {
-                            objHolidayModel.CreateDate = CreateDate;
-                        }
+                            objHolidayModel.EffectiveToDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"]);
 
-                    DateTime EditDate;
+                    if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["CreateDate"])))
+                            objHolidayModel.CreateDate = Convert.ToString(HolidayJson["Holiday"]["CreateDate"]);
+
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EditDate"])))
-                        if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["EditDate"]), out EditDate))
-                        {
-                            objHolidayModel.EditDate = EditDate;
-                        }
+                            objHolidayModel.EditDate = Convert.ToString(HolidayJson["Holiday"]["EditDate"]);
 
                     objHolidayModel.ProductCategory = Convert.ToString(HolidayJson["Holiday"]["ProductCategory"]);
                     objHolidayModel.ProductCategorySubtype = Convert.ToString(HolidayJson["Holiday"]["ProductCategorySubtype"]);
@@ -7562,22 +7548,11 @@ namespace DAL
                     {
                         objHolidayModel.Departure = new List<HolidayDeparture>();
                         var TypeOfDeparture = HolidayJson["Holiday"]["Departure"].GetType();
-                        if (TypeOfDeparture.Name.ToUpper() != "JARRAY")
+                        if (!string.Equals(TypeOfDeparture.Name, "JARRAY", StringComparison.OrdinalIgnoreCase))
                         {
-                            DateTime? StartDate = null;
-                            DateTime dt1;
-                            if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["Departure"]["StartDate"])))
-                            {
-                                if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["Departure"]["StartDate"]), out dt1))
-                                {
-                                    // Conversion Success
-                                    StartDate = dt1;
-                                }
-                            }
-
                             objHolidayModel.Departure.Add(new HolidayDeparture()
                             {
-                                StartDate = StartDate,
+                                StartDate = Convert.ToString(HolidayJson["Holiday"]["Departure"]["StartDate"]),
                                 DepartureId = Convert.ToString(HolidayJson["Holiday"]["Departure"]["DepartureId"]),
                                 TLGXCityCodeEnd = Convert.ToString(HolidayJson["Holiday"]["Departure"]["TLGXCityCodeEnd"]),
                                 TLGXCityCodeStart = Convert.ToString(HolidayJson["Holiday"]["Departure"]["TLGXCityCodeStart"]),
@@ -7593,19 +7568,9 @@ namespace DAL
 
                             for (int o = 0; o < TotalDeparture; o++)
                             {
-                                DateTime? StartDate = null;
-                                DateTime dt1;
-                                if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["StartDate"])))
-                                {
-                                    if (DateTime.TryParse(Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["StartDate"]), out dt1))
-                                    {
-                                        // Conversion Success
-                                        StartDate = dt1;
-                                    }
-                                }
                                 objHolidayModel.Departure.Add(new HolidayDeparture()
                                 {
-                                    StartDate = StartDate,
+                                    StartDate = Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["StartDate"]),
                                     DepartureId = Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["DepartureId"]),
                                     TLGXCityCodeEnd = Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["TLGXCityCodeEnd"]),
                                     TLGXCityCodeStart = Convert.ToString(HolidayJson["Holiday"]["Departure"][o]["TLGXCityCodeStart"]),
