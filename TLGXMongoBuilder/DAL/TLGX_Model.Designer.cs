@@ -1,4 +1,4 @@
-﻿// T4 code generation is enabled for model 'D:\Dilip\Workspace\tlgx-mongo-builder\TLGXMongoBuilder\DAL\TLGX_Model.edmx'. 
+﻿// T4 code generation is enabled for model 'E:\Mahesh Alle\Projects\tlgx-mongo-builder\TLGXMongoBuilder\DAL\TLGX_Model.edmx'. 
 // To enable legacy code generation, change the value of the 'Code Generation Strategy' designer
 // property to 'Legacy ObjectContext'. This property is available in the Properties Window when the model
 // is open in the designer.

@@ -10,8 +10,7 @@
 namespace DAL
 {
     using System;
-    using System.Collections.Generic;
-    
+
     public partial class m_CountryMaster
     {
         public System.Guid Country_Id { get; set; }
@@ -50,5 +49,7 @@ namespace DAL
         public string Key { get; set; }
         public string Rank { get; set; }
         public string Priority { get; set; }
+        public string TlgxContinentName { get; set; }
+        public string TlgxContinentCode { get; set; }
     }
 }

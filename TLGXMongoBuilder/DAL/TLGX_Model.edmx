@@ -1545,6 +1545,8 @@
           <Property Name="Key" Type="varchar" MaxLength="50" />
           <Property Name="Rank" Type="varchar" MaxLength="50" />
           <Property Name="Priority" Type="varchar" MaxLength="50" />
+          <Property Name="TlgxContinentName" Type="varchar" MaxLength="20" />
+          <Property Name="TlgxContinentCode" Type="varchar" MaxLength="5" />
         </EntityType>
         <EntityType Name="m_keyword">
           <Key>
@@ -2150,6 +2152,8 @@
           <Property Name="Key" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Rank" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="Priority" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="TlgxContinentName" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
+          <Property Name="TlgxContinentCode" Type="String" MaxLength="5" FixedLength="false" Unicode="false" />
         </EntityType>
         <EntityType Name="m_CountryMapping">
           <Key>
@@ -3868,6 +3872,8 @@
           <EntitySetMapping Name="m_CountryMaster">
             <EntityTypeMapping TypeName="TLGX_Model.m_CountryMaster">
               <MappingFragment StoreEntitySet="m_CountryMaster">
+                <ScalarProperty Name="TlgxContinentCode" ColumnName="TlgxContinentCode" />
+                <ScalarProperty Name="TlgxContinentName" ColumnName="TlgxContinentName" />
                 <ScalarProperty Name="Priority" ColumnName="Priority" />
                 <ScalarProperty Name="Rank" ColumnName="Rank" />
                 <ScalarProperty Name="Key" ColumnName="Key" />
