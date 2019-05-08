@@ -2909,13 +2909,15 @@ namespace DAL
                                 product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
                             }
                             var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                            MongoInsertedCount = MongoInsertedCount + 1;
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                         }
 
                         var sup = SupplierCode.SupplierCode;
                         int count = productMapList.Count;
                         int RTcount = lstMappedRooms.Count;
-                        MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                        //MongoInsertedCount = MongoInsertedCount + productMapList.Count();
+                        //UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
 
                     }
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
