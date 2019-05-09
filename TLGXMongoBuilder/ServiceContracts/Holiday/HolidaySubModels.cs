@@ -1234,7 +1234,7 @@ namespace DataContracts.Holiday
         ///// <summary>
         ///// contain start date
         ///// </summary>
-        public DateTime? StartDate { get; set; }
+        public string StartDate { get; set; }
         ///// <summary>
         ///// Tlgx Country code end
         ///// </summary>

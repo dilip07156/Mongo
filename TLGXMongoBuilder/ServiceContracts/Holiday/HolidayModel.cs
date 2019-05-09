@@ -41,16 +41,16 @@ namespace DataContracts.Holiday
         /// <summary>
         /// Holiday is effective from this date.
         /// </summary>
-        public DateTime? EffectiveFromDate { get; set; }
+        public string EffectiveFromDate { get; set; }
         /// <summary>
         /// Holiday is effective To this date.
         /// </summary>
-        public DateTime? EffectiveToDate { get; set; }
+        public string EffectiveToDate { get; set; }
         /// <summary>
         /// Date on which Holiday is created on system.
         /// </summary>
         [Required]
-        public DateTime? CreateDate { get; set; }
+        public string CreateDate { get; set; }
         /// <summary>
         /// The user who created the product.
         /// </summary>
@@ -58,7 +58,7 @@ namespace DataContracts.Holiday
         /// <summary>
         ///Date on which Holiday was last edited.
         /// </summary>
-        public DateTime? EditDate { get; set; }
+        public string EditDate { get; set; }
         /// <summary>
         /// is active or not
         /// </summary>
