@@ -2715,7 +2715,7 @@ namespace DAL
                 if (LogId == Guid.Empty)
                 {
                     LogId = Guid.NewGuid();
-                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                 }
 
                 #region Index Management
@@ -2768,7 +2768,7 @@ namespace DAL
 
                 #endregion
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MAPPINGLITE");
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
 
                 List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
 
@@ -2894,13 +2894,13 @@ namespace DAL
                         }
                         scope.Complete();
                     }
-                    if (productMapList != null && productMapList.Count() > 0)
+                    if (productMapList?.Count() > 0)
                     {
 
                         foreach (var product in productMapList)
                         {
                             var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
-                            if (lstMappedRooms != null && lstMappedRooms.Count > 0)
+                            if (lstMappedRooms?.Count > 0)
                             {
                                 product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
                             }

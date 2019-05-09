@@ -1299,6 +1299,7 @@ namespace DAL
                 var collection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
                 var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", suppliercode);
                     filter &= Builders<BsonDocument>.Filter.Eq("SupplierProductCode", SupplierProductReference);
+                    filter &= Builders<BsonDocument>.Filter.Eq("MappedRooms.NakshatraRoomMappingId", MapId);
 
                 var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
                     Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", MapId));
