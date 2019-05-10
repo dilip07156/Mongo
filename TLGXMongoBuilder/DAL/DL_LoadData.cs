@@ -113,6 +113,8 @@ namespace DAL
                                    orderby country.Name, city.Name
                                    select new
                                    {
+                                       ContinentName = (country.TlgxContinentName ?? string.Empty).Trim().ToUpper(),
+                                       ContinentCode = (country.TlgxContinentCode ?? string.Empty).Trim().ToUpper(),
                                        CountryName = country.Name.Trim().ToUpper(),
                                        CountryCode = (country.Code ?? string.Empty).Trim().ToUpper(),
                                        CityName = city.Name.Trim().ToUpper(),
@@ -121,7 +123,7 @@ namespace DAL
                                        StateCode = (city.StateCode ?? string.Empty).Trim().ToUpper()
                                    };
 
-                    List<BsonDocument> docs = new List<BsonDocument>();
+                    var docs = new List<BsonDocument>();
                     foreach (var city in CityList)
                     {
                         var document = new BsonDocument
@@ -130,8 +132,10 @@ namespace DAL
                             { "CityCode", city.CityCode },
                             { "StateName", city.StateName },
                             { "StateCode", city.StateCode },
-                            { "CountryCode", city.CountryCode },
                             { "CountryName", city.CountryName },
+                            { "CountryCode", city.CountryCode },
+                            { "ContinentName", city.ContinentName },
+                            { "ContinentCode", city.ContinentCode },
                         };
                         docs.Add(document);
                         document = null;
@@ -6291,16 +6295,16 @@ namespace DAL
                     CultureInfo culture = new CultureInfo("en-US");
 
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"])))
-                            objHolidayModel.EffectiveFromDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"]);
+                        objHolidayModel.EffectiveFromDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveFromDate"]);
 
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"])))
-                            objHolidayModel.EffectiveToDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"]);
+                        objHolidayModel.EffectiveToDate = Convert.ToString(HolidayJson["Holiday"]["EffectiveToDate"]);
 
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["CreateDate"])))
-                            objHolidayModel.CreateDate = Convert.ToString(HolidayJson["Holiday"]["CreateDate"]);
+                        objHolidayModel.CreateDate = Convert.ToString(HolidayJson["Holiday"]["CreateDate"]);
 
                     if (!String.IsNullOrEmpty(Convert.ToString(HolidayJson["Holiday"]["EditDate"])))
-                            objHolidayModel.EditDate = Convert.ToString(HolidayJson["Holiday"]["EditDate"]);
+                        objHolidayModel.EditDate = Convert.ToString(HolidayJson["Holiday"]["EditDate"]);
 
                     objHolidayModel.ProductCategory = Convert.ToString(HolidayJson["Holiday"]["ProductCategory"]);
                     objHolidayModel.ProductCategorySubtype = Convert.ToString(HolidayJson["Holiday"]["ProductCategorySubtype"]);
