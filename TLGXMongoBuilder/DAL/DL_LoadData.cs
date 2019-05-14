@@ -2047,7 +2047,7 @@ namespace DAL
                                           join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id into LJAcco
                                           from acco in LJAcco.DefaultIfEmpty()
 
-                                          where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.IsActive == true && apm.Accommodation_ProductMapping_Id == ProdMapId
+                                          where apm.IsActive == true && apm.Accommodation_ProductMapping_Id == ProdMapId
 
                                           select new DataContracts.Mapping.DC_ProductMapping
                                           {
@@ -2072,10 +2072,14 @@ namespace DAL
                                               SystemCityName = (citymaster != null ? citymaster.Name.ToUpper() : string.Empty)
 
                                           }).FirstOrDefault();
-                        if (productMap != null)
+                        if (productMap != null && (productMap.MappingStatus == "MAPPED" || productMap.MappingStatus == "AUTOMAPPED"))
                         {
                             var res = collection.DeleteMany(x => x.MapId == productMap.MapId);
                             collection.InsertOneAsync(productMap);
+                        }
+                        else if(productMap != null)
+                        {
+                            collection.DeleteOne(x => x.MapId == productMap.MapId);
                         }
                     }
                     #endregion
@@ -2267,10 +2271,17 @@ namespace DAL
                     #region If Map ID is not 0 delete and insert single Record
                     using (TLGX_Entities context = new TLGX_Entities())
                     {
+                        var prodstatus = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
+                                          join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
+                                          join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
+                                          where apm.Accommodation_ProductMapping_Id == ProdMapId
+                                          && apm.IsActive == true
+                                          select new  { Status = apm.Status.ToUpper() }).FirstOrDefault();
+
                         var prod = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
                                     join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
                                     join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
-                                    where (apm.Status.Trim().ToUpper() == "MAPPED" || apm.Status.Trim().ToUpper() == "AUTOMAPPED") && apm.Accommodation_ProductMapping_Id == ProdMapId
+                                    where apm.Accommodation_ProductMapping_Id == ProdMapId
                                     && apm.IsActive == true
                                     select new DataContracts.Mapping.DC_ProductMappingLite
                                     {
@@ -2280,10 +2291,14 @@ namespace DAL
                                         SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                         TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                     }).FirstOrDefault();
-                        if (prod != null)
+                        if (prod != null && (prodstatus.Status=="MAPPED" || prodstatus.Status=="UNMAPPED"))
                         {
                             var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, prod.MapId);
                             collection.ReplaceOne(filter, prod, new UpdateOptions { IsUpsert = true });
+                        }
+                        else if(prod != null)
+                        {
+                            collection.DeleteOne(x=>x.MapId== prod.MapId);
                         }
                     }
                     #endregion
@@ -2294,6 +2309,88 @@ namespace DAL
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+            }
+        }
+
+        public void LoadCompanyAccommodationProductMappingOnSave(Guid LogId, Guid ProdMapId)
+        {
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                var collection = _database.GetCollection<DataContracts.Mapping.DC_ConpanyAccommodationMapping>("CompanyAccommodationProductMapping");
+                StringBuilder CompanyWiseProductMapping = new StringBuilder();
+                DataContracts.Mapping.DC_ConpanyAccommodationMapping productMapstatus = new DataContracts.Mapping.DC_ConpanyAccommodationMapping();
+                DataContracts.Mapping.DC_ConpanyAccommodationMapping productMap = new DataContracts.Mapping.DC_ConpanyAccommodationMapping();
+                CompanyWiseProductMapping.Append(" select apm.Supplier_Id as [SupplierId],upper(sup.code) as SupplierCode, apm.SupplierProductReference as [SupplierProductCode]" +
+                                                " , ( upper(sup.code) + '_'+    apm.SupplierProductReference + '_'+  av.CompanyId + '_' +   av.CompanyProductId) as _id " +
+                                                " from  Accommodation_ProductMapping apm with (NOLOCk)    join  Accommodation_CompanyVersion av with (NOLOCk)" +
+                                                " on av.Accommodation_Id = apm.Accommodation_Id join  Accommodation acc with (NOLOCk)" +
+                                                " on acc.Accommodation_Id = av.Accommodation_Id join supplier sup with (NOLOCk)" +
+                                                " on apm.Supplier_Id=sup.Supplier_Id" +
+                                                " where apm.IsActive = 1 and apm.STATUS NOT in ('MAPPED', 'AUTOMAPPED') " +
+                                                " and apm.Accommodation_ProductMapping_Id = '" + ProdMapId + @"'");
+
+
+                StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                sbSelectAccoMaster.Append(@"  
+                                    select  
+	                                      apm.Supplier_Id					     as [SupplierId]
+                                        , upper(sup.code)				 as [SupplierCode]	  
+                                        , (upper(sup.code)	 + '_'+    apm.SupplierProductReference + '_'+  av.CompanyId + '_' +   av.CompanyProductId) as _id 
+	                                    , apm.SupplierProductReference		 as [SupplierProductCode]
+	                                    , apm.ProductName					 as [SupplierProductName]
+	                                    , av.ProductName					 as [CompanyProductName]
+                                        , av.CommonProductId                 as [CommonProductId]
+	                                    , av.CompanyId						 as [TLGXCompanyId]
+                                        , av.CompanyProductId                as [CompanyProductId]
+	                                    , av.CompanyName					 as [TLGXCompanyName]	 
+	                                    , av.Country						 as [CountryName]
+	                                    , av.City							 as [CityName]
+	                                    , av.State							 as [StateName]
+                                        , 'Accommodation'                    as [ProductCategory]
+	                                    , av.ProductCatSubType				 as [ProductCategorySubType]
+	                                    , av.Brand							 as [Brand]
+	                                    , av.Chain							 as [Chain]
+	                                    , av.Interest						 as [Interest]
+	                                    , av.Accommodation_CompanyVersion_Id as [Accommodation_CompanyVersion_Id]
+                                        , av.StarRating						 as [Rating]
+                                        , isnull(acc.IsRoomMappingCompleted,0)  as [IsRoomMappingCompleted] 
+										, isnull(apm.IsDirectContract,0)     as [IsDirectContract]   
+                                    from  Accommodation_ProductMapping apm with (NOLOCk)
+                                    join  Accommodation_CompanyVersion av 
+		                                    on av.Accommodation_Id = apm.Accommodation_Id
+                                    join  Accommodation acc 
+		                                    on acc.Accommodation_Id = av.Accommodation_Id
+                                    join supplier sup with (NOLOCk) 
+                                            on apm.Supplier_Id=sup.Supplier_Id
+                                    where 
+                                        apm.IsActive = 1  and	                                     
+	                                    apm.Accommodation_ProductMapping_Id = '" + ProdMapId + @"'");
+
+
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
+                    productMapstatus = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(CompanyWiseProductMapping.ToString()).FirstOrDefault();
+                    productMap = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(sbSelectAccoMaster.ToString()).FirstOrDefault();
+                    if (productMapstatus!=null && productMap != null)
+                    {
+                        collection.DeleteOne(x => x._id == productMap._id);
+                    }
+                    else if(productMap != null)
+                    {
+                        var res = collection.DeleteOne(x => x._id == productMap._id);
+                        collection.InsertOneAsync(productMap);
+                    }
+                }
+                 collection = null;
+                _database = null;
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                throw ex;
             }
         }
 
