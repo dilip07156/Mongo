@@ -2785,13 +2785,13 @@ namespace DAL
                         context.Database.CommandTimeout = 0;
 
                         StringBuilder sbSuuplierCodes = new StringBuilder();
-
-                        sbSuuplierCodes.Append("SELECT upper(Code) as SupplierCode ,Supplier_Id as Supplier_Id,UPPER(Name) as SupplierName from Supplier with(nolock) where StatusCode ='ACTIVE' order by Code ");
-
+                        //sbSuuplierCodes.Append("SELECT upper(Code) as SupplierCode ,Supplier.Supplier_Id as Supplier_Id,UPPER(Name) as SupplierName from Supplier with(nolock) inner join supplier_productCategory with(nolock) on supplier_productCategory.Supplier_Id = Supplier.Supplier_Id where StatusCode ='ACTIVE'  and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' order by SupplierName ");
+                        sbSuuplierCodes.Append(" SELECT COUNT(apm.Supplier_Id) as count,apm.Supplier_Id, (select upper(Code) from supplier where supplier_id=apm.Supplier_Id) as SupplierCode, ");
+                        sbSuuplierCodes.Append(" (select UPPER(Name) from supplier where supplier_id=apm.Supplier_Id) as SupplierName FROM Accommodation_ProductMapping apm with(nolock)  ");
+                        sbSuuplierCodes.Append(" inner join supplier_productCategory spc with(nolock) on spc.Supplier_Id = apm.Supplier_Id where  ");
+                        sbSuuplierCodes.Append(" APM.Status in ('MAPPED','AUTOMAPPED','UNMAPPED') and apm.IsActive = 1 and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' group by apm.Supplier_Id order by count ");
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
-
                         StringBuilder sbSelectAMPCount = new StringBuilder();
-
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_ProductMapping apm with(nolock)  join  Accommodation_CompanyVersion av with(nolock)
 		                                    on av.Accommodation_Id = apm.Accommodation_Id where Status in ('MAPPED','AUTOMAPPED') and IsActive = 1 ");
 
@@ -2906,48 +2906,36 @@ namespace DAL
 
                     List<DC_ConpanyAccommodationMapping> ConpanyAccommodationMappingList = new List<DC_ConpanyAccommodationMapping>();
                     if (productMapList?.Count() > 0)
-                    {                        
+                    {
                         foreach (var product in productMapList)
                         {
-                            
-                            try
-                            {                                
-                                var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
-                                if (lstMappedRooms?.Count > 0)
-                                {
-                                    product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
-                                }
-                                else
-                                {
-                                    product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
-                                }
-                                //DC_ConpanyAccommodationMapping mam = null;
-                                //var result = collection.ReplaceOne(filter, mam, new UpdateOptions { IsUpsert = true });
-                                var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
-                                ConpanyAccommodationMappingList.Add(product);
-                                MongoInsertedCount = MongoInsertedCount + 1;
-                                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
-                                
-                            }
-                            catch(Exception ex)
+                            var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
+                            if (lstMappedRooms?.Count > 0)
                             {
-                                ErrorLog(ex);
+                                product.MappedRooms = lstMappedRooms.Where(x => x.SupplierProductId == product.SupplierProductCode && x.Accommodation_CompanyVersion_Id == product.Accommodation_CompanyVersion_Id).ToList();
                             }
-
+                            else
+                            {
+                                product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
+                            }
+                            //DC_ConpanyAccommodationMapping mam = null;
+                            //var result = collection.ReplaceOne(filter, mam, new UpdateOptions { IsUpsert = true });
+                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                            ConpanyAccommodationMappingList.Add(product);
+                            MongoInsertedCount = MongoInsertedCount + 1;
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                         }
                         List<string> MappedIds = lstMappedRooms.Select(s => s.NakshatraRoomMappingId).ToList();
                         //List<string> SupplierCodeIds = productMapList.Select(p => p.SupplierProductCode).ToList();
                         List<DC_ConpanyAccommodationMapping> companyAccoMappingListId = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).ToList();
-
-                        var tets = companyAccoMappingListId.Select(x => x.SupplierProductCode).ToList();
                         List<DC_ConpanyAccommodationRoomMapping> mappedRoomsForSupplierCode = companyAccoMappingListId.SelectMany(x => x.MappedRooms).ToList();
                         List<DC_ConpanyAccommodationRoomMapping> MappedRoomsForSupplierCodeSQL = ConpanyAccommodationMappingList.SelectMany(x => x.MappedRooms).ToList();
 
-                        List<string> Mapids = mappedRoomsForSupplierCode.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
-                        List<string> MapidSQL = MappedRoomsForSupplierCodeSQL.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();                        
-                        IEnumerable<string> MapIdsToBeDeleted = Mapids.Except(MapidSQL);                   
-                       
+                        var Mapids = mappedRoomsForSupplierCode.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
+                        var MapidSQL = MappedRoomsForSupplierCodeSQL.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
+                        var MapIdsToBeDeleted = Mapids.Except(MapidSQL).ToList();
 
+                        // delete logic if not in sql data
                         var CompanyAccommodationProductMappingCollection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
                         foreach (var id in MapIdsToBeDeleted)
                         {
@@ -2957,11 +2945,6 @@ namespace DAL
                                 Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", id.ToString()));
                             var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
                         }
-                        var sup = SupplierCode.SupplierCode;
-                        int count = productMapList.Count;
-                        int RTcount = lstMappedRooms.Count;
-                        //MongoInsertedCount = MongoInsertedCount + productMapList.Count();
-                        //UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                     }
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                 }
@@ -2974,6 +2957,11 @@ namespace DAL
                 ErrorLog(ex);
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
             }
+            catch (Exception ex)
+            {
+                ErrorLog(ex);
+                UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+            }
         }
 
         private void ErrorLog(Exception ex)
@@ -2981,7 +2969,7 @@ namespace DAL
             StringBuilder errorlog = new StringBuilder();
             try
             {
-                
+
                 errorlog.Append("Insert Into error_log values('" + Convert.ToString(ex.Message) + "','" + Convert.ToString(ex.InnerException) + "','" + Convert.ToString(ex.StackTrace) + "','" + DateTime.Now.ToString("yyyy-MM-dd HH:MM:ss") + "')");
                 using (TLGX_Entities context = new TLGX_Entities())
                 {
@@ -2992,7 +2980,7 @@ namespace DAL
             }
             catch
             {
-                
+
             }
 
         }
