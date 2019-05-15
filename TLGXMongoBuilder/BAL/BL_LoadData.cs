@@ -239,6 +239,19 @@ namespace BAL
                 }
             }
         }
+        public void LoadCompanyAccommodationProductMappingOnSave(string LogId, string ProdMapId)
+        {
+            Guid gLogId;
+            Guid gProdMapId;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(ProdMapId, out gProdMapId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCompanyAccommodationProductMappingOnSave(gLogId, gProdMapId);
+                }
+            }
+        }
+        
 
         public void LoadProductMappingLiteBySupplier(string LogId, string SupplierID)
         {

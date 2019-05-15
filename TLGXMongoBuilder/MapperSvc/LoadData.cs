@@ -216,6 +216,15 @@ namespace MapperSvc
             }
         }
 
+        public void LoadCompanyAccommodationProductMappingOnSave(string LogId, string MapId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCompanyAccommodationProductMappingOnSave(LogId, MapId);
+            }
+        }
+        
+
         public void LoadProductMappingLiteBySupplier(string LogId, string Supplier_ID)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
