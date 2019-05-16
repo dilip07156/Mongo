@@ -2904,8 +2904,8 @@ namespace DAL
                     scope.Complete();
                 }
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
-                
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");                
+
                 foreach (var SupplierCode in SupplierCodes)
                 {
                     currSupplier = SupplierCode.SupplierName;
@@ -3060,7 +3060,7 @@ namespace DAL
                 }
                 UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
