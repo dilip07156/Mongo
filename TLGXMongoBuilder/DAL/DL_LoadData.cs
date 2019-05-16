@@ -80,7 +80,7 @@ namespace DAL
                     collection.InsertMany(docs);
                     docs = null;
                     collection = null;
-                    _database = null;
+                    //_database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -140,7 +140,7 @@ namespace DAL
                     collection.InsertMany(docs);
                     docs = null;
                     collection = null;
-                    _database = null;
+                    //_database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -193,7 +193,7 @@ namespace DAL
                     collection.InsertMany(docs);
                     docs = null;
                     collection = null;
-                    _database = null;
+                    //_database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -251,7 +251,7 @@ namespace DAL
                     }
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -296,7 +296,7 @@ namespace DAL
                     collection.InsertManyAsync(dataList);
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -333,7 +333,7 @@ namespace DAL
                     collection.InsertManyAsync(dataList);
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
                     if (Log != null)
@@ -415,7 +415,7 @@ namespace DAL
                         collection.InsertManyAsync(dataList);
 
                         collection = null;
-                        _database = null;
+                        //_database = null;
                     }
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
@@ -667,7 +667,7 @@ namespace DAL
                 }
 
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -857,7 +857,7 @@ namespace DAL
                 }
 
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -932,7 +932,7 @@ namespace DAL
 
                     collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_Master>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
                     collection = null;
-                    _database = null;
+                    //_database = null;
                     if (LogId != Guid.Empty)
                     {
                         UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalZoneCount, MongoInsertedCount);
@@ -1126,7 +1126,7 @@ namespace DAL
                     }
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
                 }
 
             }
@@ -1254,7 +1254,7 @@ namespace DAL
                 #endregion
 
                 collection = null;
-                _database = null;
+                //_database = null;
 
 
             }
@@ -1379,7 +1379,7 @@ namespace DAL
                 UpdateDistLogInfo(LogId, PushStatus.COMPLETED);
 
                 collection = null;
-                _database = null;
+                //_database = null;
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -1558,7 +1558,7 @@ namespace DAL
                 }
 
                 collection = null;
-                _database = null;
+                //_database = null;
 
                 UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
 
@@ -1729,7 +1729,7 @@ namespace DAL
                     UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
 
                     UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalRecords, TotalProcessed, string.Empty, "City", "Mapping");
                 }
@@ -1850,7 +1850,7 @@ namespace DAL
                 #endregion
 
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<ErrorNotifier> ex)
             {
@@ -2091,7 +2091,7 @@ namespace DAL
             }
 
             collection = null;
-            _database = null;
+            //_database = null;
         }
 
         public void LoadProductMappingLite(Guid LogId, Guid ProdMapId)
@@ -2304,7 +2304,7 @@ namespace DAL
                     #endregion
                 }
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -2386,7 +2386,7 @@ namespace DAL
                     }
                 }
                  collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
             {
@@ -2620,7 +2620,7 @@ namespace DAL
             }
 
             collection = null;
-            _database = null;
+            //_database = null;
         }
 
         public void LoadProductMappingLiteBySupplier(Guid LogId, Guid Supplier_ID)
@@ -2795,7 +2795,7 @@ namespace DAL
                 }
 
                 collection = null;
-                _database = null;
+                //_database = null;
             }
             catch (FaultException<ErrorNotifier> ex) { UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount); }
         }
@@ -3051,6 +3051,8 @@ namespace DAL
                                 }
                             }
                         }
+                        // loggin successful supplier with last count
+                        LogSupplierStatus(currSupplier, MongoInsertedCount);
                         UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                     }
                     catch (Exception ex)
@@ -3071,6 +3073,25 @@ namespace DAL
             {
                 ErrorLog(ex, currSupplier);
                 UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+            }
+        }
+
+        private void LogSupplierStatus(string SupplierName, int MongoInsertedCount)
+        {
+            StringBuilder strLogSupplierStatus = new StringBuilder();
+            try
+            {
+                strLogSupplierStatus.Append("Insert Into CompanySpecificSupplierLog values('" + SupplierName + "','" + DateTime.Now.ToString("yyyy-MM-dd HH:MM:ss") + "'," + MongoInsertedCount + ")");
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    context.Database.CommandTimeout = 0;
+                    context.Database.ExecuteSqlCommand(strLogSupplierStatus.ToString());
+                }
+            }
+            catch
+            {
+
             }
         }
 
@@ -3134,7 +3155,7 @@ namespace DAL
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SupplierProductCode));
                         collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMapping>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
                         collection = null;
-                        _database = null;
+                        //_database = null;
                     }
 
                     var Log = context.DistributionLayerRefresh_Log.Find(LogId);
@@ -3176,7 +3197,7 @@ namespace DAL
                     collection.Indexes.CreateOne(Builders<DataContracts.Mapping.DC_ProductMappingLite>.IndexKeys.Ascending(_ => _.SupplierCode).Ascending(_ => _.SystemProductCode));
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -4164,7 +4185,7 @@ namespace DAL
             }
 
             collection = null;
-            _database = null;
+            //_database = null;
             return true;
         }
         #endregion
@@ -4893,7 +4914,7 @@ namespace DAL
                     Log = null;
 
                     collection = null;
-                    _database = null;
+                    //_database = null;
                 }
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
