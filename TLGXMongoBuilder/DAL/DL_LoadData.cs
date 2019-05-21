@@ -958,7 +958,7 @@ namespace DAL
                 sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
                                             Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
                                             upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
-                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode,zm.zone_code
                                             FROM  m_zoneMaster zm  with(Nolock)
                                             LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
                                             WHERE zm.isActive=1 ");
@@ -1058,6 +1058,7 @@ namespace DAL
                     Longitude = item.Longitude,
                     Zone_Radius = item.Zone_Radius,
                     TLGXCountryCode = item.TLGXCountryCode,
+                    Zone_Code=item.Zone_Code,
                     Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
                     {
                         TLGXCityCode = xcity.TLGXCityCode
