@@ -96,7 +96,7 @@ namespace ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "LoadBySupplier/CountryMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadCountryMappingBySupplier(string LogId,string Supplier_ID);
+        void LoadCountryMappingBySupplier(string LogId, string Supplier_ID);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -108,7 +108,7 @@ namespace ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "LoadByObject/EntityMapping/{Entity}/{EntityMappingID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadObjectMapping(string Entity,string EntityMappingID);
+        void LoadObjectMapping(string Entity, string EntityMappingID);
 
         #endregion
 
@@ -126,7 +126,7 @@ namespace ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/ProductMappingLite/{LogId}/{MapId}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadProductMappingLite(string LogId ,string MapId);
+        void LoadProductMappingLite(string LogId, string MapId);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -137,7 +137,12 @@ namespace ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_ID);
+        void LoadCompanyAccommodationProductMapping(string LogId, string Supplier_ID);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMappingCrossVersion/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCompanyAccommodationProductMappingCrossVersion(string LogId, string Supplier_ID);
 
         [OperationContract]
         [FaultContract(typeof(ErrorNotifier))]
@@ -195,8 +200,8 @@ namespace ServiceContracts
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/HotelRoomTypeMapping/{LogId}/{Supplier_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
-        void UpdateHotelRoomTypeMapping(string LogId,string Supplier_Id);
-       
+        void UpdateHotelRoomTypeMapping(string LogId, string Supplier_Id);
+
         #region ZoneTypeMaster
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
@@ -217,7 +222,7 @@ namespace ServiceContracts
         /// Load Master AccommodationRoomInfo Data to MongoDB
         /// </summary>
         [OperationContract]
-        [FaultContract(typeof(DataContracts.ErrorNotifier))] 
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/MasterAccommodationRoomInfo/{LogId}/{Accommodation_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadMasterAccommodationRoomInfo(string LogId, string Accommodation_Id);
     }

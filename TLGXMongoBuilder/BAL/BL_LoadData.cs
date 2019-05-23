@@ -280,6 +280,19 @@ namespace BAL
                 }
             }
         }
+
+        public void LoadCompanyAccommodationProductMappingCrossVersion(string LogId, string Supplier_Id)
+        {
+            Guid gLogId;
+            
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCompanyAccommodationProductMappingCrossVersion(gLogId, Supplier_Id);
+                }
+            }
+        }
         #endregion
         public void LoadActivityMapping(string LogId)
         {
