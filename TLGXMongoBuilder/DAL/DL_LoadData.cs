@@ -2889,7 +2889,7 @@ namespace DAL
                         sbSuuplierCodes.Append(" SELECT COUNT(apm.Supplier_Id) as count,apm.Supplier_Id, (select upper(Code) from supplier where supplier_id=apm.Supplier_Id) as SupplierCode, ");
                         sbSuuplierCodes.Append(" (select UPPER(Name) from supplier where supplier_id=apm.Supplier_Id) as SupplierName FROM Accommodation_ProductMapping apm with(nolock)  ");
                         sbSuuplierCodes.Append(" inner join supplier_productCategory spc with(nolock) on spc.Supplier_Id = apm.Supplier_Id where  ");
-                        sbSuuplierCodes.Append(" APM.Status in ('MAPPED','AUTOMAPPED','UNMAPPED') and apm.IsActive = 1 and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' group by apm.Supplier_Id order by count ");
+                        sbSuuplierCodes.Append(" APM.Status in ('MAPPED','AUTOMAPPED') and apm.IsActive = 1 and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' group by apm.Supplier_Id order by count ");
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_ProductMapping apm with(nolock)  join  Accommodation_CompanyVersion av with(nolock)
