@@ -359,4 +359,9 @@ namespace DataContracts.Mapping
         public string SystemRoomTypeCode { get; set; }
         public string TLGXRoomTypeCode { get; set; }
     }
+
+    public class DC_CompanyAccoVersionMappingRequest
+    {
+
+    }
 }

@@ -3093,7 +3093,7 @@ namespace DAL
                 if (LogId == Guid.Empty)
                 {
                     LogId = Guid.NewGuid();
-                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                 }
 
                 #region Index Management
@@ -3146,7 +3146,7 @@ namespace DAL
 
                 #endregion
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
 
                 List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
 
@@ -3169,7 +3169,7 @@ namespace DAL
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_CompanyVersion av with(nolock) ");
 
-                        if (Supplier_ID != Convert.ToString(Guid.Empty))
+                        if (Supplier_ID != Convert.ToString(Guid.Empty) && Supplier_ID != "ALL")
                         {
                             sbSelectAMPCount.Append(@" where CompanyId ='" + Supplier_ID + "'");
                             SupplierCodes = SupplierCodes.Where(x => x.SupplierCode == Supplier_ID).ToList();
