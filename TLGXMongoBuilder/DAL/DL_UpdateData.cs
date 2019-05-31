@@ -1250,7 +1250,16 @@ namespace DAL
                                 product.MappedRooms = new List<DC_ConpanyAccommodationRoomMapping>();
                             }
 
-                            var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
+                        var accommodationMappings = collection.FindAsync(a => a._id==product._id).Result.FirstOrDefault();
+                        if (accommodationMappings != null)
+                        {
+                            var mappedrooms = accommodationMappings.MappedRooms.Where(x => x.NakshatraRoomMappingId != MapId);
+                            if (mappedrooms.Any())
+                            {
+                                product.MappedRooms.AddRange(mappedrooms);
+                            }
+                        }
+                        var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
                         }
                     }
                 

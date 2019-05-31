@@ -36,6 +36,8 @@ namespace DataContracts.Masters
         public List<DC_Zone_CityMapping> Zone_CityMapping { get; set; }
         [DataMember]
         public List<DC_Zone_ProductMapping> Zone_ProductMapping { get; set; }
+        [DataMember]
+        public string Zone_Code { get; set; }
 
     }
     [DataContract]
@@ -82,6 +84,8 @@ namespace DataContracts.Masters
         public decimal? Zone_Radius { get; set; }
         [DataMember]
         public string TLGXCountryCode { get; set; }
+        [DataMember]
+        public string Zone_Code { get; set; }
         [DataMember]
         public List<DC_Zone_ProductMappingRQ> Zone_ProductMapping { get; set; }
         [DataMember]

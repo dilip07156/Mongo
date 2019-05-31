@@ -958,7 +958,7 @@ namespace DAL
                 sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
                                             Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
                                             upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
-                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode,zm.zone_code
                                             FROM  m_zoneMaster zm  with(Nolock)
                                             LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
                                             WHERE zm.isActive=1 ");
@@ -1058,6 +1058,7 @@ namespace DAL
                     Longitude = item.Longitude,
                     Zone_Radius = item.Zone_Radius,
                     TLGXCountryCode = item.TLGXCountryCode,
+                    Zone_Code=item.Zone_Code,
                     Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
                     {
                         TLGXCityCode = xcity.TLGXCityCode
@@ -2888,7 +2889,7 @@ namespace DAL
                         sbSuuplierCodes.Append(" SELECT COUNT(apm.Supplier_Id) as count,apm.Supplier_Id, (select upper(Code) from supplier where supplier_id=apm.Supplier_Id) as SupplierCode, ");
                         sbSuuplierCodes.Append(" (select UPPER(Name) from supplier where supplier_id=apm.Supplier_Id) as SupplierName FROM Accommodation_ProductMapping apm with(nolock)  ");
                         sbSuuplierCodes.Append(" inner join supplier_productCategory spc with(nolock) on spc.Supplier_Id = apm.Supplier_Id where  ");
-                        sbSuuplierCodes.Append(" APM.Status in ('MAPPED','AUTOMAPPED','UNMAPPED') and apm.IsActive = 1 and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' group by apm.Supplier_Id order by count ");
+                        sbSuuplierCodes.Append(" APM.Status in ('MAPPED','AUTOMAPPED') and apm.IsActive = 1 and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' group by apm.Supplier_Id order by count ");
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_ProductMapping apm with(nolock)  join  Accommodation_CompanyVersion av with(nolock)
@@ -3092,7 +3093,7 @@ namespace DAL
                 if (LogId == Guid.Empty)
                 {
                     LogId = Guid.NewGuid();
-                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                 }
 
                 #region Index Management
@@ -3145,7 +3146,7 @@ namespace DAL
 
                 #endregion
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
 
                 List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
 
@@ -3168,7 +3169,7 @@ namespace DAL
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_CompanyVersion av with(nolock) ");
 
-                        if (Supplier_ID != Convert.ToString(Guid.Empty))
+                        if (Supplier_ID != Convert.ToString(Guid.Empty) && Supplier_ID != "ALL")
                         {
                             sbSelectAMPCount.Append(@" where CompanyId ='" + Supplier_ID + "'");
                             SupplierCodes = SupplierCodes.Where(x => x.SupplierCode == Supplier_ID).ToList();
