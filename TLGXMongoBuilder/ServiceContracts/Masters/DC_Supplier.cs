@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Bson.Serialization.Attributes;
+using DataContracts.Mapping;
+
 namespace DataContracts.Masters
 {
     [DataContract(Namespace = "Supplier")]
@@ -24,6 +26,10 @@ namespace DataContracts.Masters
 
         [DataMember]
         public string SupplierType { get; set; }
+
+
+        [DataMember]
+        public DC_SupplierMCONS MCON { get; set; }
     }
 
     public class DC_Supplier_ShortVersion

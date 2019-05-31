@@ -248,6 +248,14 @@ namespace MapperSvc
                 objBL.LoadCompanyAccommodationProductMappingCrossVersion(LogId, Supplier_ID);
             }
         }
+
+        public void LoadMCONBySupplier(string LogId, string Supplier_ID = "00000000-0000-0000-0000-000000000000")
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadMCONBySupplier(LogId, Supplier_ID);
+            }
+        }
         #endregion
 
         public void LoadActivityMapping(string LogId)

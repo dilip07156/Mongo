@@ -2077,7 +2077,7 @@ namespace DAL
                             var res = collection.DeleteMany(x => x.MapId == productMap.MapId);
                             collection.InsertOneAsync(productMap);
                         }
-                        else if(productMap != null)
+                        else if (productMap != null)
                         {
                             collection.DeleteOne(x => x.MapId == productMap.MapId);
                         }
@@ -2276,7 +2276,7 @@ namespace DAL
                                           join s in context.Suppliers.AsNoTracking() on apm.Supplier_Id equals s.Supplier_Id
                                           where apm.Accommodation_ProductMapping_Id == ProdMapId
                                           && apm.IsActive == true
-                                          select new  { Status = apm.Status.ToUpper() }).FirstOrDefault();
+                                          select new { Status = apm.Status.ToUpper() }).FirstOrDefault();
 
                         var prod = (from apm in context.Accommodation_ProductMapping.AsNoTracking()
                                     join a in context.Accommodations.AsNoTracking() on apm.Accommodation_Id equals a.Accommodation_Id
@@ -2291,14 +2291,14 @@ namespace DAL
                                         SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                         TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                     }).FirstOrDefault();
-                        if (prod != null && (prodstatus.Status=="MAPPED" || prodstatus.Status=="UNMAPPED"))
+                        if (prod != null && (prodstatus.Status == "MAPPED" || prodstatus.Status == "UNMAPPED"))
                         {
                             var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, prod.MapId);
                             collection.ReplaceOne(filter, prod, new UpdateOptions { IsUpsert = true });
                         }
-                        else if(prod != null)
+                        else if (prod != null)
                         {
-                            collection.DeleteOne(x=>x.MapId== prod.MapId);
+                            collection.DeleteOne(x => x.MapId == prod.MapId);
                         }
                     }
                     #endregion
@@ -2375,17 +2375,17 @@ namespace DAL
                     context.Database.CommandTimeout = 0;
                     productMapstatus = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(CompanyWiseProductMapping.ToString()).FirstOrDefault();
                     productMap = context.Database.SqlQuery<DataContracts.Mapping.DC_ConpanyAccommodationMapping>(sbSelectAccoMaster.ToString()).FirstOrDefault();
-                    if (productMapstatus!=null && productMap != null)
+                    if (productMapstatus != null && productMap != null)
                     {
                         collection.DeleteOne(x => x._id == productMap._id);
                     }
-                    else if(productMap != null)
+                    else if (productMap != null)
                     {
                         var res = collection.DeleteOne(x => x._id == productMap._id);
                         collection.InsertOneAsync(productMap);
                     }
                 }
-                 collection = null;
+                collection = null;
                 //_database = null;
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
@@ -2904,7 +2904,7 @@ namespace DAL
                     scope.Complete();
                 }
 
-                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");                
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
 
                 foreach (var SupplierCode in SupplierCodes)
                 {
@@ -3004,7 +3004,7 @@ namespace DAL
                             foreach (var product in productMapList)
                             {
                                 try
-                                {                                    
+                                {
                                     var filter = Builders<DataContracts.Mapping.DC_ConpanyAccommodationMapping>.Filter.Eq(c => c._id, product._id);
                                     if (lstMappedRooms?.Count > 0)
                                     {
@@ -3163,7 +3163,7 @@ namespace DAL
                         StringBuilder sbSuuplierCodes = new StringBuilder();
                         //sbSuuplierCodes.Append("SELECT upper(Code) as SupplierCode ,Supplier.Supplier_Id as Supplier_Id,UPPER(Name) as SupplierName from Supplier with(nolock) inner join supplier_productCategory with(nolock) on supplier_productCategory.Supplier_Id = Supplier.Supplier_Id where StatusCode ='ACTIVE'  and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' order by SupplierName ");
                         sbSuuplierCodes.Append(" SELECt distinct   cast(cast(0 as binary) as uniqueidentifier) as Supplier_Id,CompanyId as SupplierName, CompanyId as SupplierCode  from Accommodation_CompanyVersion with(nolock) order by CompanyId ");
-                        
+
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_CompanyVersion av with(nolock) ");
@@ -3366,7 +3366,7 @@ namespace DAL
             }
         }
 
-        private void ErrorLog(Exception ex,string currSupplier)
+        private void ErrorLog(Exception ex, string currSupplier)
         {
             StringBuilder errorlog = new StringBuilder();
             try
@@ -3384,6 +3384,197 @@ namespace DAL
 
             }
         }
+
+        public void LoadMCONBySupplier(Guid LogId, Guid Supplier_ID)
+        {
+            #region Params
+
+            int TotalAPMCount = 0;
+            int MongoInsertedCount = 0;
+            bool Is_IX_SupplierName_Exists = false;
+            string currSupplier = string.Empty;
+
+            #endregion
+
+            try
+            {
+                _database = MongoDBHandler.mDatabase();
+                //var collection = _database.GetCollection<DC_SupplierMCONS>("SupplierMCONS");
+                var collection = _database.GetCollection<DataContracts.Masters.DC_Supplier>("Supplier");
+
+
+                if (LogId == Guid.Empty)
+                {
+                    LogId = Guid.NewGuid();
+                    UpdateDistLogInfo(LogId, PushStatus.INSERT, 0, 0, string.Empty, "HOTEL", "MCONMAPPING");
+                }
+
+                #region Index Management
+
+                var listOfindexes = collection.Indexes.List().ToList();
+
+                foreach (var index in listOfindexes)
+                {
+                    JObject rss = JObject.Parse(index.ToJson());
+
+                    if ((string)rss["key"]["SupplierName"] != null) { Is_IX_SupplierName_Exists = true; }
+
+                }
+
+                if (!Is_IX_SupplierName_Exists)
+                {
+                    IndexKeysDefinitionBuilder<DC_Supplier> IndexBuilder = new IndexKeysDefinitionBuilder<DC_Supplier>();
+                    var keys = IndexBuilder.Ascending(_ => _.SupplierName).Ascending(_ => _.SupplierName);
+                    CreateIndexModel<DC_Supplier> IndexModel = new CreateIndexModel<DC_Supplier>(keys);
+                    collection.Indexes.CreateOneAsync(IndexModel);
+                }
+
+                #endregion
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, 0, 0, string.Empty, "HOTEL", "MCONMAPPING");
+
+                #region Fetch Supplier Additional Details
+
+                List<DC_Supplier_ShortVersion> SupplierCodes = new List<DC_Supplier_ShortVersion>();
+
+                using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                new System.Transactions.TransactionOptions()
+                {
+                    IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                    Timeout = new TimeSpan(0, 2, 0)
+                }))
+                {
+                    using (TLGX_Entities context = new TLGX_Entities())
+                    {
+                        context.Database.CommandTimeout = 0;
+
+                        StringBuilder sbSuuplierCodes = new StringBuilder();
+                        sbSuuplierCodes.Append(@" SELECT distinct s.Supplier_Id, upper(s.Code) as SupplierCode, upper(s.Name) as SupplierName from m_SupplierImportAttributes attr with(nolock) 
+                                                join
+                                                Supplier s on attr.Supplier_Id = s.Supplier_Id
+                                                where attr.Entity = 'RoomType' and attr.Status = 'Active' and s.StatusCode = 'Active' ");
+
+                        SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
+                        StringBuilder sbSelectAMPCount = new StringBuilder();
+                        sbSelectAMPCount.Append(@" SELECT COUNT(1) from m_SupplierImportAttributes attr with(nolock) 
+                                                join
+                                                Supplier s on attr.Supplier_Id = s.Supplier_Id
+                                                where attr.Entity = 'RoomType' and attr.Status = 'Active'   ");
+
+                        if (Supplier_ID != Guid.Empty)
+                        {
+                            
+                            SupplierCodes = SupplierCodes.Where(x => x.Supplier_Id == Supplier_ID).ToList();
+                        }
+
+                        TotalAPMCount = context.Database.SqlQuery<int>(sbSelectAMPCount.ToString()).SingleOrDefault();
+                    }
+                    scope.Complete();
+                }
+
+
+                UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, 0, string.Empty, "HOTEL", "MCONMAPPING");
+
+                #endregion
+
+                if (SupplierCodes != null)
+                {
+                    foreach (var SupplierCode in SupplierCodes)
+                    {
+                        currSupplier = SupplierCode.SupplierName;
+                        try
+                        {
+                            List<DataContracts.Mapping.DC_SupplierMCONS> supplierMCONList = new List<DataContracts.Mapping.DC_SupplierMCONS>();
+                            StringBuilder sbSelectAccoRoomMapped = new StringBuilder();
+                            using (var scope = new System.Transactions.TransactionScope(System.Transactions.TransactionScopeOption.RequiresNew,
+                            new System.Transactions.TransactionOptions()
+                            {
+                                IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                                Timeout = new TimeSpan(0, 15, 0)
+                            }))
+                            {
+                                #region Generating Query
+                                StringBuilder sbSelectAccoMaster = new StringBuilder();
+
+                                sbSelectAccoMaster.Append(@"  
+                                    
+                                        SELECT PvTable.SupplierName,PvTable.IsRTOnlineRequestInsert as HoldInsertOnlineRoomTrypeMapping,PvTable.IsRTOnlineRequestRead as HoldReadOnlineRoomTrypeMappingData from 
+
+                                        (
+                                            SELECT attrv.AttributeName,attrv.AttributeValue, '" + SupplierCode.SupplierName + @"' as SupplierName FROM m_SupplierImportAttributes attr with(nolock)
+                                            join m_SupplierImportAttributeValues attrv with(nolock)
+                                            On attr.SupplierImportAttribute_Id = attrv.SupplierImportAttribute_Id
+                                            where attr.Entity = 'RoomType' 
+                                            and attrv.AttributeValue in ('IsRTOnlineRequestRead','IsRTOnlineRequestInsert')
+                                            and attr.Supplier_Id = '" + SupplierCode.Supplier_Id + @"'
+                                            ) as tb
+                                            Pivot 
+                                            (
+                                            max(tb.AttributeName)
+                                            for tb.AttributeValue in ([IsRTOnlineRequestRead],[IsRTOnlineRequestInsert])
+                                            ) as PvTable
+                                             
+                                        ");
+
+
+                                #endregion
+
+                                using (TLGX_Entities context = new TLGX_Entities())
+                                {
+                                    context.Configuration.AutoDetectChangesEnabled = false;
+                                    context.Database.CommandTimeout = 0;
+                                    supplierMCONList = context.Database.SqlQuery<DataContracts.Mapping.DC_SupplierMCONS>(sbSelectAccoMaster.ToString()).ToList();
+
+                                }
+                                scope.Complete();
+                            }
+
+                            DC_Supplier supplier = collection.Find<DC_Supplier>(x => x.SupplierName == SupplierCode.SupplierName).FirstOrDefault();
+
+
+                            if (supplierMCONList?.Count() > 0 && supplier != null)
+                            {
+                                foreach (var SupplierMcon in supplierMCONList)
+                                {
+                                    try
+                                    {
+                                        
+                                        var filter = Builders<DC_Supplier>.Filter.Eq(c => c.SupplierName, SupplierMcon.SupplierName);
+                                        supplier.MCON = new DC_SupplierMCONS();
+                                        supplier.MCON = SupplierMcon;
+                                        var result = collection.ReplaceOne(filter, supplier, new UpdateOptions { IsUpsert = true });
+                                        MongoInsertedCount = MongoInsertedCount + 1;
+                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MCONMAPPING");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        ErrorLog(ex, currSupplier);
+                                    }
+                                }
+                            }
+                            // loggin successful supplier with last count
+                            LogSupplierStatus(currSupplier, MongoInsertedCount);
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MCONMAPPING");
+                        }
+                        catch (Exception ex)
+                        {
+                            ErrorLog(ex, currSupplier);
+                        }
+                    }
+
+                    UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "HOTEL", "MCONMAPPING");
+                }
+                else
+                {
+                    UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount);
+                }
+
+                collection = null;
+                //_database = null;
+            }
+            catch (FaultException<ErrorNotifier> ex) { UpdateDistLogInfo(LogId, PushStatus.ERROR, TotalAPMCount, MongoInsertedCount); }
+        }
+
         #endregion
 
 
@@ -5329,6 +5520,7 @@ namespace DAL
             {
                 Status = "Error";
             }
+            Supplier_Id = string.IsNullOrEmpty(Supplier_Id) ? Guid.Empty.ToString() : Supplier_Id;
 
             if (status == PushStatus.INSERT)
             {

@@ -293,6 +293,23 @@ namespace BAL
                 }
             }
         }
+
+        public void LoadMCONBySupplier(string LogId, string Supplier_Id)
+        {
+            Guid gLogId;
+            Guid gSupplier_Id;
+
+            Supplier_Id = string.IsNullOrEmpty(Supplier_Id) ? Guid.Empty.ToString(): Supplier_Id; 
+
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadMCONBySupplier(gLogId, gSupplier_Id);
+                }
+            }
+        }
+
         #endregion
         public void LoadActivityMapping(string LogId)
         {

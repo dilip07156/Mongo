@@ -145,6 +145,12 @@ namespace ServiceContracts
         void LoadCompanyAccommodationProductMappingCrossVersion(string LogId, string Supplier_ID);
 
         [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/LoadSupplierMCONS/{LogId}?Supplier_ID={Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadMCONBySupplier(string LogId, string Supplier_ID = "");
+
+
+        [OperationContract]
         [FaultContract(typeof(ErrorNotifier))]
         [WebGet(UriTemplate = "LoadBySupplier/ProductMapping/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadProductMappingBySupplier(string LogId, string Supplier_ID);

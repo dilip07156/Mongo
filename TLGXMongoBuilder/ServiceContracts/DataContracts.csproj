@@ -122,6 +122,7 @@
     <Compile Include="AuthenticateContract.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="Mapping\DC_ConpanyAccommodationMapping.cs" />
+    <Compile Include="Mapping\DC_SupplierMCONS.cs" />
     <Compile Include="Masters\DC_AccomodationCompanyVersion.cs" />
     <Compile Include="DC_SupplierEntity.cs" />
     <Compile Include="Dc_SupplierEntitySingleValue.cs" />
