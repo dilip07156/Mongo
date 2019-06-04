@@ -202,6 +202,8 @@ namespace DAL
                         context.SaveChanges();
                     }
                 }
+                // Passing MCON Supplier Method below
+                LoadMCONBySupplier(Guid.Empty, Guid.Empty);
 
             }
             catch (FaultException<DataContracts.ErrorNotifier> ex)
