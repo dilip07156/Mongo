@@ -3501,20 +3501,20 @@ namespace DAL
 
                                 sbSelectAccoMaster.Append(@"  
                                     
-                                        SELECT PvTable.SupplierName,PvTable.IsRTOnlineRequestInsert as HoldInsertOnlineRoomTrypeMapping,PvTable.IsRTOnlineRequestRead as HoldReadOnlineRoomTrypeMappingData from 
+                                        SELECT PvTable.SupplierName,PvTable.HoldInsertOnlineRoomTypeMappingData as HoldInsertOnlineRoomTypeMappingData,PvTable.HoldReadOnlineRoomTypeMappingData as HoldReadOnlineRoomTypeMappingData from 
 
                                         (
                                             SELECT attrv.AttributeName,attrv.AttributeValue, '" + SupplierCode.SupplierName + @"' as SupplierName FROM m_SupplierImportAttributes attr with(nolock)
                                             join m_SupplierImportAttributeValues attrv with(nolock)
                                             On attr.SupplierImportAttribute_Id = attrv.SupplierImportAttribute_Id
                                             where attr.Entity = 'RoomType' 
-                                            and attrv.AttributeValue in ('IsRTOnlineRequestRead','IsRTOnlineRequestInsert')
+                                            and attrv.AttributeValue in ('HoldReadOnlineRoomTypeMappingData','HoldInsertOnlineRoomTypeMappingData')
                                             and attr.Supplier_Id = '" + SupplierCode.Supplier_Id + @"'
                                             ) as tb
                                             Pivot 
                                             (
                                             max(tb.AttributeName)
-                                            for tb.AttributeValue in ([IsRTOnlineRequestRead],[IsRTOnlineRequestInsert])
+                                            for tb.AttributeValue in ([HoldReadOnlineRoomTypeMappingData],[HoldInsertOnlineRoomTypeMappingData])
                                             ) as PvTable
                                              
                                         ");
