@@ -17,10 +17,10 @@ namespace DataContracts.Mapping
         public string SupplierName { get; set; }
 
         [DataMember]
-        public string HoldInsertOnlineRoomTrypeMapping { get; set; }
+        public string HoldInsertOnlineRoomTypeMappingData { get; set; }
 
         
         [DataMember]
-        public string HoldReadOnlineRoomTrypeMappingData { get; set; }
+        public string HoldReadOnlineRoomTypeMappingData { get; set; }
     }
 }
