@@ -17,8 +17,8 @@ namespace DataContracts.Mapping
         //[DataMember]
         //public string CountryMapping_Id { get; set; }
 
-        //[DataMember]
-        //public string Country_Id { get; set; }
+        [DataMember]
+        public Guid Country_Id { get; set; }
 
         [DataMember]
         public string CountryName { get; set; }
