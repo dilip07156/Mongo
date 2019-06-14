@@ -10,8 +10,7 @@
 namespace DAL
 {
     using System;
-    using System.Collections.Generic;
-    
+
     public partial class Accommodation_ProductMapping
     {
         public System.Guid Accommodation_ProductMapping_Id { get; set; }
@@ -56,18 +55,21 @@ namespace DAL
         public Nullable<System.Guid> stg_AccoMapping_Id { get; set; }
         public string TLGXProductCode { get; set; }
         public Nullable<bool> IsPentaho { get; set; }
-        public Nullable<int> MatchedBy { get; set; }
+        public Nullable<short> MatchedBy { get; set; }
         public string HotelName_Tx { get; set; }
         public string Latitude_Tx { get; set; }
         public string Longitude_Tx { get; set; }
         public string MatchedByString { get; set; }
         public Nullable<System.Guid> SupplierImportFile_Id { get; set; }
-        public Nullable<int> Batch { get; set; }
+        public Nullable<short> Batch { get; set; }
         public Nullable<System.Guid> ReRun_SupplierImportFile_Id { get; set; }
-        public Nullable<int> ReRun_Batch { get; set; }
+        public Nullable<short> ReRun_Batch { get; set; }
         public string ProductType { get; set; }
         public System.Data.Entity.Spatial.DbGeography GeoLocation { get; set; }
         public Nullable<int> RowCounter { get; set; }
         public int MapId { get; set; }
+        public Nullable<bool> IsUniqueProduct { get; set; }
+        public Nullable<bool> IsBestSeller { get; set; }
+        public Nullable<bool> IsDirectContract { get; set; }
     }
 }
