@@ -3324,6 +3324,7 @@ namespace DAL
 
                             // delete logic if not in sql data
                             var CompanyAccommodationProductMappingCollection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
+                            LogSupplierStatus(currSupplier + " - " + "Deleting " + MapIdsToBeDeleted.Count() + " MapIds for all countries ", MongoInsertedCount);
                             foreach (var id in MapIdsToBeDeleted)
                             {
                                 try
@@ -3332,6 +3333,7 @@ namespace DAL
                                     var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
                                         Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", Convert.ToString(id)));
                                     var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
+                                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                                 }
                                 catch (Exception ex)
                                 {
