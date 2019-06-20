@@ -2294,12 +2294,12 @@ namespace DAL
                                         SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                         TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                     }).FirstOrDefault();
-                        if (prod != null && (prodstatus.Status == "MAPPED" || prodstatus.Status == "UNMAPPED"))
+                        if (prod != null && (prodstatus.Status == "MAPPED" || prodstatus.Status == "AUTOMAPPED"))
                         {
                             var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, prod.MapId);
                             collection.ReplaceOne(filter, prod, new UpdateOptions { IsUpsert = true });
                         }
-                        else if (prod != null)
+                        else if (prod != null && prodstatus.Status == "UNMAPPED")
                         {
                             collection.DeleteOne(x => x.MapId == prod.MapId);
                         }
