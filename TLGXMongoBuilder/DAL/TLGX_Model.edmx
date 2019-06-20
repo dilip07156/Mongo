@@ -278,15 +278,15 @@
           <Property Name="Supplier_Id" Type="uniqueidentifier" />
           <Property Name="SupplierId" Type="varchar" MaxLength="50" />
           <Property Name="SupplierName" Type="varchar" MaxLength="50" />
-          <Property Name="SupplierProductReference" Type="varchar" MaxLength="50" />
+          <Property Name="SupplierProductReference" Type="nvarchar" MaxLength="255" />
           <Property Name="ProductName" Type="nvarchar" MaxLength="500" />
           <Property Name="Street" Type="nvarchar" MaxLength="500" />
           <Property Name="Street2" Type="nvarchar" MaxLength="500" />
           <Property Name="Street3" Type="nvarchar" MaxLength="500" />
-          <Property Name="CountryName" Type="nvarchar" MaxLength="50" />
-          <Property Name="CountryCode" Type="varchar" MaxLength="20" />
-          <Property Name="CityName" Type="nvarchar" MaxLength="100" />
-          <Property Name="CityCode" Type="varchar" MaxLength="50" />
+          <Property Name="CountryName" Type="nvarchar" MaxLength="255" />
+          <Property Name="CountryCode" Type="nvarchar" MaxLength="50" />
+          <Property Name="CityName" Type="nvarchar" MaxLength="255" />
+          <Property Name="CityCode" Type="nvarchar" MaxLength="100" />
           <Property Name="PostCode" Type="varchar" MaxLength="20" />
           <Property Name="TelephoneNumber" Type="varchar" MaxLength="500" />
           <Property Name="Status" Type="varchar" MaxLength="15" />
@@ -2257,15 +2257,15 @@
           <Property Name="Supplier_Id" Type="Guid" />
           <Property Name="SupplierId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
           <Property Name="SupplierName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
-          <Property Name="SupplierProductReference" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="SupplierProductReference" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <Property Name="ProductName" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Street" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Street2" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
           <Property Name="Street3" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
-          <Property Name="CountryName" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
-          <Property Name="CountryCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
-          <Property Name="CityName" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
-          <Property Name="CityCode" Type="String" MaxLength="50" FixedLength="false" Unicode="false" />
+          <Property Name="CountryName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CountryCode" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CityName" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
+          <Property Name="CityCode" Type="String" MaxLength="100" FixedLength="false" Unicode="true" />
           <Property Name="PostCode" Type="String" MaxLength="20" FixedLength="false" Unicode="false" />
           <Property Name="TelephoneNumber" Type="String" MaxLength="500" FixedLength="false" Unicode="false" />
           <Property Name="Status" Type="String" MaxLength="15" FixedLength="false" Unicode="false" />

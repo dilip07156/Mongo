@@ -2364,12 +2364,12 @@ namespace DAL
                                         SystemProductCode = a.CompanyHotelID.ToString().ToUpper(),
                                         TlgxMdmHotelId = (a.TLGXAccoId == null ? string.Empty : a.TLGXAccoId.ToUpper())
                                     }).FirstOrDefault();
-                        if (prod != null && (prodstatus.Status == "MAPPED" || prodstatus.Status == "UNMAPPED"))
+                        if (prod != null && (prodstatus.Status == "MAPPED" || prodstatus.Status == "AUTOMAPPED"))
                         {
                             var filter = Builders<DataContracts.Mapping.DC_ProductMappingLite>.Filter.Eq(c => c.MapId, prod.MapId);
                             collection.ReplaceOne(filter, prod, new UpdateOptions { IsUpsert = true });
                         }
-                        else if (prod != null)
+                        else if (prod != null && prodstatus.Status == "UNMAPPED")
                         {
                             collection.DeleteOne(x => x.MapId == prod.MapId);
                         }
@@ -2965,8 +2965,7 @@ namespace DAL
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
                         StringBuilder sbSelectAMPCount = new StringBuilder();
                         sbSelectAMPCount.Append(@" SELECT COUNT(1) FROM Accommodation_ProductMapping apm with(nolock)  join  Accommodation_CompanyVersion av with(nolock)
-		                                    on av.Accommodation_Id = apm.Accommodation_Id where Status in ('MAPPED','AUTOMAPPED') and IsActive = 1 
-                                            and av.Country='United Arab Emirates'");// temporary clause added for pushing UAE data first on priority and then pushing rest of data for FITRUMS
+		                                    on av.Accommodation_Id = apm.Accommodation_Id where Status in ('MAPPED','AUTOMAPPED') and IsActive = 1 ");
 
                         if (Supplier_ID != Guid.Empty)
                         {
@@ -2990,7 +2989,6 @@ namespace DAL
                         sbCountryVizCount.Append(" select  count(1) as Count, UPPER(av.Country) as [CountryName], (select top 1 a.Country_Id from m_CountryMapping a where a.CountryName = av.Country) as Country_Id ");
                         sbCountryVizCount.Append(" from  Accommodation_ProductMapping apm with (NOLOCK) join  Accommodation_CompanyVersion av  with(nolock) on av.Accommodation_Id = apm.Accommodation_Id ");
                         sbCountryVizCount.Append(" join  Accommodation acc  with(nolock) on acc.Accommodation_Id = av.Accommodation_Id where apm.IsActive = 1  and apm.supplier_id = '" + Supplier_ID + "' ");
-                        sbCountryVizCount.Append(" and av.Country='United Arab Emirates' ");// temporary clause added for pushing UAE data first on priority and then pushing rest of data for FITRUMS
                         sbCountryVizCount.Append(" and apm.STATUS in ('MAPPED', 'AUTOMAPPED') group by av.Country order by count ");
                         CountryList = context.Database.SqlQuery<DataContracts.Mapping.DC_CountryMapping>(sbCountryVizCount.ToString()).ToList();
                     }
@@ -3396,6 +3394,7 @@ namespace DAL
 
                             // delete logic if not in sql data
                             var CompanyAccommodationProductMappingCollection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
+                            LogSupplierStatus(currSupplier + " - " + "Deleting " + MapIdsToBeDeleted.Count() + " MapIds for all countries ", MongoInsertedCount);
                             foreach (var id in MapIdsToBeDeleted)
                             {
                                 try
@@ -3404,6 +3403,7 @@ namespace DAL
                                     var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
                                         Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", Convert.ToString(id)));
                                     var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
+                                    UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                                 }
                                 catch (Exception ex)
                                 {
