@@ -960,10 +960,12 @@ namespace DAL
                 sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
                                             Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
                                             upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
-                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode,zm.zone_code
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode,zm.zone_code,zm.Zone_House_Number,
+                                            zm.Zone_Street_One,zm.Zone_Street_Two,zm.Zone_Street_Three,zm.Zone_City,zm.Zone_City_Area,zm.Zone_City_Area_Location,
+                                            zm.Zone_Postal_Code,zm.Zone_Full_Adress
                                             FROM  m_zoneMaster zm  with(Nolock)
                                             LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
-                                            WHERE zm.isActive=1 ");
+                                            WHERE zm.isActive=1 and zm.Latitude is not null and zm.Longitude is not null ");
                 int skip = batchNo * batchSize;
                 sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
 
@@ -997,9 +999,38 @@ namespace DAL
 
                 #endregion
 
+                #region ==== ZoneGeography SQL QUERY
+                StringBuilder sbSelectZoneGeography = new StringBuilder();
+                sbSelectZoneGeography.Append(@" SELECT zc.Zone_id, upper(ltrim(rtrim(cm.code))) as TLGXCityCode,upper(ltrim(rtrim(cm.CountryCode))) as TLGXCountryCode,upper(ltrim(rtrim(cm.StateCode))) as TLGXStateCode,
+                                                upper(ltrim(rtrim(zm.Zone_City_Area))) as TLGXCityAreaCode,upper(ltrim(rtrim(zm.Zone_City_Area_Location))) as TLGXCityAreaLocationCode
+                                                FROM  ZoneCity_Mapping zc with(NOLOCK) 
+                                                JOIN m_citymaster cm with(NOLOCK)  on zc.city_id = cm.city_id
+											    JOIN m_ZoneMaster zm with(NOLOCK) on zm.Zone_id=zc.Zone_Id ");
+
+                StringBuilder sbfinalZoneGeography = new StringBuilder();
+                sbfinalZoneGeography.Append(sbSelectZoneGeography + " ");
+                sbfinalZoneGeography.Append(" WHERE zc.zone_id  in ( ");
+
+                #endregion
+
+                #region ==== ZoneGeography SQL QUERY
+                StringBuilder sbSelectZoneGeographyCoordinates = new StringBuilder();
+                sbSelectZoneGeographyCoordinates.Append(@" SELECT Zone_id,Longitude ,Latitude FROM m_ZoneMaster with(NOLOCK) ");
+
+                StringBuilder sbfinalZoneCoordinates = new StringBuilder();
+                sbfinalZoneCoordinates.Append(sbSelectZoneGeographyCoordinates + " ");
+                sbfinalZoneCoordinates.Append(" WHERE zone_id  in ( ");
+
+                #endregion
+
+
                 List<DataContracts.Masters.DC_Zone_ProductMappingRQ> _ZoneProdListResult = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
 
                 List<DataContracts.Masters.DC_Zone_CityMappingRQ> _ZoneCityListResult = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
+
+                List<DataContracts.Masters.DC_Zone_GeographyRQ> _ZoneGeographyListResult = new List<DataContracts.Masters.DC_Zone_GeographyRQ>();
+
+                List<DC_Zone_CoordinateRQ> _Zone_GeometryCoordinatesListResult = new List<DC_Zone_CoordinateRQ>();
 
                 StringBuilder sbZone_id = new StringBuilder();
 
@@ -1026,12 +1057,28 @@ namespace DAL
                         sbfinalZoneCity.Append(sbZone_id.ToString().TrimEnd(',') + ")");
                         _ZoneCityListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CityMappingRQ>(sbfinalZoneCity.ToString()).ToList();
 
+                        //To Get Zone Geography by Zone id
+                        sbfinalZoneGeography.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        _ZoneGeographyListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_GeographyRQ>(sbfinalZoneGeography.ToString()).ToList();
+
+                        //To Get Zone Geography Coordinates by Zone id
+                        sbfinalZoneCoordinates.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        _Zone_GeometryCoordinatesListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CoordinateRQ>(sbfinalZoneCoordinates.ToString()).ToList();
+
                         foreach (var item in _ZoneListResult)
                         {
                             item.Zone_ProductMapping = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
                             item.Zone_ProductMapping = _ZoneProdListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
                             item.Zone_CityMapping = new List<DataContracts.Masters.DC_Zone_CityMappingRQ>();
                             item.Zone_CityMapping = _ZoneCityListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                            item.Zone_GeographyMapping = new List<DC_Zone_GeographyRQ>();
+                            item.Zone_GeographyMapping = _ZoneGeographyListResult.Where(w => w.Zone_id == item.Zone_id).ToList();                            
+                            List<DC_Zone_CoordinateRQ> _CoordinateRQs= _Zone_GeometryCoordinatesListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                            DC_Zone_GeometryRQ dC_Zone_GeometryRQ = new DC_Zone_GeometryRQ();
+                            dC_Zone_GeometryRQ.coordinates = _CoordinateRQs.FirstOrDefault();
+                            dC_Zone_GeometryRQ.type = "Point";
+                            item.geometry = new List<DC_Zone_GeometryRQ>();
+                            item.geometry.Add(dC_Zone_GeometryRQ);
                         }
                         _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
                     }
@@ -1060,7 +1107,30 @@ namespace DAL
                     Longitude = item.Longitude,
                     Zone_Radius = item.Zone_Radius,
                     TLGXCountryCode = item.TLGXCountryCode,
-                    Zone_Code=item.Zone_Code,
+                    Zone_Code=item.Zone_Code,      
+                    Zone_House_Number=item.Zone_House_Number,
+                    Zone_Street_One=item.Zone_Street_One,
+                    Zone_Street_Two=item.Zone_Street_Two,
+                    Zone_Street_Three=item.Zone_Street_Three,
+                    Zone_City=item.Zone_City,
+                    Zone_City_Area=item.Zone_City_Area,
+                    Zone_City_Area_Location=item.Zone_City_Area_Location,
+                    Zone_Postal_Code=item.Zone_Postal_Code,
+                    Zone_Full_Adress=item.Zone_Full_Adress,
+                    loc = item.geometry.ConvertAll(xGeometry => new DataContracts.Masters.DC_Zone_Geometry
+                    {
+                        type=xGeometry.type,
+                        coordinates=new List<double> { xGeometry.coordinates.Longitude!=null?Convert.ToDouble(xGeometry.coordinates.Longitude):0.00, xGeometry.coordinates.Latitude != null ? Convert.ToDouble(xGeometry.coordinates.Latitude) : 0.00 }
+                    }).FirstOrDefault(),
+
+                    Zone_GeographyMapping = item.Zone_GeographyMapping.ConvertAll(xGeo => new DataContracts.Masters.DC_Zone_Geography
+                    {
+                        TLGXCityCode= xGeo.TLGXCityCode,
+                        TLGXCountryCode=xGeo.TLGXCountryCode,
+                        TLGXCityAreaCode=xGeo.TLGXCityAreaCode,
+                        TLGXCityAreaLocationCode=xGeo.TLGXCityAreaLocationCode,
+                        TLGXStateCode=xGeo.TLGXStateCode
+                    }),
                     Zone_CityMapping = item.Zone_CityMapping.ConvertAll(xcity => new DataContracts.Masters.DC_Zone_CityMapping
                     {
                         TLGXCityCode = xcity.TLGXCityCode

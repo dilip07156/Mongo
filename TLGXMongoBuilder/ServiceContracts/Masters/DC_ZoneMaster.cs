@@ -37,7 +37,29 @@ namespace DataContracts.Masters
         [DataMember]
         public List<DC_Zone_ProductMapping> Zone_ProductMapping { get; set; }
         [DataMember]
+        public List<DC_Zone_Geography> Zone_GeographyMapping { get; set; }
+        [DataMember]
+        public DC_Zone_Geometry loc { get; set; }
+        [DataMember]
         public string Zone_Code { get; set; }
+        [DataMember]
+        public string Zone_House_Number { get; set; }
+        [DataMember]
+        public string Zone_Street_One { get; set; }
+        [DataMember]
+        public string Zone_Street_Two { get; set; }
+        [DataMember]
+        public string Zone_Street_Three { get; set; }
+        [DataMember]
+        public string Zone_City { get; set; }
+        [DataMember]
+        public string Zone_City_Area { get; set; }
+        [DataMember]
+        public string Zone_City_Area_Location { get; set; }
+        [DataMember]
+        public string Zone_Postal_Code { get; set; }
+        [DataMember]
+        public string Zone_Full_Adress { get; set; }
 
     }
     [DataContract]
@@ -64,6 +86,33 @@ namespace DataContracts.Masters
     }
 
     [DataContract]
+    public class DC_Zone_Geography
+    {        
+        [DataMember]        
+        public string TLGXCityCode { get; set; }
+        [DataMember]
+        public string TLGXCountryCode { get; set; }
+        [DataMember]
+        public string TLGXStateCode { get; set; }
+        [DataMember]
+        public string TLGXCityAreaCode { get; set; }
+        [DataMember]
+        public string TLGXCityAreaLocationCode { get; set; }
+        
+    }
+
+    [DataContract]
+    public class DC_Zone_Geometry
+    {
+        [DataMember]
+        public string type { get; set; }
+        [DataMember]
+        public List<double> coordinates { get; set; }
+    }
+
+   
+
+    [DataContract]
     public class DC_Zone_MasterRQ
     {
         [DataMember]
@@ -87,9 +136,31 @@ namespace DataContracts.Masters
         [DataMember]
         public string Zone_Code { get; set; }
         [DataMember]
+        public string Zone_House_Number { get; set; }
+        [DataMember]
+        public string Zone_Street_One { get; set; }
+        [DataMember]
+        public string Zone_Street_Two { get; set; }
+        [DataMember]
+        public string Zone_Street_Three { get; set; }
+        [DataMember]
+        public string Zone_City { get; set; }
+        [DataMember]
+        public string Zone_City_Area { get; set; }
+        [DataMember]
+        public string Zone_City_Area_Location { get; set; }
+        [DataMember]
+        public string Zone_Postal_Code { get; set; }
+        [DataMember]
+        public string Zone_Full_Adress { get; set; }
+        [DataMember]
+        public List<DC_Zone_GeographyRQ> Zone_GeographyMapping { get; set; }
+        [DataMember]
         public List<DC_Zone_ProductMappingRQ> Zone_ProductMapping { get; set; }
         [DataMember]
         public List<DC_Zone_CityMappingRQ> Zone_CityMapping { get; set; }
+        [DataMember]
+        public List<DC_Zone_GeometryRQ> geometry { get; set; }
 
     }
     [DataContract]
@@ -115,6 +186,44 @@ namespace DataContracts.Masters
     {
         [DataMember]
         public string TLGXCityCode { get; set; }
+        [DataMember]
+        public Guid Zone_id { get; set; }
+    }
+
+    [DataContract]
+    public class DC_Zone_GeographyRQ
+    {
+        [DataMember]
+        public string TLGXCityCode { get; set; }
+        [DataMember]
+        public string TLGXCountryCode { get; set; }
+        [DataMember]
+        public string TLGXStateCode { get; set; }
+        [DataMember]
+        public string TLGXCityAreaCode { get; set; }
+        [DataMember]
+        public string TLGXCityAreaLocationCode { get; set; }
+        [DataMember]
+        public Guid Zone_id { get; set; }
+    }
+
+    [DataContract]
+    public class DC_Zone_GeometryRQ
+    {
+        [DataMember]
+        public string type { get; set; }
+        [DataMember]
+        public DC_Zone_CoordinateRQ coordinates { get; set; }
+
+    }
+
+    [DataContract]
+    public class DC_Zone_CoordinateRQ
+    {
+        [DataMember]
+        public string Longitude { get; set; }
+        [DataMember]
+        public string Latitude { get; set; }
         [DataMember]
         public Guid Zone_id { get; set; }
     }
