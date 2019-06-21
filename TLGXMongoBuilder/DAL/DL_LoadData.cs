@@ -3288,7 +3288,7 @@ namespace DAL
                             sbSelectAccoMaster.Append(@"  
                                    SELECt apm.CompanyId as SupplierCode
                                         , (apm.CompanyId	 + '_'+    apm.CommonProductId + '_'+  av.CompanyId + '_' +   av.CompanyProductId) as _id
-                                        , apm.CompanyProductId		 as [SupplierProductCode]
+                                        , apm.TLGXAccoId		 as [SupplierProductCode]
                                         , apm.ProductName		     as [SupplierProductName]
 	                                    , av.ProductName					 as [CompanyProductName]
                                         , av.CommonProductId                 as [CommonProductId]
@@ -3311,7 +3311,7 @@ namespace DAL
                                     	Accommodation_CompanyVersion apm with(nolock)
                                     	join Accommodation_CompanyVersion av on apm.CommonProductId = av.CommonProductId
                                     where av.CompanyId <> apm.CompanyId
-                                    and apm.CompanyId = '" + SupplierCode.SupplierCode + "' --and apm.CommonProductId = '28254' "
+                                    and apm.CompanyId = '" + SupplierCode.SupplierCode + "' --and apm.CommonProductId = '59465' "
 
 
                                     );
