@@ -3032,6 +3032,7 @@ namespace DAL
 	                                    , av.Interest						 as [Interest]
 	                                    , av.Accommodation_CompanyVersion_Id as [Accommodation_CompanyVersion_Id]
                                         , av.StarRating						 as [Rating]
+                                        , av.TLGXAccoId                      as [TLGXProduct_Id]
                                         , isnull(acc.IsRoomMappingCompleted,0)  as [IsRoomMappingCompleted] 
 										, isnull(apm.IsDirectContract,0)     as [IsDirectContract]   
                                     from  Accommodation_ProductMapping apm with (NOLOCk)
@@ -3041,7 +3042,7 @@ namespace DAL
 		                                    on acc.Accommodation_Id = av.Accommodation_Id
                                     where 
                                         apm.IsActive = 1  and
-	                                    apm.supplier_id = '" + SupplierCode.Supplier_Id + @"' and 
+                                        apm.supplier_id = '" + SupplierCode.Supplier_Id + @"' and 
 	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') and  apm.Country_Id = '" + CountryId + "'");
                                 
                                 sbSelectAccoRoomMapped.Append(@"  
@@ -3249,7 +3250,7 @@ namespace DAL
 
                         StringBuilder sbSuuplierCodes = new StringBuilder();
                         //sbSuuplierCodes.Append("SELECT upper(Code) as SupplierCode ,Supplier.Supplier_Id as Supplier_Id,UPPER(Name) as SupplierName from Supplier with(nolock) inner join supplier_productCategory with(nolock) on supplier_productCategory.Supplier_Id = Supplier.Supplier_Id where StatusCode ='ACTIVE'  and ProductCategory='Accommodation' and ProductCategorySubType='Hotel' order by SupplierName ");
-                        sbSuuplierCodes.Append(" SELECt distinct   cast(cast(0 as binary) as uniqueidentifier) as Supplier_Id,CompanyId as SupplierName, CompanyId as SupplierCode  from Accommodation_CompanyVersion with(nolock) order by CompanyId ");
+                        sbSuuplierCodes.Append(" Select distinct   cast(cast(0 as binary) as uniqueidentifier) as Supplier_Id,CompanyId as SupplierName, CompanyId as SupplierCode  from Accommodation_CompanyVersion with(nolock) order by CompanyId ");
 
                         SupplierCodes = context.Database.SqlQuery<DC_Supplier_ShortVersion>(sbSuuplierCodes.ToString()).ToList();
                         StringBuilder sbSelectAMPCount = new StringBuilder();
@@ -3304,7 +3305,8 @@ namespace DAL
 	                                    , av.Interest						 as [Interest]
 	                                    , av.Accommodation_CompanyVersion_Id as [Accommodation_CompanyVersion_Id]
                                         , av.StarRating						 as [Rating]
-	
+                                        , av.TLGXAccoId                      as [TLGXProduct_Id]
+
                                     from 
                                     	Accommodation_CompanyVersion apm with(nolock)
                                     	join Accommodation_CompanyVersion av on apm.CommonProductId = av.CommonProductId
