@@ -3284,11 +3284,12 @@ namespace DAL
                         {
                             #region Generating Query
                             StringBuilder sbSelectAccoMaster = new StringBuilder();
-
+                            // Sending TLGXAccoId as SupplierProductCode from Accommodation_CompanyVersion for CompanySpecificHotelAndRoomTypeMapping.
+                            // In return we will return them value in field tlgxProduct_Id
                             sbSelectAccoMaster.Append(@"  
                                    SELECt apm.CompanyId as SupplierCode
                                         , (apm.CompanyId	 + '_'+    apm.CommonProductId + '_'+  av.CompanyId + '_' +   av.CompanyProductId) as _id
-                                        , apm.TLGXAccoId		 as [SupplierProductCode]
+                                        , apm.TLGXAccoId		 as [SupplierProductCode] 
                                         , apm.ProductName		     as [SupplierProductName]
 	                                    , av.ProductName					 as [CompanyProductName]
                                         , av.CommonProductId                 as [CommonProductId]
