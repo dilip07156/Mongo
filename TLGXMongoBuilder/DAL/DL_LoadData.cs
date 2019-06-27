@@ -1013,13 +1013,29 @@ namespace DAL
 
                 #endregion
 
-                #region ==== ZoneGeography SQL QUERY
+                #region ==== ZoneLoc SQL QUERY
                 StringBuilder sbSelectZoneGeographyCoordinates = new StringBuilder();
                 sbSelectZoneGeographyCoordinates.Append(@" SELECT Zone_id,Longitude ,Latitude FROM m_ZoneMaster with(NOLOCK) ");
 
                 StringBuilder sbfinalZoneCoordinates = new StringBuilder();
                 sbfinalZoneCoordinates.Append(sbSelectZoneGeographyCoordinates + " ");
                 sbfinalZoneCoordinates.Append(" WHERE zone_id  in ( ");
+
+                #endregion
+
+                #region ==== ZoneLocation mapping SQL QUERY
+                StringBuilder sbSelectZoneLocationMapping = new StringBuilder();
+                sbSelectZoneLocationMapping.Append(@" SELECT ZS.Name,ZS.Code,ZS.ZoneType,ZS.ZoneSubType,House_Number,
+                                                       ZS.StreetName,ZS.Street2,ZS.Street3,ZS.City,ZS.CityArea,ZS.CityAreaLocation,
+                                                       ZS.StateCode,ZS.StateName,ZS.CountryCode,ZS.PostalCode,ZS.Full_Adress,ZS.Latitude,
+                                                       ZS.Longitude,ZSM.Distance,ZS.Supplier_Name,SUP.Code as Supplier_code,ZM.Zone_id from Zone_SupplierMapping ZSM with(NOLOCK) 
+	                                                   INNER JOIN Zone_Supplier ZS with(NOLOCK) ON ZSM.ZoneSupplier_Id=ZS.ZoneSupplier_Id
+	                                                   INNER JOIN m_ZoneMaster ZM with(NOLOCK) ON ZSM.ZoneId=ZM.Zone_id 
+                                                       INNER JOIN Supplier SUP with(NOLOCK) ON SUP.Name=ZS.Supplier_Name");
+
+                StringBuilder sbfinalZoneLocationMapping = new StringBuilder();
+                sbfinalZoneLocationMapping.Append(sbSelectZoneLocationMapping + " ");
+                sbfinalZoneLocationMapping.Append(" WHERE zm.zone_id  in ( ");
 
                 #endregion
 
@@ -1031,6 +1047,8 @@ namespace DAL
                 List<DataContracts.Masters.DC_Zone_GeographyRQ> _ZoneGeographyListResult = new List<DataContracts.Masters.DC_Zone_GeographyRQ>();
 
                 List<DC_Zone_CoordinateRQ> _Zone_GeometryCoordinatesListResult = new List<DC_Zone_CoordinateRQ>();
+
+                List<DC_Zone_LocationMappingRQ> _Zone_LocationMappingRQListResult = new List<DC_Zone_LocationMappingRQ>();
 
                 StringBuilder sbZone_id = new StringBuilder();
 
@@ -1065,6 +1083,12 @@ namespace DAL
                         sbfinalZoneCoordinates.Append(sbZone_id.ToString().TrimEnd(',') + ")");
                         _Zone_GeometryCoordinatesListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_CoordinateRQ>(sbfinalZoneCoordinates.ToString()).ToList();
 
+                        //To Get Zone Geography Coordinates by Zone id
+                        sbfinalZoneLocationMapping.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                        _Zone_LocationMappingRQListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_LocationMappingRQ>(sbfinalZoneLocationMapping.ToString()).ToList();
+
+
+
                         foreach (var item in _ZoneListResult)
                         {
                             item.Zone_ProductMapping = new List<DataContracts.Masters.DC_Zone_ProductMappingRQ>();
@@ -1079,6 +1103,8 @@ namespace DAL
                             dC_Zone_GeometryRQ.type = "Point";
                             item.geometry = new List<DC_Zone_GeometryRQ>();
                             item.geometry.Add(dC_Zone_GeometryRQ);
+                            item.Zone_LocationMapping = new List<DC_Zone_LocationMappingRQ>();
+                            item.Zone_LocationMapping = _Zone_LocationMappingRQListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
                         }
                         _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
                     }
@@ -1143,8 +1169,31 @@ namespace DAL
                         Distance = xProd.Distance,
                         Unit = xProd.Unit,
                         IsIncluded = xProd.IsIncluded
+                    }),
+                    Zone_LocationMapping = item.Zone_LocationMapping.ConvertAll(xLoc => new DataContracts.Masters.DC_Zone_LocationMapping
+                    {
+                        Name = xLoc.Name,
+                        Code = xLoc.Code,
+                        ZoneType = xLoc.ZoneType,
+                        ZoneSubType = xLoc.ZoneSubType,
+                        City = xLoc.City,
+                        CityArea = xLoc.CityArea,
+                        CityAreaLocation=xLoc.CityAreaLocation,
+                        CountryCode=xLoc.CountryCode,
+                        Full_Adress=xLoc.Full_Adress,
+                        House_Number=xLoc.House_Number,
+                        PostalCode=xLoc.PostalCode,
+                        StateName=xLoc.StateName,
+                        StateCode=xLoc.StateCode,
+                        StreetName=xLoc.StreetName,
+                        Street2=xLoc.Street2,
+                        Street3=xLoc.Street3,
+                        Latitude=xLoc.Latitude,
+                        Longitude=xLoc.Longitude,
+                        Distance=xLoc.Distance,
+                        Supplier_code=xLoc.Supplier_code,
+                        Supplier_Name=xLoc.Supplier_Name
                     })
-
                 });
             }
             catch (Exception ex) { throw; }

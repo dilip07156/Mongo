@@ -39,6 +39,8 @@ namespace DataContracts.Masters
         [DataMember]
         public List<DC_Zone_Geography> Zone_GeographyMapping { get; set; }
         [DataMember]
+        public List<DC_Zone_LocationMapping> Zone_LocationMapping { get; set; }
+        [DataMember]
         public DC_Zone_Geometry loc { get; set; }
         [DataMember]
         public string Zone_Code { get; set; }
@@ -110,7 +112,54 @@ namespace DataContracts.Masters
         public List<double> coordinates { get; set; }
     }
 
-   
+    [DataContract]
+    public class DC_Zone_LocationMapping
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Code { get; set; }
+        [DataMember]
+        public string ZoneType { get; set; }
+        [DataMember]
+        public string ZoneSubType { get; set; }
+        [DataMember]
+        public string House_Number { get; set; }
+        [DataMember]
+        public string StreetName { get; set; }
+        [DataMember]
+        public string Street2 { get; set; }
+        [DataMember]
+        public string Street3 { get; set; }
+        [DataMember]
+        public string City { get; set; }
+        [DataMember]
+        public string CityArea { get; set; }
+        [DataMember]
+        public string CityAreaLocation { get; set; }
+        [DataMember]
+        public string StateCode { get; set; }
+        [DataMember]
+        public string StateName { get; set; }
+        [DataMember]
+        public string CountryCode { get; set; }
+        [DataMember]
+        public string PostalCode { get; set; }
+        [DataMember]
+        public string Full_Adress { get; set; }
+        public double Latitude { get; set; }
+        [DataMember]
+        public double Longitude { get; set; }
+        [DataMember]
+        public double Distance { get; set; }
+        [DataMember]
+        public string Supplier_Name { get; set; }
+        [DataMember]
+        public string Supplier_code { get; set; }
+
+    }
+
+
 
     [DataContract]
     public class DC_Zone_MasterRQ
@@ -161,6 +210,8 @@ namespace DataContracts.Masters
         public List<DC_Zone_CityMappingRQ> Zone_CityMapping { get; set; }
         [DataMember]
         public List<DC_Zone_GeometryRQ> geometry { get; set; }
+        [DataMember]
+        public List<DC_Zone_LocationMappingRQ> Zone_LocationMapping { get; set; }
 
     }
     [DataContract]
@@ -235,6 +286,56 @@ namespace DataContracts.Masters
         public string Zone_Type { get; set; }
         [DataMember]
         public List<string> Zone_SubType { get; set; }
+
+    }
+
+    [DataContract]
+    public class DC_Zone_LocationMappingRQ
+    {
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Code { get; set; }
+        [DataMember]
+        public string ZoneType { get; set; }
+        [DataMember]
+        public string ZoneSubType { get; set; }
+        [DataMember]
+        public string House_Number { get; set; }
+        [DataMember]
+        public string StreetName { get; set; }
+        [DataMember]
+        public string Street2 { get; set; }
+        [DataMember]
+        public string Street3 { get; set; }
+        [DataMember]
+        public string City { get; set; }
+        [DataMember]
+        public string CityArea { get; set; }
+        [DataMember]
+        public string CityAreaLocation { get; set; }
+        [DataMember]
+        public string StateCode { get; set; }
+        [DataMember]
+        public string StateName { get; set; }
+        [DataMember]
+        public string CountryCode { get; set; }
+        [DataMember]
+        public string PostalCode { get; set; }
+        [DataMember]
+        public string Full_Adress { get; set; }
+        [DataMember]
+        public double Latitude { get; set; }
+        [DataMember]
+        public double Longitude { get; set; }
+        [DataMember]
+        public double Distance { get; set; }
+        [DataMember]
+        public string Supplier_Name { get; set; }
+        [DataMember]
+        public string Supplier_code { get; set; }
+        [DataMember]
+        public Guid Zone_id { get; set; }
 
     }
 
