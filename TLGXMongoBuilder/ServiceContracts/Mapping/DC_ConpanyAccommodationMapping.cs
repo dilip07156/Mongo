@@ -45,6 +45,11 @@ namespace DataContracts.Mapping
         [DataMember]
         public string TLGXCompanyId { get; set; }
 
+
+        [DataMember]
+        public string TLGXProduct_Id { get; set; }
+        
+
         [DataMember]
         public string Rating { get; set; }
 

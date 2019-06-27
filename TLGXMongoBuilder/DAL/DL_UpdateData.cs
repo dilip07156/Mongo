@@ -1304,7 +1304,10 @@ namespace DAL
                     if (Guid.TryParse(Supplier_id, out Guid Sup_id))
                         suppliercode = context.Suppliers.Where(x => x.Supplier_Id == Sup_id).Select(x => x.Code.ToUpper()).FirstOrDefault();
                 }
-
+                if(_database == null)
+                {
+                    _database = MongoDBHandler.mDatabase();
+                }
                 var collection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
                 var filter = Builders<BsonDocument>.Filter.Eq("SupplierCode", suppliercode);
                     filter &= Builders<BsonDocument>.Filter.Eq("SupplierProductCode", SupplierProductReference);
