@@ -141,8 +141,18 @@ namespace ServiceContracts
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationCountryWiseProductMapping/{LogId}/{Supplier_ID}/{Country_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCompanyAccommodationCountryWiseProductMapping(string LogId, string Supplier_ID, string Country_ID);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
         [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMappingCrossVersion/{LogId}/{Supplier_ID}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
         void LoadCompanyAccommodationProductMappingCrossVersion(string LogId, string Supplier_ID);
+
+        [OperationContract]
+        [FaultContract(typeof(DataContracts.ErrorNotifier))]
+        [WebGet(UriTemplate = "Load/LoadCompanyAccommodationProductMappingCrossVersion_CountryWise/{LogId}/{Supplier_ID}/{Country_Id}", RequestFormat = WebMessageFormat.Json, ResponseFormat = WebMessageFormat.Json)]
+        void LoadCompanyAccommodationProductMappingCrossVersion_CountryWise(string LogId, string Supplier_ID, string Country_Id);
 
         [OperationContract]
         [FaultContract(typeof(DataContracts.ErrorNotifier))]
