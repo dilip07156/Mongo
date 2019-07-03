@@ -241,11 +241,27 @@ namespace MapperSvc
             }
         }
 
+        public void LoadCompanyAccommodationCountryWiseProductMapping(string LogId, string Supplier_ID, string Country_ID)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCompanyAccommodationCountryWiseProductMapping(LogId, Supplier_ID, Country_ID);
+            }
+        }
+
         public void LoadCompanyAccommodationProductMappingCrossVersion(string LogId, string Supplier_ID)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
             {
                 objBL.LoadCompanyAccommodationProductMappingCrossVersion(LogId, Supplier_ID);
+            }
+        }
+
+        public void LoadCompanyAccommodationProductMappingCrossVersion_CountryWise(string LogId, string Supplier_ID, string Country_Id)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadCompanyAccommodationProductMappingCrossVersion_CountryWise(LogId, Supplier_ID, Country_Id);
             }
         }
 
