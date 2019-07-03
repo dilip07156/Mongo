@@ -3444,37 +3444,37 @@ namespace DAL
                                         ErrorLog(ex, currSupplier);
                                     }
                                 }
-                                List<string> MappedIds = lstMappedRooms.Select(s => s.NakshatraRoomMappingId).ToList();
+                                // removed MapIds deletion code from cross version after discussion with gaurav
+                                //List<string> MappedIds = lstMappedRooms.Select(s => s.NakshatraRoomMappingId).ToList();
                                 //List<string> SupplierCodeIds = productMapList.Select(p => p.SupplierProductCode).ToList();
-                                List<DC_ConpanyAccommodationMapping> companyAccoMappingListId = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).ToList();
-                                List<DC_ConpanyAccommodationRoomMapping> mappedRoomsForSupplierCode = companyAccoMappingListId.SelectMany(x => x.MappedRooms).ToList();
-                                List<DC_ConpanyAccommodationRoomMapping> MappedRoomsForSupplierCodeSQL = ConpanyAccommodationMappingList.SelectMany(x => x.MappedRooms).ToList();
+                                //List<DC_ConpanyAccommodationMapping> companyAccoMappingListId = collection.Find(x => x.SupplierCode == SupplierCode.SupplierCode).ToList();
+                                //List<DC_ConpanyAccommodationRoomMapping> mappedRoomsForSupplierCode = companyAccoMappingListId.SelectMany(x => x.MappedRooms).ToList();
+                                //List<DC_ConpanyAccommodationRoomMapping> MappedRoomsForSupplierCodeSQL = ConpanyAccommodationMappingList.SelectMany(x => x.MappedRooms).ToList();
+                                //var Mapids = mappedRoomsForSupplierCode.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
+                                //var MapidSQL = MappedRoomsForSupplierCodeSQL.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
+                                //var MapIdsToBeDeleted = Mapids.Except(MapidSQL).ToList();
 
-                                var Mapids = mappedRoomsForSupplierCode.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
-                                var MapidSQL = MappedRoomsForSupplierCodeSQL.Distinct().Select(x => x.NakshatraRoomMappingId).ToList();
-                                var MapIdsToBeDeleted = Mapids.Except(MapidSQL).ToList();
-
-                                // delete logic if not in sql data
-                                var CompanyAccommodationProductMappingCollection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
-                                LogSupplierStatus(currSupplier + " - " + "Deleting " + MapIdsToBeDeleted.Count() + " MapIds for " + Convert.ToString(countryName) + " in CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", MongoInsertedCount);
-                                foreach (var id in MapIdsToBeDeleted)
-                                {
-                                    try
-                                    {
-                                        var filter = Builders<BsonDocument>.Filter.Eq("MappedRooms.NakshatraRoomMappingId", Convert.ToString(id));
-                                        var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
-                                            Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", Convert.ToString(id)));
-                                        var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
-                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        ErrorLog(ex, currSupplier);
-                                    }
-                                }
+                                //// delete logic if not in sql data
+                                //var CompanyAccommodationProductMappingCollection = _database.GetCollection<BsonDocument>("CompanyAccommodationProductMapping");
+                                //LogSupplierStatus(currSupplier + " - " + "Deleting " + MapIdsToBeDeleted.Count() + " MapIds for " + Convert.ToString(countryName) + " in CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", MongoInsertedCount);
+                                //foreach (var id in MapIdsToBeDeleted)
+                                //{
+                                //    try
+                                //    {
+                                //        var filter = Builders<BsonDocument>.Filter.Eq("MappedRooms.NakshatraRoomMappingId", Convert.ToString(id));
+                                //        var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
+                                //            Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", Convert.ToString(id)));
+                                //        var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
+                                //        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
+                                //    }
+                                //    catch (Exception ex)
+                                //    {
+                                //        ErrorLog(ex, currSupplier);
+                                //    }
+                                //}
                             }
                             // logging successful supplier with last count
-                            LogSupplierStatus(currSupplier + " in CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", MongoInsertedCount);
+                            LogSupplierStatus(currSupplier + "-"+ countryName + "-CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", MongoInsertedCount);
                             UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "CROSSCOMPANYACCOMMODATIONPRODUCTMAPPING", "MAPPING");
                         }
                         catch (Exception ex)
