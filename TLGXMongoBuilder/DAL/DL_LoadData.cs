@@ -1025,9 +1025,9 @@ namespace DAL
 
                 #region ==== ZoneLocation mapping SQL QUERY
                 StringBuilder sbSelectZoneLocationMapping = new StringBuilder();
-                sbSelectZoneLocationMapping.Append(@" SELECT ZS.Name,ZS.Code,ZS.ZoneType,ZS.ZoneSubType,House_Number,
+                sbSelectZoneLocationMapping.Append(@" SELECT ZS.Name,ZS.Code,ZS.ZoneType,ZS.ZoneSubType,HouseNumber,
                                                        ZS.StreetName,ZS.Street2,ZS.Street3,ZS.City,ZS.CityArea,ZS.CityAreaLocation,
-                                                       ZS.StateCode,ZS.StateName,ZS.CountryCode,ZS.PostalCode,ZS.Full_Adress,ZS.Latitude,
+                                                       ZS.StateCode,ZS.StateName,ZS.CountryCode,ZS.PostalCode,ZS.FullAdress,ZS.Latitude,
                                                        ZS.Longitude,ZSM.Distance,ZS.Supplier_Name,SUP.Code as Supplier_code,ZM.Zone_id from Zone_SupplierMapping ZSM with(NOLOCK) 
 	                                                   INNER JOIN Zone_Supplier ZS with(NOLOCK) ON ZSM.ZoneSupplier_Id=ZS.ZoneSupplier_Id
 	                                                   INNER JOIN m_ZoneMaster ZM with(NOLOCK) ON ZSM.ZoneId=ZM.Zone_id 
@@ -1103,8 +1103,8 @@ namespace DAL
                             dC_Zone_GeometryRQ.type = "Point";
                             item.geometry = new List<DC_Zone_GeometryRQ>();
                             item.geometry.Add(dC_Zone_GeometryRQ);
-                            item.Zone_LocationMapping = new List<DC_Zone_LocationMappingRQ>();
-                            item.Zone_LocationMapping = _Zone_LocationMappingRQListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
+                            item.ZoneLocationMapping = new List<DC_Zone_LocationMappingRQ>();
+                            item.ZoneLocationMapping = _Zone_LocationMappingRQListResult.Where(w => w.Zone_id == item.Zone_id).ToList();
                         }
                         _ZoneListResultMain = ConvertListWithoutId(_ZoneListResult);
                     }
@@ -1170,7 +1170,7 @@ namespace DAL
                         Unit = xProd.Unit,
                         IsIncluded = xProd.IsIncluded
                     }),
-                    Zone_LocationMapping = item.Zone_LocationMapping.ConvertAll(xLoc => new DataContracts.Masters.DC_Zone_LocationMapping
+                    Zone_LocationMapping = item.ZoneLocationMapping.ConvertAll(xLoc => new DataContracts.Masters.DC_Zone_LocationMapping
                     {
                         Name = xLoc.Name,
                         Code = xLoc.Code,
@@ -1180,8 +1180,8 @@ namespace DAL
                         CityArea = xLoc.CityArea,
                         CityAreaLocation=xLoc.CityAreaLocation,
                         CountryCode=xLoc.CountryCode,
-                        Full_Adress=xLoc.Full_Adress,
-                        House_Number=xLoc.House_Number,
+                        FullAdress=xLoc.FullAdress,
+                        HouseNumber=xLoc.HouseNumber,
                         PostalCode=xLoc.PostalCode,
                         StateName=xLoc.StateName,
                         StateCode=xLoc.StateCode,

@@ -124,7 +124,7 @@ namespace DataContracts.Masters
         [DataMember]
         public string ZoneSubType { get; set; }
         [DataMember]
-        public string House_Number { get; set; }
+        public string HouseNumber { get; set; }
         [DataMember]
         public string StreetName { get; set; }
         [DataMember]
@@ -146,7 +146,7 @@ namespace DataContracts.Masters
         [DataMember]
         public string PostalCode { get; set; }
         [DataMember]
-        public string Full_Adress { get; set; }
+        public string FullAdress { get; set; }
         public double Latitude { get; set; }
         [DataMember]
         public double Longitude { get; set; }
@@ -211,7 +211,7 @@ namespace DataContracts.Masters
         [DataMember]
         public List<DC_Zone_GeometryRQ> geometry { get; set; }
         [DataMember]
-        public List<DC_Zone_LocationMappingRQ> Zone_LocationMapping { get; set; }
+        public List<DC_Zone_LocationMappingRQ> ZoneLocationMapping { get; set; }
 
     }
     [DataContract]
@@ -301,7 +301,7 @@ namespace DataContracts.Masters
         [DataMember]
         public string ZoneSubType { get; set; }
         [DataMember]
-        public string House_Number { get; set; }
+        public string HouseNumber { get; set; }
         [DataMember]
         public string StreetName { get; set; }
         [DataMember]
@@ -323,7 +323,7 @@ namespace DataContracts.Masters
         [DataMember]
         public string PostalCode { get; set; }
         [DataMember]
-        public string Full_Adress { get; set; }
+        public string FullAdress { get; set; }
         [DataMember]
         public double Latitude { get; set; }
         [DataMember]
