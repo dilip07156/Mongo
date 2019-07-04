@@ -268,7 +268,7 @@ namespace BAL
 
         
 
-     public void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_Id)
+        public void LoadCompanyAccommodationProductMapping(string LogId,string Supplier_Id)
         {
             Guid gLogId;
             Guid gSupplier_Id;
@@ -277,6 +277,20 @@ namespace BAL
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
                     obj.LoadCompanyAccommodationProductMapping(gLogId, gSupplier_Id);
+                }
+            }
+        }
+
+        public void LoadCompanyAccommodationCountryWiseProductMapping(string LogId, string Supplier_Id, string Country_Id)
+        {
+            Guid gLogId;
+            Guid gSupplier_Id;
+            Guid gCountry_Id;
+            if (Guid.TryParse(LogId, out gLogId) && Guid.TryParse(Supplier_Id, out gSupplier_Id) &&  Guid.TryParse(Country_Id, out gCountry_Id))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCompanyAccommodationCountryWiseProductMapping(gLogId, gSupplier_Id, gCountry_Id);
                 }
             }
         }
@@ -290,6 +304,19 @@ namespace BAL
                 using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
                 {
                     obj.LoadCompanyAccommodationProductMappingCrossVersion(gLogId, Supplier_Id);
+                }
+            }
+        }
+
+        public void LoadCompanyAccommodationProductMappingCrossVersion_CountryWise(string LogId, string Supplier_Id, string Country_Id)
+        {
+            Guid gLogId;
+
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadCompanyAccommodationProductMappingCrossVersion_CountryWise(gLogId, Supplier_Id, Country_Id);
                 }
             }
         }
