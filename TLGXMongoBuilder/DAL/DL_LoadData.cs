@@ -3091,7 +3091,7 @@ namespace DAL
                                     where 
                                         apm.IsActive = 1  and
                                         apm.supplier_id = '" + SupplierCode.Supplier_Id + @"' and 
-	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') and  apm.Country_Id = '" + CountryId + "'");
+	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') and  apm.CountryName = '" + countryName + "'");
 
                                 sbSelectAccoRoomMapped.Append(@"  
                                   SELECT  ASRTM.SupplierRoomId
@@ -3115,7 +3115,7 @@ namespace DAL
                                join Accommodation a on a.Accommodation_Id = ASRTM.Accommodation_Id
                                       where 
                                              ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"' and 
-                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED') and a.Country_Id = '" + CountryId + "'");
+                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED') and a.Country = '" + countryName + "'");
                                 #endregion
 
                                 using (TLGX_Entities context = new TLGX_Entities())
@@ -3327,13 +3327,16 @@ namespace DAL
                     {
                         context.Database.CommandTimeout = 0;
                         StringBuilder sbCountryVizCount = new StringBuilder();
-                        sbCountryVizCount.Append(" select count(1) as Count, UPPER(av.Country) as [CountryName], (select top 1 a.Country_Id from m_CountryMapping a where a.CountryName = av.Country) as Country_Id ");
-                        sbCountryVizCount.Append(" from  Accommodation_ProductMapping apm with (NOLOCK) join  Accommodation_CompanyVersion av  with(nolock) on av.Accommodation_Id = apm.Accommodation_Id ");
-                        sbCountryVizCount.Append(" join  Accommodation acc  with(nolock) on acc.Accommodation_Id = av.Accommodation_Id where apm.IsActive = 1  and apm.supplier_id = '" + Supplier_ID + "' ");
-
+                        sbCountryVizCount.Append(" select count(1) as Count, UPPER(av.Country) as [CountryName] ");
+                        sbCountryVizCount.Append(" from  Accommodation_ProductMapping apm with (NOLOCK) join  Accommodation_CompanyVersion av  with(nolock) on av.Accommodation_Id = apm.Accommodation_Id join Accommodation acc  with(nolock) on acc.Accommodation_Id = av.Accommodation_Id ");
+                        sbCountryVizCount.Append(" where apm.IsActive = 1  and apm.supplier_id = '" + Supplier_ID + "' ");
                         if (Country_Id != Guid.Empty)
                         {
-                            sbCountryVizCount.Append(@" AND apm.Country_Id='" + Country_Id + "'");
+                            sbCountryVizCount.Append(@" and  av.Country in (select distinct CountryName from m_CountryMapping where Country_Id='" + Country_Id + "' and CountryName is not null )");
+                        }
+                        else
+                        {
+                            sbCountryVizCount.Append(@" and  av.Country in (select distinct CountryName from m_CountryMapping where CountryName is not null )");
                         }
 
                         sbCountryVizCount.Append(" and apm.STATUS in ('MAPPED', 'AUTOMAPPED') group by av.Country order by count ");
@@ -3390,7 +3393,7 @@ namespace DAL
                                     where 
                                         apm.IsActive = 1  and
                                         apm.supplier_id = '" + SupplierCode.Supplier_Id + @"' and 
-	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') and  apm.Country_Id = '" + CountryId + "'");
+	                                    apm.STATUS in ('MAPPED', 'AUTOMAPPED') and  apm.CountryName = '" + countryName + "'");
 
                                 sbSelectAccoRoomMapped.Append(@"  
                                   SELECT  ASRTM.SupplierRoomId
@@ -3406,7 +3409,7 @@ namespace DAL
                                           ,ASRTM.Supplier_Id 
                                           ,ASRTM.SupplierProductId
                                  ,ARIC.CommonRoomId as TLGXCommonRoomId   
-                        from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
+                                from Accommodation_SupplierRoomTypeMapping ASRTM with(nolock) 
                                join Accommodation_SupplierRoomTypeMapping_Values ASRTMV with(nolock) 
                                              ON ASRTM.Accommodation_SupplierRoomTypeMapping_Id = ASRTMV.Accommodation_SupplierRoomTypeMapping_Id 
                                join Accommodation_RoomInfo_CompanyVersion ARIC with(nolock)                                
@@ -3414,7 +3417,7 @@ namespace DAL
                                join Accommodation a on a.Accommodation_Id = ASRTM.Accommodation_Id
                                       where 
                                              ASRTM.Supplier_Id = '" + SupplierCode.Supplier_Id + @"' and 
-                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED') and a.Country_Id = '" + CountryId + "'");
+                                             (ASRTMV.SystemMappingStatus =  'AUTOMAPPED' or ASRTMV.UserMappingStatus = 'MAPPED') and a.country = '" + countryName + "'");
                                 #endregion
 
                                 using (TLGX_Entities context = new TLGX_Entities())
@@ -3448,7 +3451,7 @@ namespace DAL
                                         var result = collection.ReplaceOne(filter, product, new UpdateOptions { IsUpsert = true });
                                         ConpanyAccommodationMappingList.Add(product);
                                         MongoInsertedCount = MongoInsertedCount + 1;
-                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONCOUNTRYWISEPRODUCTMAPPING", "MAPPING");
+                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPINGCOUNTRYWISE", "MAPPING");
                                     }
                                     catch (Exception ex)
                                     {
@@ -3476,7 +3479,7 @@ namespace DAL
                                         var update = Builders<BsonDocument>.Update.PullFilter("MappedRooms",
                                             Builders<BsonDocument>.Filter.Eq("NakshatraRoomMappingId", Convert.ToString(id)));
                                         var result = CompanyAccommodationProductMappingCollection.FindOneAndUpdate(filter, update);
-                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONCOUNTRYWISEPRODUCTMAPPING", "MAPPING");
+                                        UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPINGCOUNTRYWISE", "MAPPING");
                                     }
                                     catch (Exception ex)
                                     {
@@ -3487,7 +3490,7 @@ namespace DAL
                             // loggin successful supplier with last count
 
                             LogSupplierStatus(currSupplier + " - " + countryName, MongoInsertedCount);
-                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONCOUNTRYWISEPRODUCTMAPPING", "MAPPING");
+                            UpdateDistLogInfo(LogId, PushStatus.RUNNNING, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPINGCOUNTRYWISE", "MAPPING");
                         }
                         catch (Exception ex)
                         {
@@ -3495,7 +3498,7 @@ namespace DAL
                         }
                     }
                 }
-                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONCOUNTRYWISEPRODUCTMAPPING", "MAPPING");
+                UpdateDistLogInfo(LogId, PushStatus.COMPLETED, TotalAPMCount, MongoInsertedCount, string.Empty, "COMPANYACCOMMODATIONPRODUCTMAPPINGCOUNTRYWISE", "MAPPING");
                 collection = null;
                 //_database = null;
             }
