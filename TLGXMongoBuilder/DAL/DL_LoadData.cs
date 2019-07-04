@@ -1028,7 +1028,7 @@ namespace DAL
                 sbSelectZoneLocationMapping.Append(@" SELECT ZS.Name,ZS.Code,ZS.ZoneType,ZS.ZoneSubType,HouseNumber,
                                                        ZS.StreetName,ZS.Street2,ZS.Street3,ZS.City,ZS.CityArea,ZS.CityAreaLocation,
                                                        ZS.StateCode,ZS.StateName,ZS.CountryCode,ZS.PostalCode,ZS.FullAdress,ZS.Latitude,
-                                                       ZS.Longitude,ZSM.Distance,ZS.Supplier_Name,SUP.Code as Supplier_code,ZM.Zone_id from Zone_SupplierMapping ZSM with(NOLOCK) 
+                                                       ZS.Longitude,ZSM.Distance,upper(ZS.Supplier_Name) as Supplier_Name,upper(SUP.Code) as Supplier_code,ZM.Zone_id from Zone_SupplierMapping ZSM with(NOLOCK) 
 	                                                   INNER JOIN Zone_Supplier ZS with(NOLOCK) ON ZSM.ZoneSupplier_Id=ZS.ZoneSupplier_Id
 	                                                   INNER JOIN m_ZoneMaster ZM with(NOLOCK) ON ZSM.ZoneId=ZM.Zone_id 
                                                        INNER JOIN Supplier SUP with(NOLOCK) ON SUP.Name=ZS.Supplier_Name");
