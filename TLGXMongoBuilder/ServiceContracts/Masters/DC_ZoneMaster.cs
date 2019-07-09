@@ -148,11 +148,59 @@ namespace DataContracts.Masters
         public string PostalCode { get; set; }
         [DataMember]
         public string FullAdress { get; set; }
+        [DataMember]
         public double Latitude { get; set; }
         [DataMember]
         public double Longitude { get; set; }
         [DataMember]
         public double Distance { get; set; }
+        [DataMember]
+        public string Supplier_Name { get; set; }
+        [DataMember]
+        public string Supplier_code { get; set; }
+
+    }
+
+    [DataContract]
+    public class DC_Zone_Supplier
+    {
+
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public string Code { get; set; }
+        [DataMember]
+        public string ZoneType { get; set; }
+        [DataMember]
+        public string ZoneSubType { get; set; }
+        [DataMember]
+        public string HouseNumber { get; set; }
+        [DataMember]
+        public string StreetName { get; set; }
+        [DataMember]
+        public string Street2 { get; set; }
+        [DataMember]
+        public string Street3 { get; set; }
+        [DataMember]
+        public string City { get; set; }
+        [DataMember]
+        public string CityArea { get; set; }
+        [DataMember]
+        public string CityAreaLocation { get; set; }
+        [DataMember]
+        public string StateCode { get; set; }
+        [DataMember]
+        public string StateName { get; set; }
+        [DataMember]
+        public string CountryCode { get; set; }
+        [DataMember]
+        public string PostalCode { get; set; }
+        [DataMember]
+        public string FullAdress { get; set; }
+        [DataMember]
+        public double Latitude { get; set; }
+        [DataMember]
+        public double Longitude { get; set; }        
         [DataMember]
         public string Supplier_Name { get; set; }
         [DataMember]
