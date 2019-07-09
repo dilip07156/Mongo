@@ -437,6 +437,20 @@ namespace BAL
         }
         #endregion
 
+        #region SupplierZoneMaster
+        public void LoadSupplierZoneMaster(string LogId)
+        {
+            Guid gLogId;
+            if (Guid.TryParse(LogId, out gLogId))
+            {
+                using (DAL.DL_LoadData obj = new DAL.DL_LoadData())
+                {
+                    obj.LoadSupplierZonemaster(gLogId);
+                }
+            }
+        }
+        #endregion
+
 
         public void UpdateHotelRoomTypeMapping(string LogId, string Supplier_Id)
         {

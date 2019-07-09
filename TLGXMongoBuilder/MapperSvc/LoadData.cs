@@ -348,6 +348,16 @@ namespace MapperSvc
         }
         #endregion
 
+        #region SupplierZoneMaster
+        public void LoadSupplierZoneMaster(string LogId)
+        {
+            using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())
+            {
+                objBL.LoadSupplierZoneMaster(LogId);
+            }
+        }
+        #endregion
+
         public void UpdateHotelRoomTypeMapping(string LogId, string Supplier_Id)
         {
             using (BAL.BL_LoadData objBL = new BAL.BL_LoadData())

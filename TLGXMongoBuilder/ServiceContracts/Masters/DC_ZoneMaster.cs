@@ -115,6 +115,7 @@ namespace DataContracts.Masters
     [DataContract]
     public class DC_Zone_LocationMapping
     {
+       
         [DataMember]
         public string Name { get; set; }
         [DataMember]
@@ -292,6 +293,7 @@ namespace DataContracts.Masters
     [DataContract]
     public class DC_Zone_LocationMappingRQ
     {
+       
         [DataMember]
         public string Name { get; set; }
         [DataMember]

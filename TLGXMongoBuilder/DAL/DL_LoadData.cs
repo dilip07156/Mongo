@@ -1203,6 +1203,185 @@ namespace DAL
 
         #endregion
 
+        #region
+        public void LoadSupplierZonemaster(Guid LogID)
+        {
+            int TotalZoneCount = 0;
+            int MongoInsertedCount = 0;
+            try
+            {
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    context.Database.CommandTimeout = 0;
+                    if (LogID != Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogID, PushStatus.RUNNNING);
+                    }
+                    List<DataContracts.Masters.DC_Zone_LocationMapping> _SupplierZoneList = new List<DataContracts.Masters.DC_Zone_LocationMapping>();
+                    // int total = 0;
+                    int BatchSize = 1000;
+                    string strTotalCount = @"select count(1) from Zone_SupplierMapping zsm with(NOLOCK)
+		                                     INNER JOIN zone_supplier zs with(NOLOCK) on ZSM.ZoneSupplier_Id=ZS.ZoneSupplier_Id
+	                                         INNER JOIN m_ZoneMaster ZM with(NOLOCK) ON ZSM.ZoneId=ZM.Zone_id ";
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        TotalZoneCount = context.Database.SqlQuery<int>(strTotalCount.ToString()).FirstOrDefault();
+                    }
+                    catch (Exception ex) { }
+                    int NoOfBatch = TotalZoneCount / BatchSize;
+                    int mod = TotalZoneCount % BatchSize;
+                    if (mod > 0)
+                    {
+                        NoOfBatch = NoOfBatch + 1;
+                    }
+                    _database = MongoDBHandler.mDatabase();
+                    _database.DropCollection("SupplierZoneMaster");
+                    var collection = _database.GetCollection<DataContracts.Masters.DC_Zone_LocationMapping>("SupplierZoneMaster");
+
+                    for (int BatchNo = 0; BatchNo < NoOfBatch; BatchNo++)
+                    {
+                        _SupplierZoneList = GetSupplierZoneMasterdataToLoad(BatchSize, BatchNo);
+                        if (_SupplierZoneList.Count > 0)
+                        {
+                            collection.InsertManyAsync(_SupplierZoneList);
+                            #region To update CounterIn DistributionLog
+                            if (LogID != Guid.Empty)
+                            {
+                                MongoInsertedCount = MongoInsertedCount + _SupplierZoneList.Count();
+                                UpdateDistLogInfo(LogID, PushStatus.RUNNNING, TotalZoneCount, MongoInsertedCount);
+                            }
+                            #endregion
+                        }
+                    }
+
+                    //collection.Indexes.CreateOne(Builders<DataContracts.Masters.DC_Zone_LocationMappingRQ>.IndexKeys.Ascending(_ => _.TLGXCountryCode).Ascending(_ => _.Zone_SubType).Ascending(_ => _.Zone_Type));
+                    collection = null;
+                    //_database = null;
+                    if (LogID != Guid.Empty)
+                    {
+                        UpdateDistLogInfo(LogID, PushStatus.COMPLETED, TotalZoneCount, MongoInsertedCount);
+                    }
+                }
+            }
+            catch (FaultException<DataContracts.ErrorNotifier> ex)
+            {
+                UpdateDistLogInfo(LogID, PushStatus.ERROR, TotalZoneCount, MongoInsertedCount);
+                throw ex;
+            }
+        }
+
+        private List<DC_Zone_LocationMapping> GetSupplierZoneMasterdataToLoad(int batchSize, int batchNo)
+        {
+            
+            List<DataContracts.Masters.DC_Zone_MasterRQ> _ZoneListResult = new List<DataContracts.Masters.DC_Zone_MasterRQ>();
+            List<DC_Zone_LocationMapping> _SupplierZoneLocationList = new List<DC_Zone_LocationMapping>();
+            try
+            {
+
+                #region ==== ZoneMasterQuery
+                StringBuilder sbSelectZoneMaster = new StringBuilder();
+                StringBuilder sbOrderbyZoneMaster = new StringBuilder();
+                sbSelectZoneMaster.Append(@" SELECT ('ZONE'+cast(ROW_NUMBER() OVER (ORDER BY Zone_Name) as varchar)) as Id,
+                                            Zone_id, upper(ltrim(rtrim(zm.Zone_Name))) as Zone_Name , upper(ltrim(rtrim(zm.Zone_Type))) as Zone_Type , 
+                                            upper(ltrim(rtrim(zm.Zone_SubType))) as Zone_SubType ,zm.Zone_Radius , 
+                                            zm.Latitude, zm.Longitude,upper(ltrim(rtrim(co.Code))) as TLGXCountryCode,zm.zone_code,zm.Zone_House_Number,
+                                            zm.Zone_Street_One,zm.Zone_Street_Two,zm.Zone_Street_Three,zm.Zone_City,zm.Zone_City_Area,zm.Zone_City_Area_Location,
+                                            zm.Zone_Postal_Code,zm.Zone_Full_Adress
+                                            FROM  m_zoneMaster zm  with(Nolock)
+                                            LEFT JOIN m_CountryMaster co  with(Nolock) ON co.Country_Id= zm.Country_Id 
+                                            WHERE zm.isActive=1 and zm.Latitude is not null and zm.Longitude is not null ");
+                int skip = batchNo * batchSize;
+                sbOrderbyZoneMaster.Append("  ORDER BY zm.Zone_id  OFFSET " + (skip).ToString() + " ROWS FETCH NEXT " + batchSize.ToString() + " ROWS ONLY ");
+
+                StringBuilder sbfinalZoneMaster = new StringBuilder();
+                sbfinalZoneMaster.Append(sbSelectZoneMaster + " ");
+                sbfinalZoneMaster.Append(" " + sbOrderbyZoneMaster + " ");
+                #endregion
+                #region ==== ZoneLocation mapping SQL QUERY
+                StringBuilder sbSelectZoneLocationMapping = new StringBuilder();
+                sbSelectZoneLocationMapping.Append(@" SELECT  ZS.Name,ZS.Code,ZS.ZoneType,ZS.ZoneSubType,HouseNumber,
+                                                       ZS.StreetName,ZS.Street2,ZS.Street3,ZS.City,ZS.CityArea,ZS.CityAreaLocation,
+                                                       ZS.StateCode,ZS.StateName,ZS.CountryCode,ZS.PostalCode,ZS.FullAdress,ZS.Latitude,
+                                                       ZS.Longitude,ZSM.Distance,upper(ZS.Supplier_Name) as Supplier_Name,upper(SUP.Code) as Supplier_code,ZM.Zone_id from Zone_SupplierMapping ZSM with(NOLOCK) 
+	                                                   INNER JOIN Zone_Supplier ZS with(NOLOCK) ON ZSM.ZoneSupplier_Id=ZS.ZoneSupplier_Id
+	                                                   INNER JOIN m_ZoneMaster ZM with(NOLOCK) ON ZSM.ZoneId=ZM.Zone_id 
+                                                       INNER JOIN Supplier SUP with(NOLOCK) ON SUP.Name=ZS.Supplier_Name");
+
+                StringBuilder sbfinalZoneLocationMapping = new StringBuilder();
+                sbfinalZoneLocationMapping.Append(sbSelectZoneLocationMapping + " ");
+                sbfinalZoneLocationMapping.Append(" WHERE zm.zone_id  in ( ");
+
+                #endregion
+                StringBuilder sbZone_id = new StringBuilder();                
+                List<DataContracts.Masters.DC_Zone_LocationMappingRQ> _SupplierZoneListResult = new List<DataContracts.Masters.DC_Zone_LocationMappingRQ>();
+                using (TLGX_Entities context = new TLGX_Entities())
+                {
+                    context.Configuration.AutoDetectChangesEnabled = false;
+                    try
+                    {
+                        _ZoneListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_MasterRQ>(sbfinalZoneMaster.ToString()).ToList();                       
+                        //Add  Zone_id for ZpList and Zc List
+                        foreach (var id in _ZoneListResult)
+                        {
+                            sbZone_id.Append("'" + id.Zone_id + "',");
+                        }
+                        if (_ZoneListResult.Count > 0)
+                        {
+                            //To Get Zone Geography Coordinates by Zone id
+                            sbfinalZoneLocationMapping.Append(sbZone_id.ToString().TrimEnd(',') + ")");
+                            _SupplierZoneListResult = context.Database.SqlQuery<DataContracts.Masters.DC_Zone_LocationMappingRQ>(sbfinalZoneLocationMapping.ToString()).ToList();
+
+                            _SupplierZoneLocationList = ConvertSupplierZoneListWithoutId(_SupplierZoneListResult);
+                        }
+                    }
+                    catch (Exception ex) { }
+                }
+
+            }
+            catch(Exception ex)
+            {
+
+            }
+            return _SupplierZoneLocationList;
+        }
+
+        private List<DC_Zone_LocationMapping> ConvertSupplierZoneListWithoutId(List<DC_Zone_LocationMappingRQ> supplierZoneListResult)
+        {
+            List<DataContracts.Masters.DC_Zone_LocationMapping> _ResultList = new List<DataContracts.Masters.DC_Zone_LocationMapping>();
+            try
+            {
+                _ResultList = supplierZoneListResult.ConvertAll(item => new DataContracts.Masters.DC_Zone_LocationMapping
+                {
+                    
+                    Name = item.Name,
+                    Code = item.Code,
+                    ZoneType = item.ZoneType,
+                    ZoneSubType=item.ZoneSubType,
+                    HouseNumber=item.HouseNumber,
+                    StreetName=item.StreetName,
+                    Street2=item.Street2,
+                    Street3=item.Street3,
+                    City=item.City,
+                    CityArea=item.CityArea,
+                    CityAreaLocation=item.CityAreaLocation,
+                    StateCode=item.StateCode,
+                    StateName=item.StateName,
+                    CountryCode=item.CountryCode,
+                    PostalCode=item.PostalCode,
+                    FullAdress=item.FullAdress,
+                    Latitude = item.Latitude,
+                    Longitude = item.Longitude,
+                    Distance = item.Distance,
+                    Supplier_code = item.Supplier_code,
+                    Supplier_Name = item.Supplier_Name
+                });
+            }
+            catch (Exception ex) { throw; }
+            return _ResultList;
+        }
+        #endregion
+
         #region ZoneTypeMaster
         public void LoadZoneTypeMaster(Guid LogId)
         {
